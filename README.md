@@ -1,7 +1,7 @@
 # Adaptive User Interfaces Toolkit
 This repository contains AUIT, a toolkit to support the design of adaptive user interfaces in XR
 
-We use multi-object to combine different preferences and achieve an optimal adaptations of 3D user interfaces.
+We use multi-object optimization to combine different preferences and achieve optimal adaptations of 3D user interfaces.
 For more information about each different component refer to the publication.
 
 ## To run and use AUIT
@@ -11,9 +11,10 @@ However, running the scenes on a Microsoft HoloLens 2 requires the installation 
 This repository uses MRTK to simulate camera movement and prototyping with 3D UIs, but AUIT can be used without it (it has no dependencies).
 
 ## Getting started
-To create an adaptive UI, add each of the five required components to the user interface to adapt (note that some dependencies will be added automatically):
+1. See example scene for a basic setup with one cube virtual object.
+2. To create an adaptive UI, add each of the three required components to the user interface to adapt (note that some dependencies will be added automatically, such as the solver and context sources):
 - Adaptation Objectives (context source defines which context widget to use)
-- Solver
+- Adaptation Manager (contains the Solver)
 - Property Transitions
 - Adaptation Trigger
 
