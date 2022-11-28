@@ -18,6 +18,11 @@ namespace AUIT.Solvers.Experimental
         public (List<Layout>, float, float) Result => result;
 
         // hyperparemeters; [0] Iterations [1] Minimum temperature; [2] Initial temperature; [3] alpha
+        public void Initialize()
+        {
+            
+        }
+
         public IEnumerator OptimizeCoroutine(Layout layout, List<LocalObjective> objectives, List<float> hyperparameters)
         {
             this.result = (null, 0.0f, 0.0f);
