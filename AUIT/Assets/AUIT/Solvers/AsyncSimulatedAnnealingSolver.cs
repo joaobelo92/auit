@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using AUIT.AdaptationObjectives;
 using AUIT.AdaptationObjectives.Definitions;
 using UnityEngine;
@@ -15,10 +16,12 @@ namespace AUIT.Solvers.Experimental
         public float MaxFrameTime = 0.10f;
 
         (List<Layout>, float, float) result;
+        public AdaptationManager adaptationManager { get; set; }
+        
         public (List<Layout>, float, float) Result => result;
 
         // hyperparemeters; [0] Iterations [1] Minimum temperature; [2] Initial temperature; [3] alpha
-        public void Initialize()
+        public async Task Initialize()
         {
             
         }

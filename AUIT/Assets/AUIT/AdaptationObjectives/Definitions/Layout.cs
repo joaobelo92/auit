@@ -1,9 +1,13 @@
+using System;
+using Newtonsoft.Json;
 using UnityEngine;
 
 namespace AUIT.AdaptationObjectives.Definitions
 {
+    [Serializable]
     public class Layout
     {
+        [SerializeField]
         private Vector3 position;
         public Vector3 Position
         {
@@ -11,6 +15,7 @@ namespace AUIT.AdaptationObjectives.Definitions
             set => position = value;
         }
 
+        [SerializeField]
         private Quaternion rotation;
         public Quaternion Rotation
         {
@@ -46,7 +51,7 @@ namespace AUIT.AdaptationObjectives.Definitions
 
         public override string ToString()
         {
-            return "Position: " + position + ", Rotation: " + rotation + ", Scale: " + scale;
+            return JsonConvert.SerializeObject(this);
         }
     }
 }

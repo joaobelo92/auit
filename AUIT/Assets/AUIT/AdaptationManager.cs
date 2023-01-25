@@ -10,6 +10,7 @@ using AUIT.AdaptationObjectives;
 using AUIT.Solvers;
 using AUIT.Solvers.Experimental;
 using AUIT.AdaptationObjectives.Definitions;
+using Newtonsoft.Json;
 
 namespace AUIT
 {
@@ -37,9 +38,9 @@ namespace AUIT
         public ISolver solver = new SimulatedAnnealingSolver();
         public List<float> hyperparameters = new List<float> { 1500f, 0.000001f, 10000f, 0.98f, 0.02f };
 
-        private IAsyncSolver asyncSolver = new AsyncSimulatedAnnealingSolver();
-        private Coroutine asyncSolverOptimizeCoroutine;
-        public Coroutine AsyncSolverOptimizeCoroutine => asyncSolverOptimizeCoroutine;
+        private IAsyncSolver asyncSolver = new ParetoFrontierSolver();
+        public Coroutine AsyncSolverOptimizeCoroutine { get; private set; }
+
         private bool waitingForOptimization = false;
 
         [HideInInspector]
@@ -100,11 +101,18 @@ namespace AUIT
         protected virtual void Start()
         {
             layout = new Layout(transform);
+            asyncSolver.adaptationManager = this;
+            asyncSolver.Initialize();
         }
 
         // Update is called once per frame
         void Update()
         {
+            // if (Time.frameCount % 100 == 0)
+            // {
+            //     print(LocalObjectiveHandler.Objectives.First().name);
+            //     print(LocalObjectiveHandler.Objectives.First().CostFunction(layout));
+            // }
             if (isGlobal && Input.GetKeyDown(KeyCode.V))
             {
                 for (int i = 0; i < 100; i++)
@@ -173,6 +181,44 @@ namespace AUIT
             propertyTransitions.Remove(propertyTransition);
         }
 
+        public List<(string, List<(string, float)>)> EvaluateLayout(string inc)
+        {
+            
+            print("triggered");
+            print(LocalObjectiveHandler.Objectives.Count);
+            print(LocalObjectiveHandler.Objectives.First().name);
+            print(LocalObjectiveHandler.Objectives.First().CostFunction(layout));
+            List<(string, List<(string, float)>)> result = new List<(string, List<(string, float)>)>();
+            // TODO: evaluate actual layout from python 
+            if (!isGlobal)
+            {
+                List<(string, float)> costs = new List<(string, float)>();
+                print(LocalObjectiveHandler.Objectives.Count);
+                print(LocalObjectiveHandler.Objectives.First().name);
+                print(LocalObjectiveHandler.Objectives.First().CostFunction(layout));
+                foreach (var objective in LocalObjectiveHandler.Objectives)
+                {
+                    print(objective.CostFunction(layout));
+                    costs.Add((objective.name, objective.CostFunction(layout)));
+                }
+                result.Add((gameObject.name, costs));
+            } else {
+                foreach (var element in UIElements)
+                {
+                    AdaptationManager adaptationManager = element.GetComponent<AdaptationManager>();
+                    List<(string, float)> costs = new List<(string, float)>();
+                    foreach (var objective in adaptationManager.LocalObjectiveHandler.Objectives)
+                    {
+                        costs.Add((objective.name, objective.CostFunction(adaptationManager.layout)));
+                    }
+                    result.Add((element.name, costs));
+                }
+            }
+
+            print(result);
+            return result;
+        }
+
         public (List<Layout>, float) OptimizeLayout()
         {
             if (isActiveAndEnabled == false)
@@ -194,20 +240,52 @@ namespace AUIT
                     objectives.Add(adaptationManager.LocalObjectiveHandler.Objectives);
                     layouts.Add(adaptationManager.layout);
                 }
+                
                 if (objectives.Count == 0)
                 {
                     Debug.LogWarning($"[AdaptationManager.OptimizeLayout()]: Unable to find any objectives on adaptation manager game objects...");
                     return (new List<Layout> { layout }, 0.0f);
                 }
+                
+                // async starts
+                if (waitingForOptimization == false)
+                {
+                    waitingForOptimization = true;
+                    if (AsyncSolverOptimizeCoroutine != null)
+                        StopCoroutine(AsyncSolverOptimizeCoroutine);
+                    AsyncSolverOptimizeCoroutine = StartCoroutine(asyncSolver.OptimizeCoroutine(layouts, objectives, hyperparameters));
+                }
 
-                return solver.Optimize(layouts, objectives, hyperparameters);
+                if (asyncSolver.Result.Item1 != null)
+                {
+                    waitingForOptimization = false;
+                }
+
+                return (asyncSolver.Result.Item1, asyncSolver.Result.Item2);
+                
+                // return solver.Optimize(layouts, objectives, hyperparameters);
             }
             if (LocalObjectiveHandler.Objectives.Count == 0)
             {
                 Debug.LogWarning($"[AdaptationManager.OptimizeLayout()]: Unable to find any objectives on adaptation manager game object...");
                 return (new List<Layout> { layout }, 0.0f);
             }
-            return solver.Optimize(layout, LocalObjectiveHandler.Objectives, hyperparameters);
+            // return solver.Optimize(layout, LocalObjectiveHandler.Objectives, hyperparameters);
+            
+            if (waitingForOptimization == false)
+            {
+                waitingForOptimization = true;
+                if (AsyncSolverOptimizeCoroutine != null)
+                    StopCoroutine(AsyncSolverOptimizeCoroutine);
+                AsyncSolverOptimizeCoroutine = StartCoroutine(asyncSolver.OptimizeCoroutine(layout, LocalObjectiveHandler.Objectives, hyperparameters));
+            }
+
+            if (asyncSolver.Result.Item1 != null)
+            {
+                waitingForOptimization = false;
+            }
+
+            return (asyncSolver.Result.Item1, asyncSolver.Result.Item2);
         }
 
         public (List<Layout>, float, float) AsyncOptimizeLayout()
@@ -235,9 +313,9 @@ namespace AUIT
                 if (waitingForOptimization == false)
                 {
                     waitingForOptimization = true;
-                    if (asyncSolverOptimizeCoroutine != null)
-                        StopCoroutine(asyncSolverOptimizeCoroutine);
-                    asyncSolverOptimizeCoroutine = StartCoroutine(asyncSolver.OptimizeCoroutine(layouts, objectives, hyperparameters));
+                    if (AsyncSolverOptimizeCoroutine != null)
+                        StopCoroutine(AsyncSolverOptimizeCoroutine);
+                    AsyncSolverOptimizeCoroutine = StartCoroutine(asyncSolver.OptimizeCoroutine(layouts, objectives, hyperparameters));
                 }
 
                 if (asyncSolver.Result.Item1 != null)
@@ -251,20 +329,21 @@ namespace AUIT
             if (LocalObjectiveHandler.Objectives.Count == 0)
                 return (new List<Layout> { layout }, 0.0f, 0.0f);
 
-            if (waitingForOptimization == false)
-            {
-                waitingForOptimization = true;
-                if (asyncSolverOptimizeCoroutine != null)
-                    StopCoroutine(asyncSolverOptimizeCoroutine);
-                asyncSolverOptimizeCoroutine = StartCoroutine(asyncSolver.OptimizeCoroutine(layout, LocalObjectiveHandler.Objectives, hyperparameters));
-            }
+            // if (waitingForOptimization == false)
+            // {
+            //     waitingForOptimization = true;
+            //     if (asyncSolverOptimizeCoroutine != null)
+            //         StopCoroutine(asyncSolverOptimizeCoroutine);
+            //     asyncSolverOptimizeCoroutine = StartCoroutine(asyncSolver.OptimizeCoroutine(layout, LocalObjectiveHandler.Objectives, hyperparameters));
+            // }
+            //
+            // if (asyncSolver.Result.Item1 != null)
+            // {
+            //     waitingForOptimization = false;
+            // }
 
-            if (asyncSolver.Result.Item1 != null)
-            {
-                waitingForOptimization = false;
-            }
-
-            return (asyncSolver.Result);
+            // return (asyncSolver.Result);
+            return (new List<Layout> { layout }, 0.0f, 0.0f);
         }
 
         public float ComputeCost()
