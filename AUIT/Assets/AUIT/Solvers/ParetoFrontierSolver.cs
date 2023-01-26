@@ -120,7 +120,7 @@ namespace AUIT.Solvers
             Debug.Log($"sending optimization request");
             var optimizationRequest = new
             OptimizationRequest {
-                layout = initialLayout,
+                initialLayout = UIConfiguration.FromLayout(initialLayout),
                 nObjectives = objectives.Count
             };
             Task<string> res = requestFunc(("O", JsonUtility.ToJson(optimizationRequest)));

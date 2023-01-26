@@ -5,9 +5,9 @@ using UnityEngine.Serialization;
 namespace AUIT.Extras
 {
     [Serializable]
-    public class OptimizationRequest
+    public class OptimizationResponse
     {
-        public UIConfiguration initialLayout;
-        public int nObjectives;
+        public UIConfiguration[] solutions;
     }
+
 }
