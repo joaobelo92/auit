@@ -200,12 +200,9 @@ namespace AUIT
             {
                 // WARN: This is a hack to get the local objectives to work
                 // We only take the first UIElement's objectives to evaluate the layout's first element
-                Debug.LogError("Local Adaptation Manager does not support EvaluateLayout");
+                // Debug.LogError("Local Adaptation Manager does not support EvaluateLayout");
                 foreach (var objective in LocalObjectiveHandler.Objectives)
                 {
-                    // print(objective.name);
-                    // print(layout.elements.First());
-                    // print(objective.CostFunction(layout.elements.First()));
                     // costs.Add(objective.CostFunction(layout.elements.First()));
                     costs.Add(0f);
                 }
@@ -248,45 +245,6 @@ namespace AUIT
             
             return costs;
         }
-
-        // Joao's code
-        // public List<(string, List<(string, float)>)> EvaluateLayout(string inc)
-        // {
-            
-        //     print("triggered");
-        //     print(LocalObjectiveHandler.Objectives.Count);
-        //     print(LocalObjectiveHandler.Objectives.First().name);
-        //     print(LocalObjectiveHandler.Objectives.First().CostFunction(layout));
-        //     List<(string, List<(string, float)>)> result = new List<(string, List<(string, float)>)>();
-        //     // TODO: evaluate actual layout from python 
-        //     if (!isGlobal)
-        //     {
-        //         List<(string, float)> costs = new List<(string, float)>();
-        //         print(LocalObjectiveHandler.Objectives.Count);
-        //         print(LocalObjectiveHandler.Objectives.First().name);
-        //         print(LocalObjectiveHandler.Objectives.First().CostFunction(layout));
-        //         foreach (var objective in LocalObjectiveHandler.Objectives)
-        //         {
-        //             print(objective.CostFunction(layout));
-        //             costs.Add((objective.name, objective.CostFunction(layout)));
-        //         }
-        //         result.Add((gameObject.name, costs));
-        //     } else {
-        //         foreach (var element in UIElements)
-        //         {
-        //             AdaptationManager adaptationManager = element.GetComponent<AdaptationManager>();
-        //             List<(string, float)> costs = new List<(string, float)>();
-        //             foreach (var objective in adaptationManager.LocalObjectiveHandler.Objectives)
-        //             {
-        //                 costs.Add((objective.name, objective.CostFunction(adaptationManager.layout)));
-        //             }
-        //             result.Add((element.name, costs));
-        //         }
-        //     }
-
-        //     print(result);
-        //     return result;
-        // }
 
         public (List<Layout>, float) OptimizeLayout()
         {
