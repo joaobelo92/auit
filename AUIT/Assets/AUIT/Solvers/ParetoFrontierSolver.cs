@@ -99,10 +99,14 @@ namespace AUIT.Solvers
                                 case 'E':
                                     string payload = message.Substring(1);
                                     Debug.Log($"Got this: {payload}");
-                                    // response = JsonConvert.SerializeObject(adaptationManager.EvaluateLayout(payload));
-                                    response = "server test";
+                                    var evaluationRequest = JsonUtility.FromJson<EvaluationRequest>(payload);
+                                    var evaluationResponse = new EvaluationResponse
+                                    {
+                                        costs = adaptationManager.EvaluateLayouts(evaluationRequest.layouts)
+                                    };
+                                    response = JsonConvert.SerializeObject(evaluationResponse);
                                     Debug.Log("Sending evaluation response: " + response);
-                                    server.SendFrame(response);
+                                    server.SendFrame("e" + response);
                                     break;
                                 default:
                                     Debug.Log("Unknown request");
