@@ -182,13 +182,18 @@ namespace AUIT
             propertyTransitions.Remove(propertyTransition);
         }
 
-        public List<List<float>> EvaluateLayouts(UIConfiguration[] layouts)
+        public List<List<float>> EvaluateLayouts(string payload)
         {
+            
+            var evaluationRequest = JsonConvert.DeserializeObject<EvaluationRequest>(payload);
+            Debug.Log("e: " + evaluationRequest);
             List<List<float>> costs = new List<List<float>>();
-            foreach (var layout in layouts)
+            foreach (var layout in evaluationRequest.layouts)
             {
+                Debug.Log("l: " + layout);
                 costs.Add(EvaluateLayout(layout));
             }
+            
             return costs;
         }
 
@@ -200,12 +205,15 @@ namespace AUIT
             {
                 // WARN: This is a hack to get the local objectives to work
                 // We only take the first UIElement's objectives to evaluate the layout's first element
-                // Debug.LogError("Local Adaptation Manager does not support EvaluateLayout");
+                Debug.LogError(LocalObjectiveHandler.Objectives.Count);
                 foreach (var objective in LocalObjectiveHandler.Objectives)
                 {
-                    // costs.Add(objective.CostFunction(layout.elements.First()));
-                    costs.Add(0f);
+                    Debug.Log(layout.elements.First());
+                    costs.Add(objective.CostFunction(layout.elements.First()));
+                    // costs.Add(0f);
                 }
+
+                return costs;
             }
 
             // Create a map of all objectives across all UI elements (key: objective name, value: objective)

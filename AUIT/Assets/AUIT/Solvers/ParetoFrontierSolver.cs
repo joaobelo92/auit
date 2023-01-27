@@ -18,65 +18,49 @@ namespace AUIT.Solvers
     {
         public AdaptationManager adaptationManager { get; set; }
         public (List<Layout>, float, float) Result { get; }
-        private NetMQRuntime runtime;
-        private RequestSocket requestSocket;
         
-        Func<(string, string), Task<string>> requestFunc;
-                           
-        public async Task Initialize()
+        // Func<(string, string), Task<string>> requestFunc;
+
+        public void Initialize()
         {
             
-            var serverThread = new Thread(Server);
+            var serverThread = new Thread(Networking);
             serverThread.Start();
-            var clientThread = new Thread(Client);
-            clientThread.Start();
             
-            while(requestFunc == null) {}
+            // while(requestFunc == null) {}
 
-            void Client()
-            {
-                using (runtime = new NetMQRuntime())
-                {
-                    Debug.Log("attempting to start client");
-                    runtime.Run(ClientAsync()); 
-                    
-                }
-                    
-                
-                async Task ClientAsync() {
-                    requestSocket = new RequestSocket();
-                    // "tcp://192.168.0.104:5555"
-                    requestSocket.Connect("tcp://localhost:5555");
-
-                    async Task<string> MakeRequest(string endpoint, string request)
-                    {
-                        requestSocket.SendFrame(endpoint + request);
-                        
-                        Debug.Log("request sent!");
-                        var (res, _) = await requestSocket.ReceiveFrameStringAsync();
-
-                        Debug.Log("got the reply!");
-                        Debug.Log(res);
-
-                        return res;
-                    }
-
-                    requestFunc = e => MakeRequest(e.Item1, e.Item2);   
-                    Debug.Log("recFunc assigned");
-                }
-                
-                
-                
-            }
-            
-            void Server()
+            void Networking()
             {
                 using (var runtime = new NetMQRuntime())
                 {
                     Debug.Log("attempting to start server");
                     runtime.Run(ServerAsync()); 
                 }
-            
+                
+                // async Task ClientAsync() {
+                //     
+                //     requestSocket = new RequestSocket();
+                //     // "tcp://192.168.0.104:5555"
+                //     requestSocket.Connect("tcp://localhost:5555");
+                //
+                //     async Task<string> MakeRequest(string endpoint, string request)
+                //     {
+                //         requestSocket.SendFrame(endpoint + request);
+                //         
+                //         Debug.Log("request sent!");
+                //         var (res, _) = await requestSocket.ReceiveFrameStringAsync();
+                //
+                //         Debug.Log("got the reply!");
+                //         Debug.Log(res);
+                //
+                //         return res;
+                //     }
+                //
+                //     requestFunc = e => MakeRequest(e.Item1, e.Item2);   
+                //     Debug.Log("recFunc assigned");
+                // }
+                
+                
                 async Task ServerAsync()
                 {
                     using (var server = new ResponseSocket("tcp://*:5556"))
@@ -98,14 +82,12 @@ namespace AUIT.Solvers
                                     break;
                                 case 'E':
                                     string payload = message.Substring(1);
-                                    Debug.Log($"Got this: {payload}");
-                                    var evaluationRequest = JsonUtility.FromJson<EvaluationRequest>(payload);
                                     var evaluationResponse = new EvaluationResponse
                                     {
-                                        costs = adaptationManager.EvaluateLayouts(evaluationRequest.layouts)
+                                        costs = adaptationManager.EvaluateLayouts(payload)
                                     };
                                     response = JsonConvert.SerializeObject(evaluationResponse);
-                                    Debug.Log("Sending evaluation response: " + response);
+                                    // Debug.Log("Sending evaluation response: " + response);
                                     server.SendFrame("e" + response);
                                     break;
                                 default:
@@ -127,10 +109,44 @@ namespace AUIT.Solvers
                 initialLayout = UIConfiguration.FromLayout(initialLayout),
                 nObjectives = objectives.Count
             };
-            Task<string> res = requestFunc(("O", JsonUtility.ToJson(optimizationRequest)));
-            res.RunSynchronously();
-            Debug.Log($"in main: ${res.Result}");
-            yield break;
+            
+            var clientThread = new Thread(Client);
+            clientThread.Start();
+            string result = "";
+            
+            void Client()
+            {
+                using (var runtime = new NetMQRuntime())
+                {
+                    Debug.Log("attempting to start client");
+                    runtime.Run(ClientAsync()); 
+                
+                    async Task ClientAsync() {
+                    
+                        var requestSocket = new RequestSocket();
+                        requestSocket.Connect("tcp://localhost:5555");
+                
+                        requestSocket.SendFrame("O" + JsonUtility.ToJson(optimizationRequest));
+                    
+                        Debug.Log("request sent: " + "O" + JsonUtility.ToJson(optimizationRequest));
+                        (result, _) = await requestSocket.ReceiveFrameStringAsync();
+            
+                        Debug.Log("got the reply!");
+                        Debug.Log(result);
+                    }
+                }
+            }
+            
+            
+            // Debug.Log(JsonUtility.ToJson(optimizationRequest));
+            // requestSocket.SendFrame("O" + JsonUtility.ToJson(optimizationRequest));
+            // var message = requestSocket.ReceiveFrameString();
+            // //
+            // Debug.Log($"in main: ${message}");
+            while (result == "")
+            {
+                yield return null;
+            }
         }
 
         public IEnumerator OptimizeCoroutine(List<Layout> initialLayouts, List<List<LocalObjective>> objectives, List<float> hyperparameters)

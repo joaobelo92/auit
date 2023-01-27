@@ -60,7 +60,7 @@ namespace AUIT.AdaptationObjectives.Definitions
 
         public override string ToString()
         {
-            return JsonConvert.SerializeObject(this);
+            return "Position: " + position + ", Rotation: " + rotation + ", Scale: " + scale;
         }
     }
 }

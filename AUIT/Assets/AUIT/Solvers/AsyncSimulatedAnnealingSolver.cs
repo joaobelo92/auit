@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AUIT.AdaptationObjectives;
 using AUIT.AdaptationObjectives.Definitions;
+using NetMQ;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -16,12 +17,13 @@ namespace AUIT.Solvers.Experimental
         public float MaxFrameTime = 0.10f;
 
         (List<Layout>, float, float) result;
+        private IAsyncSolver asyncSolverImplementation;
         public AdaptationManager adaptationManager { get; set; }
         
         public (List<Layout>, float, float) Result => result;
 
         // hyperparemeters; [0] Iterations [1] Minimum temperature; [2] Initial temperature; [3] alpha
-        public async Task Initialize()
+        public void Initialize()
         {
             
         }

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using AUIT.AdaptationObjectives.Definitions;
 using UnityEngine.Serialization;
 
@@ -15,6 +16,11 @@ namespace AUIT.Extras
             config.elements = new Layout[1];
             config.elements[0] = layout;
             return config;
+        }
+
+        public override string ToString()
+        {
+            return elements.First().ToString();
         }
     }
 }

@@ -11,7 +11,7 @@ namespace AUIT.Solvers.Experimental
         AdaptationManager adaptationManager { set; }
         (List<Layout>, float, float) Result { get; }
         
-        Task Initialize();
+        void Initialize();
         IEnumerator OptimizeCoroutine(Layout initialLayout, List<LocalObjective> objectives, List<float> hyperparameters);
         IEnumerator OptimizeCoroutine(List<Layout> initialLayouts, List<List<LocalObjective>> objectives, List<float> hyperparameters);
     }

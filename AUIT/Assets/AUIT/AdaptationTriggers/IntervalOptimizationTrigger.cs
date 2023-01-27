@@ -31,8 +31,8 @@ namespace AUIT.AdaptationTriggers
             }
             else
             {
-                AdaptationManager.layout = layouts[0];
-                AdaptationManager.Adapt(layouts[0]);
+                // AdaptationManager.layout = layouts[0];
+                // AdaptationManager.Adapt(layouts[0]);
             }
         }
     }
