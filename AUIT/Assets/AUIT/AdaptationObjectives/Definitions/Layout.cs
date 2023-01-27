@@ -7,6 +7,15 @@ namespace AUIT.AdaptationObjectives.Definitions
     [Serializable]
     public class Layout
     {
+        // Placeholder for a meaningful ID
+        [SerializeField]
+        private string id = Guid.NewGuid().ToString();
+        public string Id
+        {
+            get => id;
+            set => id = value;
+        }
+
         [SerializeField]
         private Vector3 position;
         public Vector3 Position
