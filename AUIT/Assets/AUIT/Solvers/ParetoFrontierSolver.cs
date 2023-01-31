@@ -82,6 +82,7 @@ namespace AUIT.Solvers
                                     break;
                                 case 'E':
                                     string payload = message.Substring(1);
+                                    // Debug.Log("computing costs: " + payload);
                                     var evaluationResponse = new EvaluationResponse
                                     {
                                         costs = adaptationManager.EvaluateLayouts(payload)
@@ -128,11 +129,11 @@ namespace AUIT.Solvers
                 
                         requestSocket.SendFrame("O" + JsonUtility.ToJson(optimizationRequest));
                     
-                        Debug.Log("request sent: " + "O" + JsonUtility.ToJson(optimizationRequest));
+                        // Debug.Log("request sent: " + "O" + JsonUtility.ToJson(optimizationRequest));
                         (result, _) = await requestSocket.ReceiveFrameStringAsync();
             
-                        Debug.Log("got the reply!");
-                        Debug.Log(result);
+                        // Debug.Log("got the reply!");
+                        // Debug.Log(result);
                     }
                 }
             }

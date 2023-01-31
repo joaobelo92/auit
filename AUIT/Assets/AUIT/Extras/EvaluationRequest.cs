@@ -8,7 +8,7 @@ namespace AUIT.Extras
     [Serializable]
     public class EvaluationRequest
     {
-        public UIConfiguration[] layouts;
+        public string[] layouts;
 
 
         public override string ToString()

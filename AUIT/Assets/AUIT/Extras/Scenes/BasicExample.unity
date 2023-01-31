@@ -585,6 +585,7 @@ MonoBehaviour:
   - 0.98
   - 0.02
   layout:
+    id: 
     position: {x: 0, y: 0, z: 0}
     rotation: {x: 0, y: 0, z: 0, w: 0}
   UIElements: []
@@ -685,7 +686,7 @@ MonoBehaviour:
   goalXYDistance: 0.3
   yInterval: 0.25
   distanceXZInterval: 0.1
-  maxDistance: 1
+  maxDistance: 25
 --- !u!114 &1916628238
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -44,6 +44,10 @@ namespace AUIT
 
         private bool waitingForOptimization = false;
 
+        private bool job = false;
+        public List<List<Layout>> layoutJob;
+        public List<List<float>> jobResult;
+
         [HideInInspector]
         public Layout layout;
 
@@ -104,6 +108,8 @@ namespace AUIT
             layout = new Layout(transform);
             asyncSolver.adaptationManager = this;
             asyncSolver.Initialize();
+            
+            InvokeRepeating(nameof(RunJobs), 0, 0.001f);
         }
 
         // Update is called once per frame
@@ -133,6 +139,7 @@ namespace AUIT
             }
             if (isGlobal && Input.GetKeyDown(KeyCode.B))
             {
+                
                 List<double> times = new List<double>();
 
                 for (int i = 0; i < 100; i++)
@@ -147,9 +154,29 @@ namespace AUIT
 
                 print(string.Join(", ", times));
             }
+            // Debug.Log(LocalObjectiveHandler.Objectives.First().CostFunction(new Layout(new Vector3(1, 1, 1), Quaternion.identity, new Vector3(0, 0, 0) )));
+            
+        }
+
+        private void RunJobs()
+        {
+            if (!job) return;
+            jobResult = new List<List<float>>();
+            foreach (var l in layoutJob)
+            {
+                var r = new List<float>();
+                foreach (var e in l)
+                {
+                    r.Add(ComputeCost(e));
+                }
+                jobResult.Add(r);
+            }
+            job = false;
         }
 
         #endregion
+        
+        
 
         public List<LocalObjective> GetObjectives()
         {
@@ -184,20 +211,19 @@ namespace AUIT
 
         public List<List<float>> EvaluateLayouts(string payload)
         {
-            
-            var evaluationRequest = JsonConvert.DeserializeObject<EvaluationRequest>(payload);
-            Debug.Log("e: " + evaluationRequest);
-            List<List<float>> costs = new List<List<float>>();
-            foreach (var layout in evaluationRequest.layouts)
+            var evaluationRequest = JsonUtility.FromJson<Wrapper<string>>(payload);
+            List<List<Layout>> layouts = new List<List<Layout>>(); 
+            foreach (var l in evaluationRequest.items)
             {
-                Debug.Log("l: " + layout);
-                costs.Add(EvaluateLayout(layout));
+                var e = JsonUtility.FromJson<Wrapper<Layout>>(l);
+                layouts.Add(e.items.ToList());
             }
-            
-            return costs;
+            List<List<float>> costs = new List<List<float>>();
+            // Debug.Log(costs);
+            return EvaluateLayouts(layouts);
         }
 
-        public List<float> EvaluateLayout(UIConfiguration layout)
+        public List<List<float>> EvaluateLayouts(List<List<Layout>> ls)
         {
             List<float> costs = new List<float>();
 
@@ -205,53 +231,52 @@ namespace AUIT
             {
                 // WARN: This is a hack to get the local objectives to work
                 // We only take the first UIElement's objectives to evaluate the layout's first element
-                Debug.LogError(LocalObjectiveHandler.Objectives.Count);
-                foreach (var objective in LocalObjectiveHandler.Objectives)
-                {
-                    Debug.Log(layout.elements.First());
-                    costs.Add(objective.CostFunction(layout.elements.First()));
-                    // costs.Add(0f);
-                }
+                // Debug.LogError(LocalObjectiveHandler.Objectives.Count);
+                layoutJob = ls;
+                job = true;
 
-                return costs;
-            }
-
-            // Create a map of all objectives across all UI elements (key: objective name, value: objective)
-            Dictionary<string, LocalObjective> objectives = new Dictionary<string, LocalObjective>();
-            foreach (var element in UIElements)
-            {
-                foreach (var objective in element.GetComponent<AdaptationManager>().LocalObjectiveHandler.Objectives)
-                {
-                    if (!objectives.ContainsKey(objective.name))
-                    {
-                        objectives.Add(objective.name, objective);
-                    }
-                }
-            }
-
-            // For each objective, compute the cost of the layout
-            foreach (var objective in objectives.Values)
-            {
-                var layoutCosts = 0f;
-                // Loop over both elements in layout.elements and UIElements
-                // WARN: This assumes that the order of elements in layout.elements and UIElements is the same
-                for (int i = 0; i < layout.elements.Count(); i++)
-                {
-                    var uiElement = UIElements[i];
-                    var layoutElement = layout.elements[i];
-                    // If the objective is not defined for the element, skip it
-                    var objectivesForElement = uiElement.GetComponent<AdaptationManager>().LocalObjectiveHandler.Objectives;
-                    if (!objectivesForElement.Contains(objective))
-                    {
-                        continue;
-                    }
-                    layoutCosts += objective.CostFunction(layoutElement);
-                }
-              
-                costs.Add(layoutCosts);
+                while (job) {}
+                return jobResult;
             }
             
-            return costs;
+            return null;
+
+            // Create a map of all objectives across all UI elements (key: objective name, value: objective)
+            // Dictionary<string, LocalObjective> objectives = new Dictionary<string, LocalObjective>();
+            // foreach (var element in UIElements)
+            // {
+            //     foreach (var objective in element.GetComponent<AdaptationManager>().LocalObjectiveHandler.Objectives)
+            //     {
+            //         if (!objectives.ContainsKey(objective.name))
+            //         {
+            //             objectives.Add(objective.name, objective);
+            //         }
+            //     }
+            // }
+            //
+            // // For each objective, compute the cost of the layout
+            // foreach (var objective in objectives.Values)
+            // {
+            //     var layoutCosts = 0f;
+            //     // Loop over both elements in layout.elements and UIElements
+            //     // WARN: This assumes that the order of elements in layout.elements and UIElements is the same
+            //     for (int i = 0; i < layout.Count(); i++)
+            //     {
+            //         var uiElement = UIElements[i];
+            //         var layoutElement = layout[i];
+            //         // If the objective is not defined for the element, skip it
+            //         var objectivesForElement = uiElement.GetComponent<AdaptationManager>().LocalObjectiveHandler.Objectives;
+            //         if (!objectivesForElement.Contains(objective))
+            //         {
+            //             continue;
+            //         }
+            //         layoutCosts += objective.CostFunction(layoutElement);
+            //     }
+            //   
+            //     costs.Add(layoutCosts);
+            // }
+            //
+            // return costs;
         }
 
         public (List<Layout>, float) OptimizeLayout()
@@ -381,8 +406,13 @@ namespace AUIT
             return (new List<Layout> { layout }, 0.0f, 0.0f);
         }
 
-        public float ComputeCost()
+        public float ComputeCost(Layout l = null)
         {
+            // TODO
+            if (l == null)
+            {
+                l = layout;
+            }
             if (!isActiveAndEnabled)
             {
                 Debug.LogError($"[AdaptationManager.ComputeCost()]: AdaptationManager on {gameObject.name} is disabled!");
@@ -415,8 +445,8 @@ namespace AUIT
             }
 
             List<LocalObjective> objectives = LocalObjectiveHandler.Objectives;
-            print("Total weighted cost: " + LocalObjectiveHandler.Objectives.Sum(objective => objective.Weight * objective.CostFunction(layout)) / objectives.Count);
-            return LocalObjectiveHandler.Objectives.Sum(objective => objective.Weight * objective.CostFunction(layout)) / objectives.Count;
+            // print("Total weighted cost: " + LocalObjectiveHandler.Objectives.Sum(objective => objective.Weight * objective.CostFunction(l)) / objectives.Count);
+            return LocalObjectiveHandler.Objectives.Sum(objective => objective.Weight * objective.CostFunction(l)) / objectives.Count;
         }
 
         Coroutine computeCostCorutine;
