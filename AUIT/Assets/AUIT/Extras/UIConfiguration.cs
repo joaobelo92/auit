@@ -8,19 +8,19 @@ namespace AUIT.Extras
     [Serializable]
     public class UIConfiguration
     {
-        public Layout[] elements;
+        public Layout[] items;
 
         public static UIConfiguration FromLayout(Layout layout)
         {
             UIConfiguration config = new UIConfiguration();
-            config.elements = new Layout[1];
-            config.elements[0] = layout;
+            config.items = new Layout[1];
+            config.items[0] = layout;
             return config;
         }
 
         public override string ToString()
         {
-            return elements.First().ToString();
+            return items.First().ToString();
         }
     }
 }
