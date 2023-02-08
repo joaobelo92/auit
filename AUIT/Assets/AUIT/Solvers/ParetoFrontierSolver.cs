@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AUIT.AdaptationObjectives;
@@ -17,8 +18,9 @@ namespace AUIT.Solvers
     public class ParetoFrontierSolver : IAsyncSolver
     {
         public AdaptationManager adaptationManager { get; set; }
-        public (List<Layout>, float, float) Result { get; }
-        
+
+        public (List<List<Layout>>, float, float) Result { get; set; }
+
         // Func<(string, string), Task<string>> requestFunc;
 
         public void Initialize()
@@ -104,6 +106,8 @@ namespace AUIT.Solvers
 
         public IEnumerator OptimizeCoroutine(Layout initialLayout, List<LocalObjective> objectives, List<float> hyperparameters)
         {
+            Result = (null, 0f, 0f);
+            
             Debug.Log($"sending optimization request");
             var optimizationRequest = new
             OptimizationRequest {
@@ -142,12 +146,25 @@ namespace AUIT.Solvers
             // Debug.Log(JsonUtility.ToJson(optimizationRequest));
             // requestSocket.SendFrame("O" + JsonUtility.ToJson(optimizationRequest));
             // var message = requestSocket.ReceiveFrameString();
-            // //
             // Debug.Log($"in main: ${message}");
             while (result == "")
             {
                 yield return null;
             }
+
+            Debug.Log(result);
+            
+            var optimizationResponse = JsonUtility.FromJson<Wrapper<string>>(result.Substring(1));
+            List<List<Layout>> layouts = new List<List<Layout>>(); 
+            foreach (var layoutString in optimizationResponse.items)
+            {
+                var e = JsonUtility.FromJson<Wrapper<Layout>>(layoutString);
+                layouts.Add(e.items.ToList());
+            }
+
+            // todo: add costs
+            Result = (layouts, 0f, 0f);
+
         }
 
         public IEnumerator OptimizeCoroutine(List<Layout> initialLayouts, List<List<LocalObjective>> objectives, List<float> hyperparameters)

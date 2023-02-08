@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using AUIT.AdaptationObjectives.Definitions;
 using UnityEngine;
 
 namespace AUIT.PropertyTransitions
@@ -39,15 +41,19 @@ namespace AUIT.PropertyTransitions
     public interface IPositionAdaptation
     {
         public void Adapt(Transform objectTransform, Vector3 target);
+        
+        public void Adapt(GameObject ui, List<Layout> target);
     }
 
     public interface IRotationAdaptation
     {
         public void Adapt(Transform objectTransform, Quaternion target);
+        public void Adapt(GameObject ui, List<Layout> target);
     }
 
     public interface IScaleAdaptation
     {
         public void Adapt(Transform objectTransform, Vector3 target);
+        public void Adapt(GameObject ui, List<Layout> target);
     }
 }

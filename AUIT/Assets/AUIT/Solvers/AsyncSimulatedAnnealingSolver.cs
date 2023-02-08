@@ -20,7 +20,8 @@ namespace AUIT.Solvers.Experimental
         private IAsyncSolver asyncSolverImplementation;
         public AdaptationManager adaptationManager { get; set; }
         
-        public (List<Layout>, float, float) Result => result;
+        // todo: fix
+        public (List<List<Layout>>, float, float) Result { get; set; }
 
         // hyperparemeters; [0] Iterations [1] Minimum temperature; [2] Initial temperature; [3] alpha
         public void Initialize()

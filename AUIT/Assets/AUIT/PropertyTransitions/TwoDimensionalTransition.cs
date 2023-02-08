@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using AUIT.AdaptationObjectives.Definitions;
 using UnityEngine;
 
 namespace AUIT.PropertyTransitions
@@ -25,6 +27,11 @@ namespace AUIT.PropertyTransitions
                 is2D = false;
             }
 
+        }
+
+        public void Adapt(GameObject ui, List<Layout> target)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

@@ -9,7 +9,7 @@ namespace AUIT.Solvers.Experimental
     public interface IAsyncSolver
     {
         AdaptationManager adaptationManager { set; }
-        (List<Layout>, float, float) Result { get; }
+        (List<List<Layout>>, float, float) Result { get; }
         
         void Initialize();
         IEnumerator OptimizeCoroutine(Layout initialLayout, List<LocalObjective> objectives, List<float> hyperparameters);

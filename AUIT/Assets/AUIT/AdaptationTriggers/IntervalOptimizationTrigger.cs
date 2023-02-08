@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using AUIT.AdaptationObjectives.Definitions;
+using UnityEngine;
 
 namespace AUIT.AdaptationTriggers
 {
@@ -7,6 +9,10 @@ namespace AUIT.AdaptationTriggers
 
         [SerializeField]
         private float interval = 5f;
+        
+        [SerializeField]
+        private float timeoutThreshold = 10f;
+        
 
         protected void Start()
         {
@@ -15,24 +21,47 @@ namespace AUIT.AdaptationTriggers
 
         public override void ApplyStrategy()
         {
-            if (this.enabled == false)
+            if (enabled == false)
                 return;
 
             Debug.Log("Interval Optimization Running...");
-            
-            var (layouts, _) = AdaptationManager.OptimizeLayout();
+
+            StartCoroutine(AdaptationManager.OptimizeLayoutAndAdapt(timeoutThreshold, AdaptationLogic));
+
+            // var (layouts, _) = AdaptationManager.OptimizeLayout();
+            // if (AdaptationManager.isGlobal)
+            // {
+            //     for (int i = 0; i < AdaptationManager.UIElements.Count; i++)
+            //     {
+            //         AdaptationManager.UIElements[i].GetComponent<AdaptationManager>().layout = layouts[i];
+            //         AdaptationManager.UIElements[i].GetComponent<AdaptationManager>().Adapt(layouts[i]);
+            //     }
+            // }
+            // else
+            // {
+            //     AdaptationManager.layout = layouts[0];
+            //     AdaptationManager.Adapt(layouts[0]);
+        }
+
+        private void AdaptationLogic(List<List<Layout>> layouts, float cost)
+        {
             if (AdaptationManager.isGlobal)
             {
                 for (int i = 0; i < AdaptationManager.UIElements.Count; i++)
                 {
-                    AdaptationManager.UIElements[i].GetComponent<AdaptationManager>().layout = layouts[i];
+                    AdaptationManager.UIElements[i].GetComponent<AdaptationManager>().layouts = layouts[i];
                     AdaptationManager.UIElements[i].GetComponent<AdaptationManager>().Adapt(layouts[i]);
                 }
             }
             else
             {
-                // AdaptationManager.layout = layouts[0];
-                // AdaptationManager.Adapt(layouts[0]);
+                List<Layout> elementLayouts = new List<Layout>();
+                foreach (var layout in layouts)
+                {
+                    elementLayouts.Add(layout[0]);
+                }
+                AdaptationManager.layouts = elementLayouts;
+                AdaptationManager.Adapt(elementLayouts);
             }
         }
     }

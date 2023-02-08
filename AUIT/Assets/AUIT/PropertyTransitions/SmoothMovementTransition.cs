@@ -1,4 +1,6 @@
 using System.Collections;
+using System.Collections.Generic;
+using AUIT.AdaptationObjectives.Definitions;
 using UnityEngine;
 
 namespace AUIT.PropertyTransitions
@@ -11,6 +13,11 @@ namespace AUIT.PropertyTransitions
         public void Adapt(Transform objectTransform, Vector3 target)
         {
             StartCoroutine(SmoothMovement(objectTransform, target, transitionSpeed));
+        }
+
+        public void Adapt(GameObject ui, List<Layout> target)
+        {
+            throw new System.NotImplementedException();
         }
 
         private IEnumerator SmoothMovement(Transform objectTransform, Vector3 target, float adaptationSpeed)

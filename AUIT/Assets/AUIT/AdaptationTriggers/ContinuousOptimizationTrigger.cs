@@ -99,7 +99,7 @@ namespace AUIT.AdaptationTriggers
                 }
             }
         }
-
+        
         private IEnumerator WaitForOptimizedLayout()
         {
             optimizationTimeStart = Time.realtimeSinceStartup;

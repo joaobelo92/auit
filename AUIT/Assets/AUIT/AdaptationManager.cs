@@ -48,8 +48,12 @@ namespace AUIT
         public List<List<Layout>> layoutJob;
         public List<List<float>> jobResult;
 
+        // To be phased out for multiple layouts
         [HideInInspector]
         public Layout layout;
+        
+        [HideInInspector]
+        public List<Layout> layouts;
 
         // public Camera camera;
 
@@ -120,40 +124,40 @@ namespace AUIT
             //     print(LocalObjectiveHandler.Objectives.First().name);
             //     print(LocalObjectiveHandler.Objectives.First().CostFunction(layout));
             // }
-            if (isGlobal && Input.GetKeyDown(KeyCode.V))
-            {
-                for (int i = 0; i < 100; i++)
-                {
-                    Camera.main.transform.position = new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), Random.Range(-1f, 1f));
-                    Camera.main.transform.rotation = new Quaternion();
-
-                    // Benchmarking mode has to be hardcoded currently
-                    var (layouts, cost) = OptimizeLayout();
-
-                    for (int k = 0; k < UIElements.Count; k++)
-                    {
-                        UIElements[k].GetComponent<AdaptationManager>().layout = layouts[k];
-                        UIElements[k].GetComponent<AdaptationManager>().Adapt(layouts[k]);
-                    }
-                }
-            }
-            if (isGlobal && Input.GetKeyDown(KeyCode.B))
-            {
-                
-                List<double> times = new List<double>();
-
-                for (int i = 0; i < 100; i++)
-                {
-                    Camera.main.transform.position = new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), Random.Range(-1f, 1f));
-                    Camera.main.transform.rotation = new Quaternion();
-
-                    // Benchmarking mode has to be hardcoded currently
-                    double time = ComputeCost();
-                    times.Add(time);
-                }
-
-                print(string.Join(", ", times));
-            }
+            // if (isGlobal && Input.GetKeyDown(KeyCode.V))
+            // {
+            //     for (int i = 0; i < 100; i++)
+            //     {
+            //         Camera.main.transform.position = new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), Random.Range(-1f, 1f));
+            //         Camera.main.transform.rotation = new Quaternion();
+            //
+            //         // Benchmarking mode has to be hardcoded currently
+            //         var (layouts, cost) = OptimizeLayout();
+            //
+            //         for (int k = 0; k < UIElements.Count; k++)
+            //         {
+            //             UIElements[k].GetComponent<AdaptationManager>().layout = layouts[k];
+            //             UIElements[k].GetComponent<AdaptationManager>().Adapt(layouts[k]);
+            //         }
+            //     }
+            // }
+            // if (isGlobal && Input.GetKeyDown(KeyCode.B))
+            // {
+            //     
+            //     List<double> times = new List<double>();
+            //
+            //     for (int i = 0; i < 100; i++)
+            //     {
+            //         Camera.main.transform.position = new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), Random.Range(-1f, 1f));
+            //         Camera.main.transform.rotation = new Quaternion();
+            //
+            //         // Benchmarking mode has to be hardcoded currently
+            //         double time = ComputeCost();
+            //         times.Add(time);
+            //     }
+            //
+            //     print(string.Join(", ", times));
+            // }
             // Debug.Log(LocalObjectiveHandler.Objectives.First().CostFunction(new Layout(new Vector3(1, 1, 1), Quaternion.identity, new Vector3(0, 0, 0) )));
             
         }
@@ -166,6 +170,7 @@ namespace AUIT
             {
                 var costsForCandidateLayout = new List<float>(); // ...create a list of costs determined by the objective functions
                 // For each objective function...
+                // TODO: look into 
                 foreach (var objective in LocalObjectiveHandler.Objectives)
                 {
                     // ...compute and sum the costs for all elements e (defined as a Layout) in the candidate layout l
@@ -186,7 +191,29 @@ namespace AUIT
 
         #endregion
         
-        
+        public IEnumerator OptimizeLayoutAndAdapt(float optimizationTimeout, Action<List<List<Layout>>, float> adaptationLogic)
+        {
+            var optimizationTimeStart = Time.realtimeSinceStartup;
+            OptimizeLayout();
+
+            while (true)
+            {
+                bool timeExceeded = Time.realtimeSinceStartup - optimizationTimeStart >= optimizationTimeout;
+                if (timeExceeded)
+                {
+                    Debug.Log("Optimization timed out");
+                    yield break;
+                }
+
+                if (asyncSolver.Result.Item1 != null)
+                {
+                    Debug.Log("could apply result!");
+                    adaptationLogic(asyncSolver.Result.Item1, asyncSolver.Result.Item2);
+                    yield break;
+                }
+                yield return new WaitForEndOfFrame();
+            }
+        }
 
         public List<LocalObjective> GetObjectives()
         {
@@ -289,24 +316,26 @@ namespace AUIT
 
         public (List<Layout>, float) OptimizeLayout()
         {
+            // TODO: remove useless output
+            
             if (isActiveAndEnabled == false)
             {
                 Debug.LogError($"[AdaptationManager.OptimizeLayout()]: AdaptationManager on {gameObject.name} is disabled!");
                 return (new List<Layout> { layout }, 0.0f);
             }
-
+            
             // The adaptation manager is responsible for knowing the layout (e.g. what to optimize)
             // The properties to be optimized should be obtained dynamically in the future, but for now we hardcode 
             // the properties we want to optimize.
             if (isGlobal)
             {
                 List<List<LocalObjective>> objectives = new List<List<LocalObjective>>();
-                List<Layout> layouts = new List<Layout>();
+                List<Layout> currentLayouts = new List<Layout>();
                 foreach (var element in UIElements)
                 {
                     AdaptationManager adaptationManager = element.GetComponent<AdaptationManager>();
                     objectives.Add(adaptationManager.LocalObjectiveHandler.Objectives);
-                    layouts.Add(adaptationManager.layout);
+                    currentLayouts.Add(adaptationManager.layout);
                 }
                 
                 if (objectives.Count == 0)
@@ -321,7 +350,7 @@ namespace AUIT
                     waitingForOptimization = true;
                     if (AsyncSolverOptimizeCoroutine != null)
                         StopCoroutine(AsyncSolverOptimizeCoroutine);
-                    AsyncSolverOptimizeCoroutine = StartCoroutine(asyncSolver.OptimizeCoroutine(layouts, objectives, hyperparameters));
+                    AsyncSolverOptimizeCoroutine = StartCoroutine(asyncSolver.OptimizeCoroutine(currentLayouts, objectives, hyperparameters));
                 }
 
                 if (asyncSolver.Result.Item1 != null)
@@ -329,7 +358,7 @@ namespace AUIT
                     waitingForOptimization = false;
                 }
 
-                return (asyncSolver.Result.Item1, asyncSolver.Result.Item2);
+                return (asyncSolver.Result.Item1[0], asyncSolver.Result.Item2);
                 
                 // return solver.Optimize(layouts, objectives, hyperparameters);
             }
@@ -340,20 +369,19 @@ namespace AUIT
             }
             // return solver.Optimize(layout, LocalObjectiveHandler.Objectives, hyperparameters);
             
-            if (waitingForOptimization == false)
-            {
-                waitingForOptimization = true;
-                if (AsyncSolverOptimizeCoroutine != null)
-                    StopCoroutine(AsyncSolverOptimizeCoroutine);
-                AsyncSolverOptimizeCoroutine = StartCoroutine(asyncSolver.OptimizeCoroutine(layout, LocalObjectiveHandler.Objectives, hyperparameters));
-            }
+            // if (waitingForOptimization == false)
+            // {
+                // waitingForOptimization = true;
+                // if (AsyncSolverOptimizeCoroutine != null)
+                //     StopCoroutine(AsyncSolverOptimizeCoroutine);
+            StartCoroutine(asyncSolver.OptimizeCoroutine(layout, LocalObjectiveHandler.Objectives, hyperparameters));
+            // }
 
-            if (asyncSolver.Result.Item1 != null)
-            {
-                waitingForOptimization = false;
-            }
-
-            return (asyncSolver.Result.Item1, asyncSolver.Result.Item2);
+            // if (asyncSolver.Result.Item1 != null)
+            // {
+            //     waitingForOptimization = false;
+            // }
+            return (null, asyncSolver.Result.Item2);
         }
 
         public (List<Layout>, float, float) AsyncOptimizeLayout()
@@ -391,7 +419,7 @@ namespace AUIT
                     waitingForOptimization = false;
                 }
 
-                return (asyncSolver.Result);
+                return (asyncSolver.Result.Item1[0], 0f, 0f);
             }
 
             if (LocalObjectiveHandler.Objectives.Count == 0)
@@ -543,6 +571,7 @@ namespace AUIT
             }
         }
         
+        // TODO: phase out
         public void Adapt(Layout layout)
         {
             if (!isActiveAndEnabled)
@@ -560,6 +589,28 @@ namespace AUIT
             Adapt<IPositionAdaptation>(layout);
             Adapt<IRotationAdaptation>(layout);
             Adapt<IScaleAdaptation>(layout);
+
+            // Tell registered adaptation listeners that a new adaptation occured
+            InvokeAdaptationListerners(layout);
+        }
+        
+        public void Adapt(List<Layout> layouts)
+        {
+            if (!isActiveAndEnabled)
+            {
+                Debug.LogError($"[AdaptationManager.Adapt(layout)]: AdaptationManager on {gameObject.name} is disabled!");
+                return;
+            }
+
+            // Strategy chooses what to adapt, so we will probably create multiple of these per supported property
+            // To start, we follow one property transition per property
+            // To allow multiple property transitions per property we should implement an extension to this later, 
+            // allowing cases such as rule-based property transitions for a property (e.g.: replicate if previous
+            // distance > x meters or use smooth movement otherwise.
+
+            Adapt<IPositionAdaptation>(layouts);
+            Adapt<IRotationAdaptation>(layouts);
+            Adapt<IScaleAdaptation>(layouts);
 
             // Tell registered adaptation listeners that a new adaptation occured
             InvokeAdaptationListerners(layout);
@@ -599,6 +650,43 @@ namespace AUIT
                 return;
             }
         }
+        
+        private void Adapt<T>(List<Layout> ls)
+        {
+            List<T> adaptations = propertyTransitions.OfType<T>().ToList();
+            if (adaptations.Count == 0)
+            {
+                // Debug.LogWarning($"No '{typeof(T)}' found on {this.name}");
+                return;
+            }
+
+            T adaptation = adaptations[0];
+            if (adaptation == null)
+            {
+                Debug.LogWarning($"No property transition of type {typeof(T)} found on {name}");
+                return;
+            }
+
+            if (adaptation is IPositionAdaptation positionAdaptation)
+            {
+                positionAdaptation.Adapt(gameObject, ls);
+                return;
+            }
+    
+            if (adaptation is IRotationAdaptation rotationAdaptation)
+            {
+                rotationAdaptation.Adapt(gameObject, ls);
+                return;
+            }
+
+            if (adaptation is IScaleAdaptation scaleAdaptation)
+            {
+                scaleAdaptation.Adapt(gameObject, ls);
+            }
+
+            layouts = ls;
+        }
+        
 
         public void RegisterAdaptationListener(AdaptationListener adaptationListener)
         {

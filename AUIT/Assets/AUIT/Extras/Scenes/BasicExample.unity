@@ -531,9 +531,9 @@ GameObject:
   - component: {fileID: 1916628233}
   - component: {fileID: 1916628232}
   - component: {fileID: 1916628231}
-  - component: {fileID: 1916628228}
   - component: {fileID: 1916628237}
   - component: {fileID: 1916628238}
+  - component: {fileID: 1916628239}
   m_Layer: 0
   m_Name: Cube
   m_TagString: Untagged
@@ -541,19 +541,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1916628228
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1916628227}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1ebc884c91544631a15d11944dec6e3f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  transitionSpeed: 1
 --- !u!114 &1916628231
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -588,6 +575,7 @@ MonoBehaviour:
     id: 
     position: {x: 0, y: 0, z: 0}
     rotation: {x: 0, y: 0, z: 0, w: 0}
+  layouts: []
   UIElements: []
   isGlobal: 0
 --- !u!65 &1916628233
@@ -699,4 +687,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c1c9e896dc04e018422414eacbd58d2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  interval: 5
+  interval: 30
+  timeoutThreshold: 1000
+--- !u!114 &1916628239
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1916628227}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d60fc0928f536249adf4abb85f97f67, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
