@@ -162,14 +162,24 @@ namespace AUIT
         {
             if (!job) return;
             jobResult = new List<List<float>>();
-            foreach (var l in layoutJob)
+            foreach (var candidateLayout in layoutJob) // For each candidate layout l (i.e., List of Layouts)...
             {
-                var r = new List<float>();
-                foreach (var e in l)
+                var costsForCandidateLayout = new List<float>(); // ...create a list of costs determined by the objective functions
+                // For each objective function...
+                foreach (var objective in LocalObjectiveHandler.Objectives)
                 {
-                    r.Add(ComputeCost(e));
+                    // ...compute and sum the costs for all elements e (defined as a Layout) in the candidate layout l
+                    float objectiveCostForCurrentCandidateLayout = 0;
+                    foreach (var uiElement in candidateLayout)
+                    {
+                        objectiveCostForCurrentCandidateLayout += objective.CostFunction(uiElement);
+                    }
+                    // and add the sum to the list of costs for the candidate layout l
+                    costsForCandidateLayout.Add(objectiveCostForCurrentCandidateLayout);
                 }
-                jobResult.Add(r);
+
+                // and add the list of costs for the candidate layout l to the list of costs for all candidate layouts
+                jobResult.Add(costsForCandidateLayout);
             }
             job = false;
         }
@@ -218,8 +228,6 @@ namespace AUIT
                 var e = JsonUtility.FromJson<Wrapper<Layout>>(l);
                 layouts.Add(e.items.ToList());
             }
-            List<List<float>> costs = new List<List<float>>();
-            // Debug.Log(costs);
             return EvaluateLayouts(layouts);
         }
 
@@ -232,11 +240,11 @@ namespace AUIT
                 // WARN: This is a hack to get the local objectives to work
                 // We only take the first UIElement's objectives to evaluate the layout's first element
                 // Debug.LogError(LocalObjectiveHandler.Objectives.Count);
-                layoutJob = ls;
-                job = true;
+                layoutJob = ls; // Assign the list of candidate layouts, each of which is a list of elements defined as a Layout, to the current job to be evaluated
+                job = true; // Set the job flag to true, which will trigger the job to be evaluated in the next dequeue action
 
-                while (job) {}
-                return jobResult;
+                while (job) {} // Wait for the job to be evaluated
+                return jobResult; // Return the result of the job (i.e., the costs of each candidate layout)
             }
             
             return null;
