@@ -7,11 +7,6 @@ namespace AUIT.AdaptationObjectives.Definitions
     public class Wrapper<T>
     {
         public T[] items;
-
-        // public override string ToString()
-        // {
-        //     return string.Join(",", array);
-        // }
     }
     
     
