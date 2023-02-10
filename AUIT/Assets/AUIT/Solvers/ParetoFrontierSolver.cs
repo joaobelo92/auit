@@ -152,18 +152,24 @@ namespace AUIT.Solvers
                 yield return null;
             }
 
-            Debug.Log(result);
+            // Debug.Log(result);
             
-            var optimizationResponse = JsonUtility.FromJson<Wrapper<string>>(result.Substring(1));
-            List<List<Layout>> layouts = new List<List<Layout>>(); 
-            foreach (var layoutString in optimizationResponse.items)
+            var optimizationResponse = JsonUtility.FromJson<OptimizationResponse>(result.Substring(1));
+            var solutions = JsonUtility.FromJson<Wrapper<string>>(optimizationResponse.solutions);
+            List<List<Layout>> suggestedUIConfigurations = new List<List<Layout>>(); // List of UI configurations to store suggested adaptations
+            // For each adaptation (i.e., new UI configuration) in the returned solutions
+            foreach (var suggestedUIConfigurationString in solutions.items)
             {
-                var e = JsonUtility.FromJson<Wrapper<Layout>>(layoutString);
-                layouts.Add(e.items.ToList());
+                // Convert the string to a list of Layout objects and add it to the list of suggested UI configurations
+                var suggestedUIConfiguration = JsonUtility.FromJson<Wrapper<Layout>>(suggestedUIConfigurationString);
+                suggestedUIConfigurations.Add(suggestedUIConfiguration.items.ToList());
             }
 
+            // Suggested layout for next active adaptation
+            var suggestedAdaptation = JsonUtility.FromJson<Wrapper<Layout>>(optimizationResponse.suggested);
+
             // todo: add costs
-            Result = (layouts, 0f, 0f);
+            Result = (suggestedUIConfigurations, 0f, 0f);
 
         }
 
