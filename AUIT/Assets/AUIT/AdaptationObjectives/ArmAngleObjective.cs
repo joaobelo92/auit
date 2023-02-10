@@ -28,7 +28,7 @@ namespace AUIT.AdaptationObjectives
             Vector3 shoulderToTarget = targetPosition - shoulderPosition;
 
             // Get the vector from the shoulder position straight down to the ground.
-            Vector3 shoulderToGround = new Vector3(0, -1, 0);
+            Vector3 shoulderToGround = new Vector3(shoulderPosition.x, -1, shoulderPosition.z);
 
             // Get the angle between the two vectors.
             float angle = Vector3.Angle(shoulderToTarget, shoulderToGround);
@@ -52,8 +52,8 @@ namespace AUIT.AdaptationObjectives
         /// </summary>
         public override float CostFunction(Layout optimizationTarget, Layout initialLayout = null)
         {
-            Vector3 targetPosition = (Vector3)ContextSourceTransformTarget;
-            Vector3 currentPosition = optimizationTarget.Position;
+            Vector3 currentPosition = (Vector3)ContextSourceTransformTarget;
+            Vector3 targetPosition = optimizationTarget.Position;
 
             // Calculate the shoulder position (the shoulder is eyeToShoulderDistance below the eye)
             Vector3 shoulderPosition = currentPosition;
