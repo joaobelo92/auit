@@ -1,11 +1,22 @@
 using System.Collections.Generic;
+using AUIT.AdaptationObjectives;
+using AUIT.AdaptationTriggers;
 using AUIT.AdaptationObjectives.Definitions;
 using UnityEngine;
 
 namespace AUIT.PropertyTransitions
 {
+    /// <summary>
+    /// This transition is used to move the object to the target position instantly.
+    /// If more than one target position is provided, the GameObject is duplicated at the potential target positions.
+    /// The GameObject is moved to the first target position in the provided list.
+    /// </summary> 
     public class InstantMovementTransition : PropertyTransition, IPositionAdaptation
     {
+
+        // Property to store the duplicate GameObjects
+        private List<GameObject> duplicates = new List<GameObject>();
+
         public void Adapt(Transform objectTransform, Vector3 target)
         {
             transform.position = target;
@@ -18,12 +29,62 @@ namespace AUIT.PropertyTransitions
                 ui.transform.position = target[0].Position;
             }
 
-            foreach (var layout in target.GetRange(1, target.Count-1))
+            // Create a new parent for the duplicates
+            GameObject duplicatesParent = new GameObject();
+            duplicatesParent.name = "Potential Adaptations";
+
+            // Loop through all potential adaptations (i.e., all target positions except the first one)
+            // and adapt the position of the already existing GameObject duplicates until
+            // all duplicates are at suggested positions. Then, create new duplicates at the remaining
+            // potential target positions and store them in the duplicates list.
+            for (int i = 1; i < target.Count; i++)
             {
-                Debug.Log("creating sphere");
-                GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                sphere.transform.position = layout.Position;
-                sphere.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+                if (i < duplicates.Count)
+                {
+                    duplicates[i].transform.position = target[i].Position;
+                }
+                else
+                {
+                    GameObject duplicate = Instantiate(ui, target[i].Position, Quaternion.identity);
+                    duplicate.name = ui.name + " (Potential Adaptation)";
+                    duplicate.transform.SetParent(ui.transform.parent);
+                    duplicate.transform.localScale = ui.transform.localScale;
+                    duplicate.transform.localRotation = ui.transform.localRotation;
+                    
+                    // Disable all scripts related to the AUIT framework
+                    var scripts = duplicate.GetComponents<MonoBehaviour>();
+                    foreach (var script in scripts)
+                    {
+                        // If script's namespace includes AUIT, disable it
+                        if (script.GetType().Namespace.Contains("AUIT"))
+                        {
+                            script.enabled = false;
+                        }
+                    }
+
+                    // Set the duplicate's color to grey and make it semi-transparent
+                    var renderer = duplicate.GetComponent<Renderer>();
+                    if (renderer != null)
+                    {
+                        renderer.material.color = Color.grey;
+                        renderer.material.color = new Color(renderer.material.color.r, renderer.material.color.g, renderer.material.color.b, 0.5f);
+                    }
+
+                    // Add the duplicate to the duplicates parent
+                    duplicate.transform.SetParent(duplicatesParent.transform);
+
+                    // Add the duplicate to the duplicates list
+                    duplicates.Add(duplicate);
+                }
+            }
+
+            // If there are more duplicates than potential target positions, destroy the remaining duplicates
+            if (duplicates.Count > target.Count)
+            {
+                for (int i = target.Count; i < duplicates.Count; i++)
+                {
+                    Destroy(duplicates[i]);
+                }
             }
         }
     }
