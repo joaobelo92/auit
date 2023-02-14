@@ -69,7 +69,7 @@ namespace AUIT.PropertyTransitions
             GameObject duplicate = Instantiate(ui, target.Position, Quaternion.identity);
             duplicate.name = ui.name + " (Potential Adaptation)";
             duplicate.transform.SetParent(ui.transform.parent);
-            duplicate.transform.localScale = ui.transform.localScale;
+            duplicate.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
             duplicate.transform.localRotation = ui.transform.localRotation;
 
             // Disable all scripts related to the AUIT framework
