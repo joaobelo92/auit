@@ -3,6 +3,7 @@ using AUIT.AdaptationObjectives;
 using AUIT.AdaptationTriggers;
 using AUIT.AdaptationObjectives.Definitions;
 using UnityEngine;
+using System;
 
 namespace AUIT.PropertyTransitions
 {
@@ -80,14 +81,6 @@ namespace AUIT.PropertyTransitions
                 {
                     script.enabled = false;
                 }
-            }
-
-            // Set the duplicate's color to grey and make it semi-transparent
-            var renderer = duplicate.GetComponent<Renderer>();
-            if (renderer != null)
-            {
-                renderer.material.color = Color.grey;
-                renderer.material.color = new Color(renderer.material.color.r, renderer.material.color.g, renderer.material.color.b, 0.5f);
             }
 
             // Add the duplicate to the duplicates parent
