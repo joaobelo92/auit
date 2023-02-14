@@ -719,7 +719,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c1c9e896dc04e018422414eacbd58d2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  interval: 30
+  interval: 5
   timeoutThreshold: 1000
 --- !u!114 &1838137403
 MonoBehaviour:
@@ -755,7 +755,7 @@ MonoBehaviour:
   goalXYDistance: 0.3
   yInterval: 0.25
   distanceXZInterval: 0.1
-  maxDistance: 25
+  maxDistance: 1.5
 --- !u!114 &1838137405
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -793,3 +793,23 @@ MonoBehaviour:
   layouts: []
   UIElements: []
   isGlobal: 0
+--- !u!114 &1838137409
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1838137399}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e0c8b51d228e4ea9a09dd36fc8b1426d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  contextSource: 0
+  transformOverride: {fileID: 0}
+  weight: 0.5
+  peripheralVisionBoundary: 1
+  maxAngle: 60
+  useCustomBoundary: 0
+  customBoundaryOrigin: 12
+  customBoundaryInterval: 3
