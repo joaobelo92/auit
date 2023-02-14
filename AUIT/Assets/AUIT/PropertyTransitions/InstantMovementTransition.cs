@@ -18,6 +18,9 @@ namespace AUIT.PropertyTransitions
         // Property to store the duplicate GameObjects
         private List<GameObject> duplicates = new List<GameObject>();
 
+        public bool rotateBasedOnTarget = false;
+        public bool scaleDownDuplicates = true;
+
         public void Adapt(Transform objectTransform, Vector3 target)
         {
             transform.position = target;
@@ -63,13 +66,13 @@ namespace AUIT.PropertyTransitions
             }
         }
 
-        private GameObject CreateDuplicate(GameObject ui, Layout target, GameObject duplicatesParent, bool rotateBasedOnTarget = false)
+        private GameObject CreateDuplicate(GameObject ui, Layout target, GameObject duplicatesParent)
         {
             // Create a duplicate of the GameObject
             GameObject duplicate = Instantiate(ui, target.Position, rotateBasedOnTarget ? target.Rotation : ui.transform.rotation);
             duplicate.name = ui.name + " (Potential Adaptation)";
             duplicate.transform.SetParent(ui.transform.parent);
-            duplicate.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+            duplicate.transform.localScale = scaleDownDuplicates ? new Vector3(0.5f, 0.5f, 0.5f) : ui.transform.localScale;
 
 
             // Disable all scripts related to the AUIT framework

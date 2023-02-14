@@ -707,6 +707,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9d60fc0928f536249adf4abb85f97f67, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rotateBasedOnTarget: 0
+  scaleDownDuplicates: 0
 --- !u!114 &1838137402
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -752,7 +754,7 @@ MonoBehaviour:
   contextSource: 1
   transformOverride: {fileID: 0}
   weight: 0.5
-  goalXYDistance: 0.3
+  goalXYDistance: 0.8
   yInterval: 0.25
   distanceXZInterval: 0.1
   maxDistance: 1.5
