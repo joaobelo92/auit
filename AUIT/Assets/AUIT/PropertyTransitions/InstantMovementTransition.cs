@@ -63,14 +63,14 @@ namespace AUIT.PropertyTransitions
             }
         }
 
-        private GameObject CreateDuplicate(GameObject ui, Layout target, GameObject duplicatesParent)
+        private GameObject CreateDuplicate(GameObject ui, Layout target, GameObject duplicatesParent, bool rotateBasedOnTarget = false)
         {
             // Create a duplicate of the GameObject
-            GameObject duplicate = Instantiate(ui, target.Position, Quaternion.identity);
+            GameObject duplicate = Instantiate(ui, target.Position, rotateBasedOnTarget ? target.Rotation : ui.transform.rotation);
             duplicate.name = ui.name + " (Potential Adaptation)";
             duplicate.transform.SetParent(ui.transform.parent);
             duplicate.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
-            duplicate.transform.localRotation = ui.transform.localRotation;
+
 
             // Disable all scripts related to the AUIT framework
             var scripts = duplicate.GetComponents<MonoBehaviour>();
