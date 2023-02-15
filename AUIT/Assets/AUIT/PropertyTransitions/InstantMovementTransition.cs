@@ -11,15 +11,32 @@ namespace AUIT.PropertyTransitions
     /// This transition is used to move the object to the target position instantly.
     /// If more than one target position is provided, the GameObject is duplicated at the potential target positions.
     /// The GameObject is moved to the first target position in the provided list.
-    /// </summary> 
+    /// </summary>
     public class InstantMovementTransition : PropertyTransition, IPositionAdaptation
     {
 
-        // Property to store the duplicate GameObjects
-        private List<GameObject> duplicates = new List<GameObject>();
+        // Property to store the adaptation placeholder GameObjects
+        private List<GameObject> adaptationPlaceholders = new List<GameObject>();
 
-        public bool rotateBasedOnTarget = false;
-        public bool scaleDownDuplicates = true;
+        /// <summary>
+        /// Set the placeholder GameObject to be used for a potential adaptation.
+        /// By default, it is a small sphere.
+        /// </summary>
+        [SerializeField]
+        private GameObject adaptationPlaceholder = null;
+
+        /// <summary>
+        /// Set the scale down factor for the adaptation placeholders.
+        /// By default, it is 0.5.
+        /// </summary>
+        [SerializeField]
+        private float scaleDownFactor = 0.05f;
+
+        [SerializeField]
+        /// <summary>
+        /// If true, the GameObject is rotated based on the info in the target layout.
+        /// </summary>
+        private bool rotateBasedOnTarget = false;
 
         public void Adapt(Transform objectTransform, Vector3 target)
         {
@@ -31,9 +48,13 @@ namespace AUIT.PropertyTransitions
             if (targets.Count > 0)
             {
                 ui.transform.position = targets[0].Position;
+                if (rotateBasedOnTarget)
+                {
+                    ui.transform.rotation = targets[0].Rotation;
+                }
             }
 
-            GameObject duplicatesParent = GetDuplicatesParent();
+            GameObject adaptationPlaceholdersParent = GetAdaptationsParent();
 
             // Loop through all potential adaptations (i.e., all target positions except the first one)
             // and adapt the position of the already existing GameObject duplicates until
@@ -41,58 +62,76 @@ namespace AUIT.PropertyTransitions
             // potential target positions and store them in the duplicates list.
             for (int i = 1; i < targets.Count; i++)
             {
-                if (i < duplicates.Count)
+                if (i < adaptationPlaceholders.Count)
                 {
-                    duplicates[i].transform.position = targets[i].Position;
+                    adaptationPlaceholders[i].transform.position = targets[i].Position;
+                    if (rotateBasedOnTarget)
+                    {
+                        adaptationPlaceholders[i].transform.rotation = targets[i].Rotation;
+                    }
                 }
                 else
                 {
-                    GameObject duplicate = CreateDuplicate(ui, targets[i], duplicatesParent);
+                    GameObject placeholder = GetPlaceholder(ui.name + " (Potential Adaptation)", targets[i], adaptationPlaceholdersParent);
                     // Store the duplicate in the duplicates list
-                    duplicates.Add(duplicate);
+                    adaptationPlaceholders.Add(placeholder);
                 }
             }
 
             // If there are more duplicates than potential target positions, destroy the remaining duplicates
             // and remove them from the duplicates list
-            if (duplicates.Count > targets.Count)
+            if (adaptationPlaceholders.Count > targets.Count)
             {
-                for (int i = targets.Count; i < duplicates.Count; i++)
+                for (int i = targets.Count; i < adaptationPlaceholders.Count; i++)
                 {
-                    Destroy(duplicates[i]);
+                    Destroy(adaptationPlaceholders[i]);
                 }
 
-                duplicates.RemoveRange(targets.Count, duplicates.Count - targets.Count);
+                adaptationPlaceholders.RemoveRange(targets.Count, adaptationPlaceholders.Count - targets.Count);
             }
         }
 
-        private GameObject CreateDuplicate(GameObject ui, Layout target, GameObject duplicatesParent)
+
+        /// <summary>
+        /// Create a placeholder GameObject at the target position.
+        /// If no placeholder GameObject is provided, a small grey sphere is created.
+        /// If a placeholder GameObject is provided, it is instantiated and all scripts related to the AUIT framework are disabled.
+        /// The placeholder GameObject is added to the adaptation placeholders parent GameObject.
+        /// </summary>
+        private GameObject GetPlaceholder(string name, Layout target, GameObject adaptationPlaceholdersParent)
         {
-            // Create a duplicate of the GameObject
-            GameObject duplicate = Instantiate(ui, target.Position, rotateBasedOnTarget ? target.Rotation : ui.transform.rotation);
-            duplicate.name = ui.name + " (Potential Adaptation)";
-            duplicate.transform.SetParent(ui.transform.parent);
-            duplicate.transform.localScale = scaleDownDuplicates ? new Vector3(0.5f, 0.5f, 0.5f) : ui.transform.localScale;
+            GameObject placeholder = null;
 
-
-            // Disable all scripts related to the AUIT framework
-            var scripts = duplicate.GetComponents<MonoBehaviour>();
-            foreach (var script in scripts)
+            if (adaptationPlaceholder == null)
             {
-                // If script's namespace includes AUIT, disable it
-                if (script.GetType().Namespace.Contains("AUIT"))
+                placeholder = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                Material material = new Material(Shader.Find("Standard"));
+                material.color = new Color(0.2f, 0.2f, 0.2f);
+                placeholder.GetComponent<Renderer>().material = material;
+            }
+            else
+            {
+                placeholder = Instantiate(adaptationPlaceholder);
+                // Disable all scripts related to the AUIT framework
+                var scripts = placeholder.GetComponents<MonoBehaviour>();
+                foreach (var script in scripts)
                 {
-                    script.enabled = false;
+                    // If script's namespace includes AUIT, disable it
+                    if (script.GetType().Namespace.Contains("AUIT"))
+                    {
+                        script.enabled = false;
+                    }
                 }
             }
+          
+            placeholder.name = name;
+            placeholder.transform.localScale = new Vector3(scaleDownFactor, scaleDownFactor, scaleDownFactor);
+            placeholder.transform.SetParent(adaptationPlaceholdersParent.transform);
 
-            // Add the duplicate to the duplicates parent
-            duplicate.transform.SetParent(duplicatesParent.transform);
-
-            return duplicate;
+            return placeholder;
         }
 
-        private static GameObject GetDuplicatesParent()
+        private static GameObject GetAdaptationsParent()
         {
             // If none exists, create a new parent for the duplicates
             GameObject duplicatesParent = GameObject.Find("Potential Adaptations");
