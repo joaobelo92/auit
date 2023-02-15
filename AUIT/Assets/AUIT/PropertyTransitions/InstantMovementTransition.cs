@@ -53,6 +53,7 @@ namespace AUIT.PropertyTransitions
                     ui.transform.rotation = targets[0].Rotation;
                 }
             }
+            if (targets.Count == 1) return;
 
             GameObject adaptationPlaceholdersParent = GetAdaptationsParent();
 
@@ -73,6 +74,7 @@ namespace AUIT.PropertyTransitions
                 else
                 {
                     GameObject placeholder = GetPlaceholder(ui.name + " (Potential Adaptation)", targets[i], adaptationPlaceholdersParent);
+                    AddSelectEventsToPlaceholder(ui, placeholder);
                     // Store the duplicate in the duplicates list
                     adaptationPlaceholders.Add(placeholder);
                 }
@@ -89,6 +91,22 @@ namespace AUIT.PropertyTransitions
 
                 adaptationPlaceholders.RemoveRange(targets.Count, adaptationPlaceholders.Count - targets.Count);
             }
+
+            // If the adaptation placeholder is enabled and not ui (no duplicate UIs), disable it
+            // This is the case when the user has selected a different adaptation placeholder in the scene
+            if (adaptationPlaceholder != null && adaptationPlaceholder != ui)
+            {
+                adaptationPlaceholder.SetActive(false);
+            }
+        }
+
+        private void AddSelectEventsToPlaceholder(GameObject ui, GameObject placeholder)
+        {
+            // Attach the SwapPositionsOnTouch script to the placeholder object
+            SwapPositionsOnTouch swapPositionsOnTouch = placeholder.AddComponent<SwapPositionsOnTouch>();
+
+            // Set the ui object of the SwapPositionsOnTouch script
+            swapPositionsOnTouch.ui = ui;
         }
 
 
@@ -117,7 +135,7 @@ namespace AUIT.PropertyTransitions
                 foreach (var script in scripts)
                 {
                     // If script's namespace includes AUIT, disable it
-                    if (script.GetType().Namespace.Contains("AUIT"))
+                    if (script.GetType().Namespace != null && script.GetType().Namespace.Contains("AUIT"))
                     {
                         script.enabled = false;
                     }
@@ -127,6 +145,8 @@ namespace AUIT.PropertyTransitions
             placeholder.name = name;
             placeholder.transform.localScale = new Vector3(scaleDownFactor, scaleDownFactor, scaleDownFactor);
             placeholder.transform.SetParent(adaptationPlaceholdersParent.transform);
+            BoxCollider boxCollider = placeholder.AddComponent<BoxCollider>();
+            boxCollider.size = placeholder.transform.localScale;
 
             return placeholder;
         }
@@ -142,6 +162,28 @@ namespace AUIT.PropertyTransitions
             }
 
             return duplicatesParent;
+        }
+
+        private class SwapPositionsOnTouch : MonoBehaviour
+        {
+            public GameObject ui;
+
+            private void SwapPositions(GameObject ui)
+            {
+                Vector3 temp = ui.transform.position;
+                ui.transform.position = transform.position;
+                transform.position = temp;
+            }
+
+            private void OnMouseDown()
+            {
+                SwapPositions(ui);
+            }
+
+            private void OnTouchDown()
+            {
+                SwapPositions(ui);
+            }
         }
     }
 }
