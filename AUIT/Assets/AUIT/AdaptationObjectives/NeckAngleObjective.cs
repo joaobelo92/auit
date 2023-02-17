@@ -31,7 +31,7 @@ namespace AUIT.AdaptationObjectives
             // Get the vector from the eye position to the target's projection on the xz-plane
             // at the eye position's height.
             Vector3 eyeToTargetProjection =
-                new Vector3(eyeToTarget.x, 0, eyeToTarget.z);
+                new Vector3(eyeToTarget.x, currentEyePosition.y, eyeToTarget.z);
 
             // Get the angle between the two vectors.
             float angle = Vector3.Angle(eyeToTarget, eyeToTargetProjection);
@@ -54,8 +54,8 @@ namespace AUIT.AdaptationObjectives
         /// </summary>
         public override float CostFunction(Layout optimizationTarget, Layout initialLayout = null)
         {
-            Vector3 targetPosition = (Vector3) ContextSourceTransformTarget;
-            Vector3 currentEyePosition = optimizationTarget.Position; // This is technically the camera position.
+            Vector3 currentEyePosition = (Vector3) ContextSourceTransformTarget;
+            Vector3 targetPosition = optimizationTarget.Position; // This is technically the camera position.
 
             float normalizedAngle =
                 GetNormalizedNeckAngle(targetPosition, currentEyePosition);

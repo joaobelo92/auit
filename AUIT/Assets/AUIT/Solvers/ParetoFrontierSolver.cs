@@ -168,6 +168,18 @@ namespace AUIT.Solvers
             // Suggested layout for next active adaptation
             var suggestedAdaptation = JsonUtility.FromJson<Wrapper<Layout>>(optimizationResponse.suggested);
 
+            // If suggestedAdaptation is in suggestedUIConfigurations, move it to the first position
+            if (suggestedUIConfigurations.Contains(suggestedAdaptation.items.ToList()))
+            {
+                suggestedUIConfigurations.Remove(suggestedAdaptation.items.ToList());
+                suggestedUIConfigurations.Insert(0, suggestedAdaptation.items.ToList());
+            }
+            else
+            {
+                // If suggestedAdaptation is not in suggestedUIConfigurations, add it to the first position
+                suggestedUIConfigurations.Insert(0, suggestedAdaptation.items.ToList());
+            }
+
             // todo: add costs
             Result = (suggestedUIConfigurations, 0f, 0f);
 
