@@ -111,6 +111,7 @@ namespace AUIT
         {
             layout = new Layout(transform);
             asyncSolver.adaptationManager = this;
+            Debug.Log("Attempting to start solver");
             asyncSolver.Initialize();
             
             InvokeRepeating(nameof(RunJobs), 0, 0.001f);
@@ -160,6 +161,13 @@ namespace AUIT
             // }
             // Debug.Log(LocalObjectiveHandler.Objectives.First().CostFunction(new Layout(new Vector3(1, 1, 1), Quaternion.identity, new Vector3(0, 0, 0) )));
             
+        }
+
+        private void OnDestroy()
+        {
+            ParetoFrontierSolver paretoFrontierSolver = (ParetoFrontierSolver) asyncSolver;
+            paretoFrontierSolver.serverRuntime.Dispose();
+            paretoFrontierSolver.clientRuntime.Dispose();
         }
 
         private void RunJobs()

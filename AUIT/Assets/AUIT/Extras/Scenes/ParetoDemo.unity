@@ -398,8 +398,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c1c9e896dc04e018422414eacbd58d2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  interval: 10
-  timeoutThreshold: 10
+  interval: 30
+  timeoutThreshold: 1000000
 --- !u!114 &354526909
 MonoBehaviour:
   m_ObjectHideFlags: 0
