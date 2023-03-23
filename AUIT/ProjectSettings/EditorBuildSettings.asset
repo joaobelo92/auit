@@ -33,6 +33,7 @@ EditorBuildSettings:
     path: Assets/Video/Scenes/Demo9 - Performance Cooking Scenario Global.unity
     guid: 0e0d9745cbbde114cad91b4891406c29
   m_configObjects:
+    Unity.XR.Oculus.Settings: {fileID: 11400000, guid: 496b34e02d5c4a94ca2538a93704a7f0, type: 2}
     Unity.XR.WindowsMR.Settings: {fileID: 11400000, guid: a7cc499ad1cb2624d82a66cc184bdb74, type: 2}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 8af70b3845e9cda43910490281b74021, type: 2}
     com.unity.xr.openxr.settings4: {fileID: 11400000, guid: 02f4cc2bad1ab4cd592661859b8d8760, type: 2}
