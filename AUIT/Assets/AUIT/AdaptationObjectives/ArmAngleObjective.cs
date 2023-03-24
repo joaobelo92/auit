@@ -15,6 +15,20 @@ namespace AUIT.AdaptationObjectives
     {
         [SerializeField]
         private float eyeToShoulderDistance = 0.25f;
+        
+        public void Reset()
+        {
+            ContextSource = ContextSource.PlayerPose;
+        }
+
+        protected override void Start()
+        {
+            base.Start();
+            if (ContextSource == ContextSource.Gaze)
+            {
+                ContextSource = ContextSource.PlayerPose;
+            }
+        }
 
         private float GetNormalizedArmAngle(Vector3 targetPosition, Vector3 shoulderPosition)
         {

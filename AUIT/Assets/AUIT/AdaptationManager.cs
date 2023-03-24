@@ -101,7 +101,7 @@ namespace AUIT
             if (!isGlobal && LocalObjectiveHandler == null)
             {
                 Debug.LogError("No Local Objective Handler component found on " + name);
-                this.enabled = false;
+                enabled = false;
             }
 
         }
@@ -109,6 +109,7 @@ namespace AUIT
         // Start is called before the first frame update
         protected virtual void Start()
         {
+            AsyncIO.ForceDotNet.Force();
             layout = new Layout(transform);
             asyncSolver.adaptationManager = this;
             Debug.Log("Attempting to start solver");
@@ -168,6 +169,7 @@ namespace AUIT
             ParetoFrontierSolver paretoFrontierSolver = (ParetoFrontierSolver) asyncSolver;
             paretoFrontierSolver.serverRuntime.Dispose();
             paretoFrontierSolver.clientRuntime.Dispose();
+            paretoFrontierSolver.serverThread.Abort();
         }
 
         private void RunJobs()

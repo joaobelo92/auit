@@ -14,6 +14,21 @@ namespace AUIT.AdaptationObjectives
     /// </summary>
     public class NeckAngleObjective : LocalObjective
     {
+                
+        public void Reset()
+        {
+            ContextSource = ContextSource.PlayerPose;
+        }
+
+        protected override void Start()
+        {
+            base.Start();
+            if (ContextSource == ContextSource.Gaze)
+            {
+                ContextSource = ContextSource.PlayerPose;
+            }
+        }
+        
         private float GetNormalizedNeckAngle(Vector3 targetPosition, Vector3 currentEyePosition)
         {
             // If the target is on, right below or above the eye position, we return 1.

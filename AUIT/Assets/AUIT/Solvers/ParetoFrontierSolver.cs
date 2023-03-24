@@ -20,6 +20,7 @@ namespace AUIT.Solvers
         public AdaptationManager adaptationManager { get; set; }
         public NetMQRuntime serverRuntime;
         public NetMQRuntime clientRuntime;
+        public Thread serverThread;
 
         public (List<List<Layout>>, float, float) Result { get; set; }
 
@@ -28,94 +29,98 @@ namespace AUIT.Solvers
         public void Initialize()
         {
             
-            var serverThread = new Thread(Networking);
+            serverThread = new Thread(Networking);
             serverThread.Start();
             // while(requestFunc == null) {}
 
             void Networking()
             {
-                using (var responseSocket = new ResponseSocket("@tcp://*:5556"))
-                {
-                    while (true)
-                    {
-                        var message = responseSocket.ReceiveFrameString();
-                        Console.WriteLine("responseSocket : Server Received '{0}'", message);                //             Debug.Log($"Received a request at endpoint: {message[0]}");
-                    
-                        string response;
-                        switch (message[0])
-                        {
-                            case 'P':
-                                response = "I heard that";
-                                responseSocket.SendFrame(response);
-                                break;
-                            case 'E':
-                                string payload = message.Substring(1);
-                                // Debug.Log("computing costs: " + payload);
-                                var evaluationResponse = new EvaluationResponse
-                                {
-                                    costs = adaptationManager.EvaluateLayouts(payload)
-                                };
-                                response = JsonConvert.SerializeObject(evaluationResponse);
-                                // Debug.Log("Sending evaluation response: " + response);
-                                responseSocket.SendFrame("e" + response);
-                                break;
-                            default:
-                                Debug.Log("Unknown request");
-                                responseSocket.SendFrame("Unknown request");
-                                break;
-                        }
-                    }
-                }
-                // using (serverRuntime = new NetMQRuntime())
+                // AsyncIO.ForceDotNet.Force();
+                // using (var responseSocket = new ResponseSocket("@tcp://*:5556"))
                 // {
-                //     Debug.Log("attempting to start server");
-                //     // serverRuntime.Run(ServerAsync()); 
-                // }
-                //
-                // async Task ServerAsync()
-                // {
-                //     using (var server = new ResponseSocket("tcp://*:5556"))
+                //     while (true)
                 //     {
-                //         Debug.Log("server started");
-                //         
-                //         while (true)
+                //         var message = responseSocket.ReceiveFrameString();
+                //         Console.WriteLine("responseSocket : Server Received '{0}'", message);                //             Debug.Log($"Received a request at endpoint: {message[0]}");
+                //     
+                //         string response;
+                //         switch (message[0])
                 //         {
-                //             string message;
-                //             (message, _) = await server.ReceiveFrameStringAsync();
-                //             Debug.Log($"Received a request at endpoint: {message[0]}");
-                //         
-                //             string response;
-                //             switch (message[0])
-                //             {
-                //                 case 'P':
-                //                     response = "I heard that";
-                //                     server.SendFrame(response);
-                //                     break;
-                //                 case 'E':
-                //                     string payload = message.Substring(1);
-                //                     // Debug.Log("computing costs: " + payload);
-                //                     var evaluationResponse = new EvaluationResponse
-                //                     {
-                //                         costs = adaptationManager.EvaluateLayouts(payload)
-                //                     };
-                //                     response = JsonConvert.SerializeObject(evaluationResponse);
-                //                     // Debug.Log("Sending evaluation response: " + response);
-                //                     server.SendFrame("e" + response);
-                //                     break;
-                //                 default:
-                //                     Debug.Log("Unknown request");
-                //                     server.SendFrame("Unknown request");
-                //                     break;
-                //             }
+                //             case 'P':
+                //                 response = "I heard that";
+                //                 responseSocket.SendFrame(response);
+                //                 break;
+                //             case 'E':
+                //                 string payload = message.Substring(1);
+                //                 // Debug.Log("computing costs: " + payload);
+                //                 var evaluationResponse = new EvaluationResponse
+                //                 {
+                //                     costs = adaptationManager.EvaluateLayouts(payload)
+                //                 };
+                //                 response = JsonConvert.SerializeObject(evaluationResponse);
+                //                 // Debug.Log("Sending evaluation response: " + response);
+                //                 responseSocket.SendFrame("e" + response);
+                //                 break;
+                //             default:
+                //                 Debug.Log("Unknown request");
+                //                 responseSocket.SendFrame("Unknown request");
+                //                 break;
                 //         }
                 //     }
                 // }
+                using (serverRuntime = new NetMQRuntime())
+                {
+                     Debug.Log("attempting to start server");
+                     serverRuntime.Run(ServerAsync()); 
+                }
+                
+                async Task ServerAsync()
+                {
+                    AsyncIO.ForceDotNet.Force();
+                    using (var server = new ResponseSocket("tcp://*:5556"))
+                    {
+                        Debug.Log("server started");
+                        
+                        while (true)
+                        {
+                            string message;
+                            (message, _) = await server.ReceiveFrameStringAsync();
+                            Debug.Log($"Received a request at endpoint: {message[0]}");
+                        
+                            string response;
+                            switch (message[0])
+                            {
+                                case 'P':
+                                    response = "I heard that";
+                                    server.SendFrame(response);
+                                    break;
+                                case 'E':
+                                    string payload = message.Substring(1);
+                                    // Debug.Log("computing costs: " + payload);
+                                    var evaluationResponse = new EvaluationResponse
+                                    {
+                                        costs = adaptationManager.EvaluateLayouts(payload)
+                                    };
+                                    response = JsonConvert.SerializeObject(evaluationResponse);
+                                    // Debug.Log("Sending evaluation response: " + response);
+                                    server.SendFrame("e" + response);
+                                    break;
+                                default:
+                                    Debug.Log("Unknown request");
+                                    server.SendFrame("Unknown request");
+                                    break;
+                            }
+                        }
+                    }
+                }
             }
         }
 
         public IEnumerator OptimizeCoroutine(Layout initialLayout, List<LocalObjective> objectives, List<float> hyperparameters)
         {
             Result = (null, 0f, 0f);
+            
+            AsyncIO.ForceDotNet.Force();
             
             Debug.Log($"sending optimization request");
             var optimizationRequest = new
@@ -136,7 +141,6 @@ namespace AUIT.Solvers
                     clientRuntime.Run(ClientAsync()); 
                 
                     async Task ClientAsync() {
-                    
                         var requestSocket = new RequestSocket();
                         requestSocket.Connect("tcp://localhost:5555");
                 
