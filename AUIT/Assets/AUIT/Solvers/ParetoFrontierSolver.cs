@@ -24,14 +24,11 @@ namespace AUIT.Solvers
 
         public (List<List<Layout>>, float, float) Result { get; set; }
 
-        // Func<(string, string), Task<string>> requestFunc;
-
         public void Initialize()
         {
             
             serverThread = new Thread(Networking);
             serverThread.Start();
-            // while(requestFunc == null) {}
 
             void Networking()
             {
@@ -120,8 +117,6 @@ namespace AUIT.Solvers
         {
             Result = (null, 0f, 0f);
             
-            AsyncIO.ForceDotNet.Force();
-            
             Debug.Log($"sending optimization request");
             var optimizationRequest = new
             OptimizationRequest {
@@ -148,9 +143,7 @@ namespace AUIT.Solvers
                     
                         // Debug.Log("request sent: " + "O" + JsonUtility.ToJson(optimizationRequest));
                         (result, _) = await requestSocket.ReceiveFrameStringAsync();
-            
-                        // Debug.Log("got the reply!");
-                        // Debug.Log(result);
+                        clientRuntime.Dispose();
                     }
                 }
             }

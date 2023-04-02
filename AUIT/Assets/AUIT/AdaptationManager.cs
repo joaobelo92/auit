@@ -12,6 +12,7 @@ using AUIT.Solvers.Experimental;
 using AUIT.AdaptationObjectives.Definitions;
 using Newtonsoft.Json;
 using AUIT.Extras;
+using NetMQ;
 
 namespace AUIT
 {
@@ -168,8 +169,9 @@ namespace AUIT
         {
             ParetoFrontierSolver paretoFrontierSolver = (ParetoFrontierSolver) asyncSolver;
             paretoFrontierSolver.serverRuntime.Dispose();
-            paretoFrontierSolver.clientRuntime.Dispose();
-            paretoFrontierSolver.serverThread.Abort();
+            // paretoFrontierSolver.clientRuntime.Dispose();
+            // paretoFrontierSolver.serverThread.Abort();
+            NetMQConfig.Cleanup(false);
         }
 
         private void RunJobs()
