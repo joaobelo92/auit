@@ -4,6 +4,7 @@ using AUIT.AdaptationTriggers;
 using AUIT.AdaptationObjectives.Definitions;
 using UnityEngine;
 using System;
+using UnityEditor;
 
 namespace AUIT.PropertyTransitions
 {
@@ -46,6 +47,7 @@ namespace AUIT.PropertyTransitions
 
         public void TriggerProposal(GameObject trigger)
         {
+            gameObject.transform.GetChild(0).gameObject.SetActive(true);
             transform.position = trigger.transform.position;
             transform.LookAt(Camera.main.transform);
             transform.forward = -transform.forward;

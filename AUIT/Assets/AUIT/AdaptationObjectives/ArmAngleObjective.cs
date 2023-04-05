@@ -42,7 +42,8 @@ namespace AUIT.AdaptationObjectives
             Vector3 shoulderToTarget = targetPosition - shoulderPosition;
 
             // Get the vector from the shoulder position straight down to the ground.
-            Vector3 shoulderToGround = new Vector3(shoulderPosition.x, -1, shoulderPosition.z);
+            // Vector3 shoulderToGround = new Vector3(shoulderPosition.x, -1, shoulderPosition.z);
+            Vector3 shoulderToGround = new Vector3(0, -1, 0);
 
             // Get the angle between the two vectors.
             float angle = Vector3.Angle(shoulderToTarget, shoulderToGround);
