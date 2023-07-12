@@ -15,6 +15,24 @@ namespace AUIT.AdaptationObjectives
     {
         [SerializeField]
         private float eyeToShoulderDistance = 0.25f;
+        [SerializeField]
+        private bool useExponentialDecay = false; // Controls whether the cost should exponentially decay with the arm angle (if yes, then convex Pareto frontier)
+        [SerializeField]
+        float steepness = 2.0f; // Controls the steepness of the exponential decay (the higher the value, the steeper the decay)
+        
+        public void Reset()
+        {
+            ContextSource = ContextSource.PlayerPose;
+        }
+
+        protected override void Start()
+        {
+            base.Start();
+            if (ContextSource == ContextSource.Gaze)
+            {
+                ContextSource = ContextSource.PlayerPose;
+            }
+        }
 
         private float GetNormalizedArmAngle(Vector3 targetPosition, Vector3 shoulderPosition)
         {
@@ -28,7 +46,8 @@ namespace AUIT.AdaptationObjectives
             Vector3 shoulderToTarget = targetPosition - shoulderPosition;
 
             // Get the vector from the shoulder position straight down to the ground.
-            Vector3 shoulderToGround = new Vector3(shoulderPosition.x, -1, shoulderPosition.z);
+            // Vector3 shoulderToGround = new Vector3(shoulderPosition.x, -1, shoulderPosition.z);
+            Vector3 shoulderToGround = new Vector3(0, -1, 0);
 
             // Get the angle between the two vectors.
             float angle = Vector3.Angle(shoulderToTarget, shoulderToGround);
@@ -61,6 +80,17 @@ namespace AUIT.AdaptationObjectives
 
             // Calculate the normalized arm angle
             float normalizedAngle = GetNormalizedArmAngle(targetPosition, shoulderPosition);
+
+            // If we want to use exponential decay...
+            if (useExponentialDecay)
+            {
+                float armAngleRadians = normalizedAngle * Mathf.PI;
+                float xMod = armAngleRadians % (2 * Mathf.PI);
+                float armErgonomicsCost = xMod <= Mathf.PI ?
+                    steepness * (Mathf.Exp(xMod / Mathf.PI) - 1) / (Mathf.Exp(steepness) - 1) :
+                    (Mathf.Exp(-steepness * (xMod - 2 * Mathf.PI) / Mathf.PI) - 1) / (Mathf.Exp(steepness) - 1);
+                return armErgonomicsCost;
+            }
 
             return normalizedAngle;
         }

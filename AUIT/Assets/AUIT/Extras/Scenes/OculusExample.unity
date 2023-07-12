@@ -840,7 +840,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c1c9e896dc04e018422414eacbd58d2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  interval: 10
+  interval: 5
   timeoutThreshold: 1000
 --- !u!114 &1838137403
 MonoBehaviour:
@@ -873,10 +873,10 @@ MonoBehaviour:
   contextSource: 1
   transformOverride: {fileID: 0}
   weight: 0.5
-  goalXYDistance: 0.8
+  goalXYDistance: 0.3
   yInterval: 0.25
   distanceXZInterval: 0.1
-  maxDistance: 1.5
+  maxDistance: 0.6
 --- !u!114 &1838137405
 MonoBehaviour:
   m_ObjectHideFlags: 0

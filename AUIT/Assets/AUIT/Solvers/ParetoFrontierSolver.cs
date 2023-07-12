@@ -73,7 +73,7 @@ namespace AUIT.Solvers
                         {
                             string message;
                             (message, _) = await server.ReceiveFrameStringAsync();
-                            Debug.Log($"Received a request at endpoint: {message[0]}");
+                            // Debug.Log($"Received a request at endpoint: {message[0]}");
 
                             string response;
                             switch (message[0])
