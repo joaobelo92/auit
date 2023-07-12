@@ -14,24 +14,32 @@ namespace AUIT.AdaptationObjectives
     /// </summary>
     public class NeckAngleObjective : LocalObjective
     {
+                
+        public void Reset()
+        {
+            ContextSource = ContextSource.PlayerPose;
+        }
+
+        protected override void Start()
+        {
+            base.Start();
+            if (ContextSource == ContextSource.Gaze)
+            {
+                ContextSource = ContextSource.PlayerPose;
+            }
+        }
+        
         private float GetNormalizedNeckAngle(Vector3 targetPosition, Vector3 currentEyePosition)
         {
-            // If the target is on, right below or above the eye position, we return 1.
-            if (
-                targetPosition.x == currentEyePosition.x &&
-                targetPosition.z == currentEyePosition.z
-            )
-            {
-                return 1.0f;
-            }
-
             // Get the vector from the eye position to the target.
             Vector3 eyeToTarget = targetPosition - currentEyePosition;
 
             // Get the vector from the eye position to the target's projection on the xz-plane
             // at the eye position's height.
+            // Vector3 eyeToTargetProjection =
+            //     new Vector3(eyeToTarget.x, currentEyePosition.y, eyeToTarget.z);
             Vector3 eyeToTargetProjection =
-                new Vector3(eyeToTarget.x, currentEyePosition.y, eyeToTarget.z);
+                new Vector3(eyeToTarget.x, 0, eyeToTarget.z);
 
             // Get the angle between the two vectors.
             float angle = Vector3.Angle(eyeToTarget, eyeToTargetProjection);
