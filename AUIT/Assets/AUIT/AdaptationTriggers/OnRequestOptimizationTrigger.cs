@@ -37,6 +37,9 @@ namespace AUIT.AdaptationTriggers
                 foreach (var layout in layouts)
                 {
                     elementLayouts.Add(layout[0]);
+
+                    AdaptationManager.ComputeCost(layout[0], true);
+
                 }
                 AdaptationManager.layouts = elementLayouts;
                 AdaptationManager.Adapt(elementLayouts);

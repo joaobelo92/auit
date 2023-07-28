@@ -454,7 +454,7 @@ namespace AUIT
             return (new List<Layout> { layout }, 0.0f, 0.0f);
         }
 
-        public float ComputeCost(Layout l = null)
+        public float ComputeCost(Layout l = null, bool verbose = false)
         {
             // TODO
             if (l == null)
@@ -494,6 +494,16 @@ namespace AUIT
 
             List<LocalObjective> objectives = LocalObjectiveHandler.Objectives;
             // print("Total weighted cost: " + LocalObjectiveHandler.Objectives.Sum(objective => objective.Weight * objective.CostFunction(l)) / objectives.Count);
+            if (verbose)
+            {
+                string result = l.Position.ToString();
+                foreach (var objective in objectives)
+                {
+                    result += "; Objective: " + objective.GetType().ToString() + "; Cost: " + objective.CostFunction(l);
+                }
+
+                print(result);
+            }
             return LocalObjectiveHandler.Objectives.Sum(objective => objective.Weight * objective.CostFunction(l)) / objectives.Count;
         }
 

@@ -49,7 +49,7 @@ namespace AUIT.PropertyTransitions
         {
             gameObject.transform.GetChild(0).gameObject.SetActive(true);
             transform.position = trigger.transform.position;
-            transform.LookAt(Camera.main.transform);
+            // transform.LookAt(Camera.main.transform);
             transform.forward = -transform.forward;
             foreach (var placeholder in adaptationPlaceholders)
             {
