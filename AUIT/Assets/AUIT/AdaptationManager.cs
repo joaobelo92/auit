@@ -13,10 +13,11 @@ using AUIT.AdaptationObjectives.Definitions;
 using Newtonsoft.Json;
 using AUIT.Extras;
 using NetMQ;
+using UnityEngine.Serialization;
 
 namespace AUIT
 {
-    public class AdaptationManager : MonoBehaviour
+    public sealed class AdaptationManager : MonoBehaviour
     {
 
         /*
@@ -28,26 +29,28 @@ namespace AUIT
          * of an adaptation trigger that are added automatically to make the creator's task easier.
         */
 
-        [HideInInspector]
-        private LocalObjectiveHandler LocalObjectiveHandler;
-        [HideInInspector]
-        private AdaptationTrigger adaptationTrigger;
-        [HideInInspector]
-        private List<PropertyTransition> propertyTransitions = new List<PropertyTransition>();
-        [HideInInspector]
-        protected List<AdaptationListener> adaptationListeners = new List<AdaptationListener>();
+        private LocalObjectiveHandler _localObjectiveHandler;
+        private AdaptationTrigger _adaptationTrigger;
+        private readonly List<PropertyTransition> _propertyTransitions = new();
+        private readonly List<AdaptationListener> _adaptationListeners = new();
+        
+        public enum Solver
+        {
+            SimulatedAnnealing,
+            GeneticAlgorithm
+        }
 
-        public ISolver solver = new SimulatedAnnealingSolver();
+        public Solver solver = Solver.SimulatedAnnealing;
         public List<float> hyperparameters = new List<float> { 1500f, 0.000001f, 10000f, 0.98f, 0.02f };
 
-        private IAsyncSolver asyncSolver = new ParetoFrontierSolver();
-        public Coroutine AsyncSolverOptimizeCoroutine { get; private set; }
+        private readonly IAsyncSolver _asyncSolver = new ParetoFrontierSolver();
+        private Coroutine AsyncSolverOptimizeCoroutine { get; set; }
 
-        private bool waitingForOptimization = false;
+        private bool _waitingForOptimization = false;
 
-        private bool job = false;
-        public List<List<Layout>> layoutJob;
-        public List<List<float>> jobResult;
+        private bool _job = false;
+        public List<List<Layout>> LayoutJob;
+        public List<List<float>> JobResult;
 
         // To be phased out for multiple layouts
         [HideInInspector]
@@ -58,17 +61,17 @@ namespace AUIT
 
         // public Camera camera;
 
-        public List<GameObject> UIElements;
+        public List<GameObject> uiElements;
 
         public bool isGlobal = false;
-        private bool isAdapting;
+        private bool _isAdapting;
         public bool IsAdapting
         {
             get
             {
                 if (isGlobal)
                 {
-                    foreach (var element in UIElements)
+                    foreach (var element in uiElements)
                     {
                         AdaptationManager adaptationManager = element.GetComponent<AdaptationManager>();
                         if (adaptationManager.isGlobal)
@@ -82,24 +85,21 @@ namespace AUIT
                     }
                     return false;
                 }
-                return isAdapting;
+                return _isAdapting;
             }
-            set
-            {
-                isAdapting = value;
-            }
+            set => _isAdapting = value;
         }
 
         #region MonoBehaviour Implementation
 
-        protected virtual void Awake()
+        private void Awake()
         {
-            if (!isGlobal && LocalObjectiveHandler == null)
+            if (!isGlobal && _localObjectiveHandler == null)
             {
-                LocalObjectiveHandler = GetComponent<LocalObjectiveHandler>();
+                _localObjectiveHandler = GetComponent<LocalObjectiveHandler>();
             }
 
-            if (!isGlobal && LocalObjectiveHandler == null)
+            if (!isGlobal && _localObjectiveHandler == null)
             {
                 Debug.LogError("No Local Objective Handler component found on " + name);
                 enabled = false;
@@ -108,13 +108,13 @@ namespace AUIT
         }
 
         // Start is called before the first frame update
-        protected virtual void Start()
+        private void Start()
         {
             AsyncIO.ForceDotNet.Force();
             layout = new Layout(transform);
-            asyncSolver.adaptationManager = this;
+            _asyncSolver.adaptationManager = this;
             Debug.Log("Attempting to start solver");
-            asyncSolver.Initialize();
+            _asyncSolver.Initialize();
             
             InvokeRepeating(nameof(RunJobs), 0, 0.001f);
         }
@@ -167,7 +167,7 @@ namespace AUIT
 
         private void OnDestroy()
         {
-            ParetoFrontierSolver paretoFrontierSolver = (ParetoFrontierSolver) asyncSolver;
+            ParetoFrontierSolver paretoFrontierSolver = (ParetoFrontierSolver) _asyncSolver;
             paretoFrontierSolver.serverRuntime.Dispose();
             // paretoFrontierSolver.clientRuntime.Dispose();
             // paretoFrontierSolver.serverThread.Abort();
@@ -176,14 +176,14 @@ namespace AUIT
 
         private void RunJobs()
         {
-            if (!job) return;
-            jobResult = new List<List<float>>();
-            foreach (var candidateLayout in layoutJob) // For each candidate layout l (i.e., List of Layouts)...
+            if (!_job) return;
+            JobResult = new List<List<float>>();
+            foreach (var candidateLayout in LayoutJob) // For each candidate layout l (i.e., List of Layouts)...
             {
                 var costsForCandidateLayout = new List<float>(); // ...create a list of costs determined by the objective functions
                 // For each objective function...
                 // TODO: look into 
-                foreach (var objective in LocalObjectiveHandler.Objectives)
+                foreach (var objective in _localObjectiveHandler.Objectives)
                 {
                     // ...compute and sum the costs for all elements e (defined as a Layout) in the candidate layout l
                     float objectiveCostForCurrentCandidateLayout = 0;
@@ -196,9 +196,9 @@ namespace AUIT
                 }
 
                 // and add the list of costs for the candidate layout l to the list of costs for all candidate layouts
-                jobResult.Add(costsForCandidateLayout);
+                JobResult.Add(costsForCandidateLayout);
             }
-            job = false;
+            _job = false;
         }
 
         #endregion
@@ -217,10 +217,11 @@ namespace AUIT
                     yield break;
                 }
 
-                if (asyncSolver.Result.Item1 != null)
+                if (_asyncSolver.Result.Item1 != null)
                 {
                     Debug.Log("could apply result!");
-                    adaptationLogic(asyncSolver.Result.Item1, asyncSolver.Result.Item2);
+                    Debug.Log(_asyncSolver.Result.Item1);
+                    adaptationLogic(_asyncSolver.Result.Item1, _asyncSolver.Result.Item2);
                     yield break;
                 }
                 yield return new WaitForEndOfFrame();
@@ -229,33 +230,33 @@ namespace AUIT
 
         public List<LocalObjective> GetObjectives()
         {
-            return LocalObjectiveHandler.Objectives;
+            return _localObjectiveHandler.Objectives;
         }
 
         public void RegisterAdaptationTrigger(AdaptationTrigger adaptationTrigger)
         {
-            this.adaptationTrigger = adaptationTrigger;
+            _adaptationTrigger = adaptationTrigger;
         }
 
         public void UnregisterAdaptationTrigger(AdaptationTrigger adaptationTrigger)
         {
-            if (this.adaptationTrigger == adaptationTrigger)
+            if (_adaptationTrigger == adaptationTrigger)
             {
-                this.adaptationTrigger = null;
+                _adaptationTrigger = null;
             }
         }
 
-        public void RegisterPropertyTransition(PropertyTransition proeprtyTransition)
+        public void RegisterPropertyTransition(PropertyTransition propertyTransition)
         {
-            if (!propertyTransitions.Contains(proeprtyTransition))
+            if (!_propertyTransitions.Contains(propertyTransition))
             {
-                propertyTransitions.Add(proeprtyTransition);
+                _propertyTransitions.Add(propertyTransition);
             }
         }
 
         public void UnregisterPropertyTransition(PropertyTransition propertyTransition)
         {
-            propertyTransitions.Remove(propertyTransition);
+            _propertyTransitions.Remove(propertyTransition);
         }
 
         public List<List<float>> EvaluateLayouts(string payload)
@@ -279,11 +280,11 @@ namespace AUIT
                 // WARN: This is a hack to get the local objectives to work
                 // We only take the first UIElement's objectives to evaluate the layout's first element
                 // Debug.LogError(LocalObjectiveHandler.Objectives.Count);
-                layoutJob = ls; // Assign the list of candidate layouts, each of which is a list of elements defined as a Layout, to the current job to be evaluated
-                job = true; // Set the job flag to true, which will trigger the job to be evaluated in the next dequeue action
+                LayoutJob = ls; // Assign the list of candidate layouts, each of which is a list of elements defined as a Layout, to the current job to be evaluated
+                _job = true; // Set the job flag to true, which will trigger the job to be evaluated in the next dequeue action
 
-                while (job) {} // Wait for the job to be evaluated
-                return jobResult; // Return the result of the job (i.e., the costs of each candidate layout)
+                while (_job) {} // Wait for the job to be evaluated
+                return JobResult; // Return the result of the job (i.e., the costs of each candidate layout)
             }
             
             return null;
@@ -343,10 +344,10 @@ namespace AUIT
             {
                 List<List<LocalObjective>> objectives = new List<List<LocalObjective>>();
                 List<Layout> currentLayouts = new List<Layout>();
-                foreach (var element in UIElements)
+                foreach (var element in uiElements)
                 {
                     AdaptationManager adaptationManager = element.GetComponent<AdaptationManager>();
-                    objectives.Add(adaptationManager.LocalObjectiveHandler.Objectives);
+                    objectives.Add(adaptationManager._localObjectiveHandler.Objectives);
                     currentLayouts.Add(adaptationManager.layout);
                 }
                 
@@ -357,24 +358,24 @@ namespace AUIT
                 }
                 
                 // async starts
-                if (waitingForOptimization == false)
+                if (_waitingForOptimization == false)
                 {
-                    waitingForOptimization = true;
+                    _waitingForOptimization = true;
                     if (AsyncSolverOptimizeCoroutine != null)
                         StopCoroutine(AsyncSolverOptimizeCoroutine);
-                    AsyncSolverOptimizeCoroutine = StartCoroutine(asyncSolver.OptimizeCoroutine(currentLayouts, objectives, hyperparameters));
+                    AsyncSolverOptimizeCoroutine = StartCoroutine(_asyncSolver.OptimizeCoroutine(currentLayouts, objectives, hyperparameters));
                 }
 
-                if (asyncSolver.Result.Item1 != null)
+                if (_asyncSolver.Result.Item1 != null)
                 {
-                    waitingForOptimization = false;
+                    _waitingForOptimization = false;
                 }
 
-                return (asyncSolver.Result.Item1[0], asyncSolver.Result.Item2);
+                return (_asyncSolver.Result.Item1[0], _asyncSolver.Result.Item2);
                 
                 // return solver.Optimize(layouts, objectives, hyperparameters);
             }
-            if (LocalObjectiveHandler.Objectives.Count == 0)
+            if (_localObjectiveHandler.Objectives.Count == 0)
             {
                 Debug.LogWarning($"[AdaptationManager.OptimizeLayout()]: Unable to find any objectives on adaptation manager game object...");
                 return (new List<Layout> { layout }, 0.0f);
@@ -386,14 +387,14 @@ namespace AUIT
                 // waitingForOptimization = true;
                 // if (AsyncSolverOptimizeCoroutine != null)
                 //     StopCoroutine(AsyncSolverOptimizeCoroutine);
-            StartCoroutine(asyncSolver.OptimizeCoroutine(layout, LocalObjectiveHandler.Objectives, hyperparameters));
+            StartCoroutine(_asyncSolver.OptimizeCoroutine(layout, _localObjectiveHandler.Objectives, hyperparameters));
             // }
 
             // if (asyncSolver.Result.Item1 != null)
             // {
             //     waitingForOptimization = false;
             // }
-            return (null, asyncSolver.Result.Item2);
+            return (null, _asyncSolver.Result.Item2);
         }
 
         public (List<Layout>, float, float) AsyncOptimizeLayout()
@@ -411,30 +412,30 @@ namespace AUIT
             {
                 List<List<LocalObjective>> objectives = new List<List<LocalObjective>>();
                 List<Layout> layouts = new List<Layout>();
-                foreach (var element in UIElements)
+                foreach (var element in uiElements)
                 {
                     AdaptationManager adaptationManager = element.GetComponent<AdaptationManager>();
-                    objectives.Add(adaptationManager.LocalObjectiveHandler.Objectives);
+                    objectives.Add(adaptationManager._localObjectiveHandler.Objectives);
                     layouts.Add(adaptationManager.layout);
                 }
 
-                if (waitingForOptimization == false)
+                if (_waitingForOptimization == false)
                 {
-                    waitingForOptimization = true;
+                    _waitingForOptimization = true;
                     if (AsyncSolverOptimizeCoroutine != null)
                         StopCoroutine(AsyncSolverOptimizeCoroutine);
-                    AsyncSolverOptimizeCoroutine = StartCoroutine(asyncSolver.OptimizeCoroutine(layouts, objectives, hyperparameters));
+                    AsyncSolverOptimizeCoroutine = StartCoroutine(_asyncSolver.OptimizeCoroutine(layouts, objectives, hyperparameters));
                 }
 
-                if (asyncSolver.Result.Item1 != null)
+                if (_asyncSolver.Result.Item1 != null)
                 {
-                    waitingForOptimization = false;
+                    _waitingForOptimization = false;
                 }
 
-                return (asyncSolver.Result.Item1[0], 0f, 0f);
+                return (_asyncSolver.Result.Item1[0], 0f, 0f);
             }
 
-            if (LocalObjectiveHandler.Objectives.Count == 0)
+            if (_localObjectiveHandler.Objectives.Count == 0)
                 return (new List<Layout> { layout }, 0.0f, 0.0f);
 
             // if (waitingForOptimization == false)
@@ -473,17 +474,17 @@ namespace AUIT
 
                 List<List<LocalObjective>> globalObjectives = new List<List<LocalObjective>>();
                 List<Layout> layouts = new List<Layout>();
-                foreach (var element in UIElements)
+                foreach (var element in uiElements)
                 {
                     AdaptationManager adaptationManager = element.GetComponent<AdaptationManager>();
                     if (adaptationManager == null || adaptationManager.layout == null)
                         throw new Exception($"No local adaptation manager found on {element.name}");
-                    globalObjectives.Add(adaptationManager.LocalObjectiveHandler.Objectives);
+                    globalObjectives.Add(adaptationManager._localObjectiveHandler.Objectives);
                     layouts.Add(adaptationManager.layout);
                 }
 
                 float cost = 0;
-                for (int i = 0; i < UIElements.Count; i++)
+                for (int i = 0; i < uiElements.Count; i++)
                 {
                     cost += globalObjectives[i].Sum(objective => objective.Weight * objective.CostFunction(layouts[i])) / globalObjectives[i].Count;
                 }
@@ -492,7 +493,7 @@ namespace AUIT
                 return cost;
             }
 
-            List<LocalObjective> objectives = LocalObjectiveHandler.Objectives;
+            List<LocalObjective> objectives = _localObjectiveHandler.Objectives;
             // print("Total weighted cost: " + LocalObjectiveHandler.Objectives.Sum(objective => objective.Weight * objective.CostFunction(l)) / objectives.Count);
             if (verbose)
             {
@@ -504,7 +505,7 @@ namespace AUIT
 
                 print(result);
             }
-            return LocalObjectiveHandler.Objectives.Sum(objective => objective.Weight * objective.CostFunction(l)) / objectives.Count;
+            return _localObjectiveHandler.Objectives.Sum(objective => objective.Weight * objective.CostFunction(l)) / objectives.Count;
         }
 
         Coroutine computeCostCorutine;
@@ -550,16 +551,16 @@ namespace AUIT
             {
                 List<List<LocalObjective>> globalObjectives = new List<List<LocalObjective>>();
                 List<Layout> layouts = new List<Layout>();
-                foreach (var element in UIElements)
+                foreach (var element in uiElements)
                 {
                     AdaptationManager adaptationManager = element.GetComponent<AdaptationManager>();
                     if (adaptationManager == null || adaptationManager.layout == null)
                         throw new Exception($"No local adaptation manager found on {element.name}");
-                    globalObjectives.Add(adaptationManager.LocalObjectiveHandler.Objectives);
+                    globalObjectives.Add(adaptationManager._localObjectiveHandler.Objectives);
                     layouts.Add(adaptationManager.layout);
                 }
 
-                for (int i = 0; i < UIElements.Count; i++)
+                for (int i = 0; i < uiElements.Count; i++)
                 {
                     foreach (var objective in globalObjectives[i])
                     {
@@ -579,7 +580,7 @@ namespace AUIT
                 yield break;
             }
 
-            List<LocalObjective> objectives = LocalObjectiveHandler.Objectives;
+            List<LocalObjective> objectives = _localObjectiveHandler.Objectives;
             foreach (var objective in objectives)
             {
                 cost += objective.Weight * objective.CostFunction(layout);
@@ -613,7 +614,7 @@ namespace AUIT
             Adapt<IScaleAdaptation>(layout);
 
             // Tell registered adaptation listeners that a new adaptation occured
-            InvokeAdaptationListerners(layout);
+            InvokeAdaptationListeners(layout);
         }
         
         public void Adapt(List<Layout> layouts)
@@ -635,12 +636,12 @@ namespace AUIT
             Adapt<IScaleAdaptation>(layouts);
 
             // Tell registered adaptation listeners that a new adaptation occured
-            InvokeAdaptationListerners(layout);
+            InvokeAdaptationListeners(layout);
         }
 
         private void Adapt<T>(Layout layout)
         {
-            List<T> adaptations = propertyTransitions.OfType<T>().ToList();
+            List<T> adaptations = _propertyTransitions.OfType<T>().ToList();
             if (adaptations.Count == 0)
             {
                 // Debug.LogWarning($"No '{typeof(T)}' found on {this.name}");
@@ -675,7 +676,7 @@ namespace AUIT
         
         private void Adapt<T>(List<Layout> ls)
         {
-            List<T> adaptations = propertyTransitions.OfType<T>().ToList();
+            List<T> adaptations = _propertyTransitions.OfType<T>().ToList();
             if (adaptations.Count == 0)
             {
                 // Debug.LogWarning($"No '{typeof(T)}' found on {this.name}");
@@ -712,20 +713,20 @@ namespace AUIT
 
         public void RegisterAdaptationListener(AdaptationListener adaptationListener)
         {
-            if (adaptationListeners.Contains(adaptationListener))
+            if (_adaptationListeners.Contains(adaptationListener))
                 return;
 
-            adaptationListeners.Add(adaptationListener);
+            _adaptationListeners.Add(adaptationListener);
         }
 
         public void UnregisterAdaptationListener(AdaptationListener adaptationListener)
         {
-            adaptationListeners.Remove(adaptationListener);
+            _adaptationListeners.Remove(adaptationListener);
         }
 
-        protected virtual void InvokeAdaptationListerners(Layout adaptation)
+        private void InvokeAdaptationListeners(Layout adaptation)
         {
-            foreach (var adaptationListener in adaptationListeners)
+            foreach (var adaptationListener in _adaptationListeners)
             {
                 adaptationListener.AdaptationUpdated(adaptation);
             }

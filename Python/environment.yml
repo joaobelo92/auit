@@ -1,0 +1,14 @@
+name: auit
+channels:
+  - defaults
+dependencies:
+  - python=3.9
+  - numpy
+  - pyzmq
+  - tqdm
+  - ipykernel
+  - pandas
+  - ipympl
+  - jupyter
+  - pip:
+    - pymoo

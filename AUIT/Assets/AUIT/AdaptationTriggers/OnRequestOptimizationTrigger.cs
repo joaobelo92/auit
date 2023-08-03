@@ -25,10 +25,10 @@ namespace AUIT.AdaptationTriggers
         {
             if (AdaptationManager.isGlobal)
             {
-                for (int i = 0; i < AdaptationManager.UIElements.Count; i++)
+                for (int i = 0; i < AdaptationManager.uiElements.Count; i++)
                 {
-                    AdaptationManager.UIElements[i].GetComponent<AdaptationManager>().layouts = layouts[i];
-                    AdaptationManager.UIElements[i].GetComponent<AdaptationManager>().Adapt(layouts[i]);
+                    AdaptationManager.uiElements[i].GetComponent<AdaptationManager>().layouts = layouts[i];
+                    AdaptationManager.uiElements[i].GetComponent<AdaptationManager>().Adapt(layouts[i]);
                 }
             }
             else

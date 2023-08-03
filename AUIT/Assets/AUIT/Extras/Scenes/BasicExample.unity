@@ -123,6 +123,37 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &274086097
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 274086098}
+  m_Layer: 0
+  m_Name: Sphere
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &274086098
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 274086097}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 0.1, y: 0.1, z: 0.1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &718127019
 GameObject:
   m_ObjectHideFlags: 0
@@ -338,6 +369,7 @@ GameObject:
   - component: {fileID: 1916628239}
   - component: {fileID: 1916628241}
   - component: {fileID: 1916628240}
+  - component: {fileID: 1916628242}
   m_Layer: 0
   m_Name: Cube
   m_TagString: Untagged
@@ -369,6 +401,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6bd4eb42210b9d8489de1655cf9238f5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  solver: 0
   hyperparameters:
   - 1500
   - 0.000001
@@ -380,7 +413,7 @@ MonoBehaviour:
     position: {x: 0, y: 0, z: 0}
     rotation: {x: 0, y: 0, z: 0, w: 0}
   layouts: []
-  UIElements: []
+  uiElements: []
   isGlobal: 0
 --- !u!65 &1916628233
 BoxCollider:
@@ -539,3 +572,18 @@ MonoBehaviour:
   contextSource: 1
   transformOverride: {fileID: 0}
   weight: 0.5
+--- !u!114 &1916628242
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1916628227}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d60fc0928f536249adf4abb85f97f67, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  adaptationPlaceholder: {fileID: 1916628227}
+  scaleDownFactor: 0.05
+  rotateBasedOnTarget: 0
