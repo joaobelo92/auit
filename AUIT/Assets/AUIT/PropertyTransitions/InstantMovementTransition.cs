@@ -25,13 +25,6 @@ namespace AUIT.PropertyTransitions
         [SerializeField]
         private GameObject adaptationPlaceholder = null;
 
-        /// <summary>
-        /// Set the scale down factor for the adaptation placeholders.
-        /// By default, it is 0.5.
-        /// </summary>
-        [SerializeField]
-        private float scaleDownFactor = 0.05f;
-
         [SerializeField]
         /// <summary>
         /// If true, the GameObject is rotated based on the info in the target layout.
@@ -63,6 +56,7 @@ namespace AUIT.PropertyTransitions
             // potential target positions and store them in the duplicates list.
             for (int i = 1; i < targets.Count; i++)
             {
+                print(targets[i].Position);
                 if (i < adaptationPlaceholders.Count)
                 {
                     adaptationPlaceholders[i].transform.position = targets[i].Position;
@@ -123,9 +117,8 @@ namespace AUIT.PropertyTransitions
             if (adaptationPlaceholder == null)
             {
                 placeholder = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                Material material = new Material(Shader.Find("Standard"));
-                material.color = new Color(0.2f, 0.2f, 0.2f);
-                placeholder.GetComponent<Renderer>().material = material;
+                var meshFilter = gameObject.AddComponent<MeshFilter>();
+                gameObject.AddComponent<MeshRenderer>();
             }
             else
             {
@@ -143,10 +136,7 @@ namespace AUIT.PropertyTransitions
             }
           
             placeholder.name = name;
-            placeholder.transform.localScale = new Vector3(scaleDownFactor, scaleDownFactor, scaleDownFactor);
             placeholder.transform.SetParent(adaptationPlaceholdersParent.transform);
-            BoxCollider boxCollider = placeholder.AddComponent<BoxCollider>();
-            boxCollider.size = placeholder.transform.localScale;
 
             return placeholder;
         }

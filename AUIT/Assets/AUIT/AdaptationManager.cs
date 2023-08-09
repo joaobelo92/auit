@@ -43,6 +43,16 @@ namespace AUIT
         public Solver solver = Solver.SimulatedAnnealing;
         public List<float> hyperparameters = new List<float> { 1500f, 0.000001f, 10000f, 0.98f, 0.02f };
 
+        [Tooltip("Number of iterations the solver will run for. A higher number can lead to better" +
+                 "solutions but take longer to execute.")]
+        public int iterations = 1500;
+        
+        // Simulating annealing hyperparameters
+        public float minimumTemperature = 0.000001f;
+        public float initialTemperature = 10000f;
+        public float annealingSchedule = 0.98f;
+        public float earlyStopping = 0.02f;
+        
         private readonly IAsyncSolver _asyncSolver = new ParetoFrontierSolver();
         private Coroutine AsyncSolverOptimizeCoroutine { get; set; }
 
