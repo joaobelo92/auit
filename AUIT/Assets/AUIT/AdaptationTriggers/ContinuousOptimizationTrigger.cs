@@ -72,11 +72,11 @@ namespace AUIT.AdaptationTriggers
             if (!ShouldApplyAdaptation())
                 return;
 
-            if (runAsynchronous)
-            {
-                StartCoroutine(WaitForOptimizedLayout());
-                return;
-            }
+            // if (runAsynchronous)
+            // {
+            //     StartCoroutine(WaitForOptimizedLayout());
+            //     return;
+            // }
 
             var (layouts, cost) = AdaptationManager.OptimizeLayout();
 
@@ -100,40 +100,40 @@ namespace AUIT.AdaptationTriggers
             }
         }
         
-        private IEnumerator WaitForOptimizedLayout()
-        {
-            optimizationTimeStart = Time.realtimeSinceStartup;
-
-            while (true)
-            {
-                bool timeExceeded = Time.realtimeSinceStartup - optimizationTimeStart >= optimizationTimeout;
-                if (this.enabled == false || timeExceeded || AdaptationManager.IsAdapting)
-                    yield break;
-
-                var (layouts, cost, previousCost) = AdaptationManager.AsyncOptimizeLayout();
-                if (layouts != null && layouts.Count != 0)
-                {
-                    bool shouldAdapt = previousCost - cost > adaptationThreshold;
-                    if (shouldAdapt)
-                    {
-                        if (AdaptationManager.isGlobal)
-                        {
-                            for (int i = 0; i < AdaptationManager.uiElements.Count; i++)
-                            {
-                                AdaptationManager.uiElements[i].GetComponent<AdaptationManager>().layout = layouts[i];
-                                AdaptationManager.uiElements[i].GetComponent<AdaptationManager>().Adapt(layouts[i]);
-                            }
-                        }
-                        else
-                        {
-                            AdaptationManager.layout = layouts[0];
-                            AdaptationManager.Adapt(layouts[0]);
-                        }
-                        yield break;
-                    }
-                }
-                yield return new WaitForEndOfFrame();
-            }
-        }
+        // private IEnumerator WaitForOptimizedLayout()
+        // {
+        //     optimizationTimeStart = Time.realtimeSinceStartup;
+        //
+        //     while (true)
+        //     {
+        //         bool timeExceeded = Time.realtimeSinceStartup - optimizationTimeStart >= optimizationTimeout;
+        //         if (this.enabled == false || timeExceeded || AdaptationManager.IsAdapting)
+        //             yield break;
+        //
+        //         var (layouts, cost, previousCost) = AdaptationManager.AsyncOptimizeLayout();
+        //         if (layouts != null && layouts.Count != 0)
+        //         {
+        //             bool shouldAdapt = previousCost - cost > adaptationThreshold;
+        //             if (shouldAdapt)
+        //             {
+        //                 if (AdaptationManager.isGlobal)
+        //                 {
+        //                     for (int i = 0; i < AdaptationManager.uiElements.Count; i++)
+        //                     {
+        //                         AdaptationManager.uiElements[i].GetComponent<AdaptationManager>().layout = layouts[i];
+        //                         AdaptationManager.uiElements[i].GetComponent<AdaptationManager>().Adapt(layouts[i]);
+        //                     }
+        //                 }
+        //                 else
+        //                 {
+        //                     AdaptationManager.layout = layouts[0];
+        //                     AdaptationManager.Adapt(layouts[0]);
+        //                 }
+        //                 yield break;
+        //             }
+        //         }
+        //         yield return new WaitForEndOfFrame();
+        //     }
+        // }
     }
 }

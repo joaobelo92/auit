@@ -26,21 +26,9 @@ namespace AUIT.AdaptationTriggers
 
             Debug.Log("Interval Optimization Running...");
 
+            Debug.Log(AdaptationManager);
+            
             StartCoroutine(AdaptationManager.OptimizeLayoutAndAdapt(timeoutThreshold, AdaptationLogic));
-
-            // var (layouts, _) = AdaptationManager.OptimizeLayout();
-            // if (AdaptationManager.isGlobal)
-            // {
-            //     for (int i = 0; i < AdaptationManager.UIElements.Count; i++)
-            //     {
-            //         AdaptationManager.UIElements[i].GetComponent<AdaptationManager>().layout = layouts[i];
-            //         AdaptationManager.UIElements[i].GetComponent<AdaptationManager>().Adapt(layouts[i]);
-            //     }
-            // }
-            // else
-            // {
-            //     AdaptationManager.layout = layouts[0];
-            //     AdaptationManager.Adapt(layouts[0]);
         }
 
         private void AdaptationLogic(List<List<Layout>> layouts, float cost)

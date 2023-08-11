@@ -11,7 +11,7 @@ from networking.messages import (
 from networking.layout import Layout
 
 
-def handle_response(response_type, response_data, verbose=False):
+def handle_response(response_type, response_data, verbose=True):
     """Handle a response."""
     # If response type is HelloResponse, print a message
     if response_type == "h":
@@ -30,7 +30,7 @@ def handle_response(response_type, response_data, verbose=False):
         if verbose: print("Received an unknown response type: %s" % response_type)
 
 
-def send_request(socket, request_type, request_data, verbose=False):
+def send_request(socket, request_type, request_data, verbose=True):
     """Send a request and return the response."""
     # If verbose, print a message
     if verbose:
@@ -70,24 +70,7 @@ def send_hello_request(socket):
     return send_request(socket, request_type, request_data)
 
 
-# NOTE: This should be implemented by the AUIT client.
-def send_optimization_request(
-    socket, n_objectives: int, n_constraints: int, initial_layout: Layout
-):
-    """Send an OptimizationRequest and return the response."""
-    # Construct the request
-    request_type = "O"
-    request_data = OptimizationRequest(
-        n_objectives=n_objectives,
-        n_constraints=n_constraints,
-        initial_layout=initial_layout,
-    )
-
-    # Send the request and return the response
-    return send_request(socket, request_type, request_data)
-
-
-def send_costs_request(socket, layouts, verbose=False):
+def send_costs_request(socket, layouts, verbose=True):
     """Send an EvaluationRequest and return the response."""
     # Print a message
     if verbose:
@@ -118,21 +101,6 @@ def main():
     context = zmq.Context()
     socket = context.socket(zmq.REQ)
     socket.connect(f"tcp://localhost:{port}")
-
-    # Send a HelloRequest
-    # print("Sending HelloRequest...")
-    # response_type, response_data = send_hello_request(socket)
-
-    # Handle the response
-    # handle_response(response_type, response_data)
-
-    # Send an EvaluationRequest
-    print("Sending EvaluationRequest...")
-    response_data = send_costs_request(socket, None)
-    print(response_data)
-
-    # Handle the response
-    # handle_response(response_type, response_data)
 
 
 if __name__ == "__main__":

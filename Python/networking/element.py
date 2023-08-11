@@ -76,7 +76,7 @@ class Element:
     """An element is a UI element including its position
     and rotation."""
 
-    id: str = "0"
+    id: str
     position: Position = field(default_factory=Position)
     rotation: Rotation = field(default_factory=Rotation)
 
@@ -91,7 +91,7 @@ class Element:
     def from_dict(data) -> Element:
         """Return a UI element from a dictionary."""
         return Element(
-            id=data["id"] if "id" in data else "0",
+            id=data["id"],
             position=Position.from_json(data["position"]),
             rotation=Rotation.from_json(data["rotation"]),
         )

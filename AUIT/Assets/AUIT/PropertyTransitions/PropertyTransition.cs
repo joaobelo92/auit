@@ -4,7 +4,6 @@ using UnityEngine;
 
 namespace AUIT.PropertyTransitions
 {
-    [RequireComponent(typeof(AdaptationManager))]
     public abstract class PropertyTransition : MonoBehaviour
     {
         [HideInInspector]

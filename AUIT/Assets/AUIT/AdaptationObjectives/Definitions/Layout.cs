@@ -7,9 +7,8 @@ namespace AUIT.AdaptationObjectives.Definitions
     [Serializable]
     public class Layout
     {
-        // Placeholder for a meaningful ID
         [SerializeField]
-        private string id = Guid.NewGuid().ToString();
+        private string id;
         public string Id
         {
             get => id;
@@ -39,15 +38,17 @@ namespace AUIT.AdaptationObjectives.Definitions
             set => scale = value;
         }
 
-        public Layout(Transform transform)
+        public Layout(string id, Transform transform)
         {
+            this.id = id;
             position = transform.position;
             rotation = transform.rotation;
             scale = transform.localScale;
         }
 
-        public Layout(Vector3 position, Quaternion rotation, Vector3 scale)
+        public Layout(string id, Vector3 position, Quaternion rotation, Vector3 scale)
         {
+            this.id = id;
             this.position = position;
             this.rotation = rotation;
             this.scale = scale;
@@ -55,7 +56,7 @@ namespace AUIT.AdaptationObjectives.Definitions
 
         public Layout Clone()
         {
-            return new Layout(position, rotation, scale);
+            return new Layout(id, position, rotation, scale);
         }
 
         public override string ToString()

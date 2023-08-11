@@ -97,16 +97,21 @@ namespace AUIT.AdaptationObjectives
 
         public override Layout DirectRule(Layout optimizationTarget)
         {
-            // Ensure that ContextSource is a Transform
-            Transform contextSourceTransform = ContextSourceTransformTarget as Transform;
-            if (contextSourceTransform == null)
-                return optimizationTarget;
-
-            // Get current distance to context source
-            float currentDistance = (transform.position - contextSourceTransform.position).magnitude;
-            // Get ideal local scale
-            Vector3 idealScale = (currentDistance / initialDist) * initialScale * scalingFactor;
-            return new Layout(optimizationTarget.Position, optimizationTarget.Rotation, idealScale);
+            throw new System.NotImplementedException();
         }
+
+        // public override Layout DirectRule(Layout optimizationTarget)
+        // {
+        //     // Ensure that ContextSource is a Transform
+        //     Transform contextSourceTransform = ContextSourceTransformTarget as Transform;
+        //     if (contextSourceTransform == null)
+        //         return optimizationTarget;
+        //
+        //     // Get current distance to context source
+        //     float currentDistance = (transform.position - contextSourceTransform.position).magnitude;
+        //     // Get ideal local scale
+        //     Vector3 idealScale = (currentDistance / initialDist) * initialScale * scalingFactor;
+        //     return new Layout(optimizationTarget.Position, optimizationTarget.Rotation, idealScale);
+        // }
     }
 }

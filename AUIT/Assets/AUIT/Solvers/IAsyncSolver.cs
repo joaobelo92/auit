@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using AUIT.AdaptationObjectives;
 using AUIT.AdaptationObjectives.Definitions;
 
-namespace AUIT.Solvers.Experimental
+namespace AUIT.Solvers
 {
     public interface IAsyncSolver
     {

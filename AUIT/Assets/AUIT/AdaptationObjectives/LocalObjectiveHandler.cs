@@ -5,27 +5,24 @@ using UnityEngine;
 
 namespace AUIT.AdaptationObjectives
 {
-    [RequireComponent(typeof(AdaptationManager))]
-    /// <summary>
-    /// This class is responsible for registering itself in the Objective Orchestration Service.
-    /// In case it does not succeed, it will handle the objective components attached to the GameObject itself
-    /// </summary>
     public class LocalObjectiveHandler : MonoBehaviour
     {
-        protected readonly List<Type> objectiveTypes = new List<Type>();
+        public string Id { get; } = Guid.NewGuid().ToString();
+
+        protected readonly List<Type> objectiveTypes = new ();
         /// <summary>
         /// List of objective types that this handler will manage
         /// </summary>
         public IReadOnlyCollection<Type> ObjectiveTypes => objectiveTypes.AsReadOnly();
 
-        protected readonly List<LocalObjective> objectives = new List<LocalObjective>();
+        protected readonly List<LocalObjective> objectives = new ();
         /// <summary>
         /// List of objectives that this handler will manage
         /// Can't see yet why we will need a setter
         /// </summary>
         public List<LocalObjective> Objectives => objectives;
         
-        protected readonly List<OptimizationTarget> optimizationTargets = new List<OptimizationTarget>();
+        protected readonly List<OptimizationTarget> optimizationTargets = new ();
 
         public IReadOnlyCollection<OptimizationTarget> OptimizationTargets => optimizationTargets.AsReadOnly();
 

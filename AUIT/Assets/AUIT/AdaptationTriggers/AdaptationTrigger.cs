@@ -23,7 +23,6 @@ namespace AUIT.AdaptationTriggers
                 return;
 
             AdaptationManager.RegisterAdaptationTrigger(this);
-            AdaptationManager.layout = new Layout(this.transform);
         }
 
         protected virtual void OnDisable()

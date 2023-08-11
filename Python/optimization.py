@@ -60,11 +60,15 @@ class LayoutProblem(Problem):
         socket,
         **kwargs,
     ):
+
+        self.initial_layout = initial_layout
+
         """Initialize the problem."""
         # Calculate the number of variables
         n_variables = (
             initial_layout.n_items * 7
         )  # 3 position variables + 4 rotation variables
+
 
         # Set the lower and upper bounds:
         # Each position is bounded between -3 and 3 for x and z and -2 and 2 for y (This is arbitrary)
@@ -138,6 +142,7 @@ class LayoutProblem(Problem):
         for i in range(0, len(x), 7):
             items.append(
                 networking.element.Element(
+                    id=self.initial_layout.items[i].id,
                     position=networking.element.Position(x=x[i], y=x[i + 1], z=x[i + 2]),
                     rotation=networking.element.Rotation(x=x[i + 3], y=x[i + 4], z=x[i + 5], w=x[i + 6]),
                 )

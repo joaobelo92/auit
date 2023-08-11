@@ -17,6 +17,8 @@ namespace Editor
         private SerializedProperty _earlyStopping;
         
         private SerializedProperty _uiElements;
+
+        private AdaptationManager _target;
     
         private void OnEnable()
         {
@@ -26,13 +28,14 @@ namespace Editor
             
             _iterations = serializedObject.FindProperty("iterations");
             
-            
             _minimumTemperature = serializedObject.FindProperty("minimumTemperature");
             _initialTemperature = serializedObject.FindProperty("initialTemperature");
             _annealingSchedule = serializedObject.FindProperty("annealingSchedule");
             _earlyStopping = serializedObject.FindProperty("earlyStopping");
             
             _uiElements = serializedObject.FindProperty("uiElements");
+            
+            _target = (AdaptationManager) target;
         }
     
         public override void OnInspectorGUI()

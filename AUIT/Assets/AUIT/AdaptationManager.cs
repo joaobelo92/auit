@@ -3,17 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using Random = UnityEngine.Random;
 using AUIT.PropertyTransitions;
 using AUIT.AdaptationTriggers;
 using AUIT.AdaptationObjectives;
 using AUIT.Solvers;
-using AUIT.Solvers.Experimental;
 using AUIT.AdaptationObjectives.Definitions;
-using Newtonsoft.Json;
-using AUIT.Extras;
 using NetMQ;
-using UnityEngine.Serialization;
 
 namespace AUIT
 {
@@ -40,8 +35,26 @@ namespace AUIT
             GeneticAlgorithm
         }
 
-        public Solver solver = Solver.SimulatedAnnealing;
-        public List<float> hyperparameters = new List<float> { 1500f, 0.000001f, 10000f, 0.98f, 0.02f };
+        [SerializeField]
+        private Solver solver = Solver.SimulatedAnnealing;
+        // public Solver solver
+        // {
+        //     get => _solver;
+        //     set
+        //     {
+        //         _solver = value;
+        //         if (value == Solver.GeneticAlgorithm)
+        //         {
+        //             _asyncSolver = new ParetoFrontierSolver();
+        //
+        //             AsyncIO.ForceDotNet.Force();
+        //             layout = new Layout(transform);
+        //             _asyncSolver.adaptationManager = this;
+        //             Debug.Log("Attempting to start solver");
+        //             _asyncSolver.Initialize();
+        //         }
+        //     }
+        // }
 
         [Tooltip("Number of iterations the solver will run for. A higher number can lead to better" +
                  "solutions but take longer to execute.")]
@@ -53,12 +66,12 @@ namespace AUIT
         public float annealingSchedule = 0.98f;
         public float earlyStopping = 0.02f;
         
-        private readonly IAsyncSolver _asyncSolver = new ParetoFrontierSolver();
+        private IAsyncSolver _asyncSolver = new AsyncSimulatedAnnealingSolver();
         private Coroutine AsyncSolverOptimizeCoroutine { get; set; }
 
-        private bool _waitingForOptimization = false;
+        private bool _waitingForOptimization;
 
-        private bool _job = false;
+        private bool _job;
         public List<List<Layout>> LayoutJob;
         public List<List<float>> JobResult;
 
@@ -69,35 +82,19 @@ namespace AUIT
         [HideInInspector]
         public List<Layout> layouts;
 
-        // public Camera camera;
-
         public List<GameObject> uiElements;
 
-        public bool isGlobal = false;
-        private bool _isAdapting;
+        public bool isGlobal = true;
         public bool IsAdapting
         {
             get
             {
-                if (isGlobal)
+                foreach (var element in uiElements)
                 {
-                    foreach (var element in uiElements)
-                    {
-                        AdaptationManager adaptationManager = element.GetComponent<AdaptationManager>();
-                        if (adaptationManager.isGlobal)
-                        {
-                            Debug.LogWarning($"A global manager was found were it should be local at {adaptationManager}");
-                        }
-                        if (adaptationManager.IsAdapting)
-                        {
-                            return true;
-                        }
-                    }
-                    return false;
+                    // TODO: implement logic to check if it is adapting
                 }
-                return _isAdapting;
+                return false;
             }
-            set => _isAdapting = value;
         }
 
         #region MonoBehaviour Implementation
@@ -120,67 +117,23 @@ namespace AUIT
         // Start is called before the first frame update
         private void Start()
         {
-            AsyncIO.ForceDotNet.Force();
-            layout = new Layout(transform);
-            _asyncSolver.adaptationManager = this;
-            Debug.Log("Attempting to start solver");
-            _asyncSolver.Initialize();
+            if (solver == Solver.GeneticAlgorithm)
+            {
+                _asyncSolver = new ParetoFrontierSolver();
             
-            InvokeRepeating(nameof(RunJobs), 0, 0.001f);
-        }
-
-        // Update is called once per frame
-        void Update()
-        {
-            // if (Time.frameCount % 100 == 0)
-            // {
-            //     print(LocalObjectiveHandler.Objectives.First().name);
-            //     print(LocalObjectiveHandler.Objectives.First().CostFunction(layout));
-            // }
-            // if (isGlobal && Input.GetKeyDown(KeyCode.V))
-            // {
-            //     for (int i = 0; i < 100; i++)
-            //     {
-            //         Camera.main.transform.position = new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), Random.Range(-1f, 1f));
-            //         Camera.main.transform.rotation = new Quaternion();
-            //
-            //         // Benchmarking mode has to be hardcoded currently
-            //         var (layouts, cost) = OptimizeLayout();
-            //
-            //         for (int k = 0; k < UIElements.Count; k++)
-            //         {
-            //             UIElements[k].GetComponent<AdaptationManager>().layout = layouts[k];
-            //             UIElements[k].GetComponent<AdaptationManager>().Adapt(layouts[k]);
-            //         }
-            //     }
-            // }
-            // if (isGlobal && Input.GetKeyDown(KeyCode.B))
-            // {
-            //     
-            //     List<double> times = new List<double>();
-            //
-            //     for (int i = 0; i < 100; i++)
-            //     {
-            //         Camera.main.transform.position = new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), Random.Range(-1f, 1f));
-            //         Camera.main.transform.rotation = new Quaternion();
-            //
-            //         // Benchmarking mode has to be hardcoded currently
-            //         double time = ComputeCost();
-            //         times.Add(time);
-            //     }
-            //
-            //     print(string.Join(", ", times));
-            // }
-            // Debug.Log(LocalObjectiveHandler.Objectives.First().CostFunction(new Layout(new Vector3(1, 1, 1), Quaternion.identity, new Vector3(0, 0, 0) )));
-            
+                AsyncIO.ForceDotNet.Force();
+                _asyncSolver.adaptationManager = this;
+                Debug.Log("Attempting to start solver");
+                _asyncSolver.Initialize();
+            }
+            InvokeRepeating(nameof(RunJobs), 0, 0.01f);
         }
 
         private void OnDestroy()
         {
+            if (solver != Solver.GeneticAlgorithm) return;
             ParetoFrontierSolver paretoFrontierSolver = (ParetoFrontierSolver) _asyncSolver;
             paretoFrontierSolver.serverRuntime.Dispose();
-            // paretoFrontierSolver.clientRuntime.Dispose();
-            // paretoFrontierSolver.serverThread.Abort();
             NetMQConfig.Cleanup(false);
         }
 
@@ -191,28 +144,41 @@ namespace AUIT
             foreach (var candidateLayout in LayoutJob) // For each candidate layout l (i.e., List of Layouts)...
             {
                 var costsForCandidateLayout = new List<float>(); // ...create a list of costs determined by the objective functions
-                // For each objective function...
-                // TODO: look into 
-                foreach (var objective in _localObjectiveHandler.Objectives)
+                foreach (var uiElement in candidateLayout)
                 {
-                    // ...compute and sum the costs for all elements e (defined as a Layout) in the candidate layout l
-                    float objectiveCostForCurrentCandidateLayout = 0;
-                    foreach (var uiElement in candidateLayout)
+                    Debug.Log(uiElement.Id);
+                    // GameObject go = uiElements.First(go => go.GetComponent<LocalObjectiveHandler>().Id == uiElement.Id);
+                    GameObject go = uiElements.First();
+                    foreach (LocalObjective objective in go.GetComponent<LocalObjectiveHandler>().Objectives)
                     {
-                        objectiveCostForCurrentCandidateLayout += objective.CostFunction(uiElement);
+                        costsForCandidateLayout.Add(objective.CostFunction(uiElement));
                     }
-                    // and add the sum to the list of costs for the candidate layout l
-                    costsForCandidateLayout.Add(objectiveCostForCurrentCandidateLayout);
+                    JobResult.Add(costsForCandidateLayout);
                 }
+                
+                // // For each objective function...
+                // // TODO: look into 
+                // foreach (var objective in _localObjectiveHandler.Objectives)
+                // {
+                //     // ...compute and sum the costs for all elements e (defined as a Layout) in the candidate layout l
+                //     float objectiveCostForCurrentCandidateLayout = 0;
+                //     foreach (var uiElement in candidateLayout)
+                //     {
+                //         objectiveCostForCurrentCandidateLayout += objective.CostFunction(uiElement);
+                //     }
+                //     // and add the sum to the list of costs for the candidate layout l
+                //     costsForCandidateLayout.Add(objectiveCostForCurrentCandidateLayout);
+                // }
 
                 // and add the list of costs for the candidate layout l to the list of costs for all candidate layouts
-                JobResult.Add(costsForCandidateLayout);
             }
             _job = false;
         }
 
         #endregion
         
+        // Called by the adaptation trigger to find an adaptation. When the solver returns one/multiple solutions
+        // the adaptation logic is invoked
         public IEnumerator OptimizeLayoutAndAdapt(float optimizationTimeout, Action<List<List<Layout>>, float> adaptationLogic)
         {
             var optimizationTimeStart = Time.realtimeSinceStartup;
@@ -238,9 +204,10 @@ namespace AUIT
             }
         }
 
-        public List<LocalObjective> GetObjectives()
+        public List<LocalObjective> GetObjectives(GameObject gameObject)
         {
-            return _localObjectiveHandler.Objectives;
+            // TODO Handle exceptions 
+            return gameObject.GetComponent<LocalObjectiveHandler>().Objectives;
         }
 
         public void RegisterAdaptationTrigger(AdaptationTrigger adaptationTrigger)
@@ -278,192 +245,138 @@ namespace AUIT
                 var e = JsonUtility.FromJson<Wrapper<Layout>>(l);
                 layouts.Add(e.items.ToList());
             }
+
             return EvaluateLayouts(layouts);
         }
 
         public List<List<float>> EvaluateLayouts(List<List<Layout>> ls)
         {
-            List<float> costs = new List<float>();
+            LayoutJob = ls; // Assign the list of candidate layouts, each of which is a list of elements defined as a Layout, to the current job to be evaluated
+            _job = true; // Set the job flag to true, which will trigger the job to be evaluated in the next dequeue action
 
-            if (!isGlobal)
-            {
-                // WARN: This is a hack to get the local objectives to work
-                // We only take the first UIElement's objectives to evaluate the layout's first element
-                // Debug.LogError(LocalObjectiveHandler.Objectives.Count);
-                LayoutJob = ls; // Assign the list of candidate layouts, each of which is a list of elements defined as a Layout, to the current job to be evaluated
-                _job = true; // Set the job flag to true, which will trigger the job to be evaluated in the next dequeue action
-
-                while (_job) {} // Wait for the job to be evaluated
-                return JobResult; // Return the result of the job (i.e., the costs of each candidate layout)
-            }
-            
-            return null;
-
-            // Create a map of all objectives across all UI elements (key: objective name, value: objective)
-            // Dictionary<string, LocalObjective> objectives = new Dictionary<string, LocalObjective>();
-            // foreach (var element in UIElements)
-            // {
-            //     foreach (var objective in element.GetComponent<AdaptationManager>().LocalObjectiveHandler.Objectives)
-            //     {
-            //         if (!objectives.ContainsKey(objective.name))
-            //         {
-            //             objectives.Add(objective.name, objective);
-            //         }
-            //     }
-            // }
-            //
-            // // For each objective, compute the cost of the layout
-            // foreach (var objective in objectives.Values)
-            // {
-            //     var layoutCosts = 0f;
-            //     // Loop over both elements in layout.elements and UIElements
-            //     // WARN: This assumes that the order of elements in layout.elements and UIElements is the same
-            //     for (int i = 0; i < layout.Count(); i++)
-            //     {
-            //         var uiElement = UIElements[i];
-            //         var layoutElement = layout[i];
-            //         // If the objective is not defined for the element, skip it
-            //         var objectivesForElement = uiElement.GetComponent<AdaptationManager>().LocalObjectiveHandler.Objectives;
-            //         if (!objectivesForElement.Contains(objective))
-            //         {
-            //             continue;
-            //         }
-            //         layoutCosts += objective.CostFunction(layoutElement);
-            //     }
-            //   
-            //     costs.Add(layoutCosts);
-            // }
-            //
-            // return costs;
+            while (_job) {} // Wait for the job to be evaluated
+            return JobResult; // Return the result of the job (i.e., the costs of each candidate layout)
         }
 
         public (List<Layout>, float) OptimizeLayout()
         {
-            // TODO: remove useless output
-            
             if (isActiveAndEnabled == false)
             {
                 Debug.LogError($"[AdaptationManager.OptimizeLayout()]: AdaptationManager on {gameObject.name} is disabled!");
                 return (new List<Layout> { layout }, 0.0f);
             }
             
+            List<float> hyperparameters = new List<float>();
+            if (solver == Solver.SimulatedAnnealing)
+            {
+                hyperparameters.Add(iterations);
+                hyperparameters.Add(minimumTemperature);
+                hyperparameters.Add(initialTemperature);
+                hyperparameters.Add(annealingSchedule);
+                hyperparameters.Add(earlyStopping);
+            }
+            
             // The adaptation manager is responsible for knowing the layout (e.g. what to optimize)
             // The properties to be optimized should be obtained dynamically in the future, but for now we hardcode 
             // the properties we want to optimize.
-            if (isGlobal)
+            // if (true)
+            // {
+            List<List<LocalObjective>> objectives = new List<List<LocalObjective>>();
+            List<Layout> currentLayouts = new List<Layout>();
+            foreach (var element in uiElements)
             {
-                List<List<LocalObjective>> objectives = new List<List<LocalObjective>>();
-                List<Layout> currentLayouts = new List<Layout>();
-                foreach (var element in uiElements)
-                {
-                    AdaptationManager adaptationManager = element.GetComponent<AdaptationManager>();
-                    objectives.Add(adaptationManager._localObjectiveHandler.Objectives);
-                    currentLayouts.Add(adaptationManager.layout);
-                }
-                
-                if (objectives.Count == 0)
-                {
-                    Debug.LogWarning($"[AdaptationManager.OptimizeLayout()]: Unable to find any objectives on adaptation manager game objects...");
-                    return (new List<Layout> { layout }, 0.0f);
-                }
-                
-                // async starts
-                if (_waitingForOptimization == false)
-                {
-                    _waitingForOptimization = true;
-                    if (AsyncSolverOptimizeCoroutine != null)
-                        StopCoroutine(AsyncSolverOptimizeCoroutine);
-                    AsyncSolverOptimizeCoroutine = StartCoroutine(_asyncSolver.OptimizeCoroutine(currentLayouts, objectives, hyperparameters));
-                }
-
-                if (_asyncSolver.Result.Item1 != null)
-                {
-                    _waitingForOptimization = false;
-                }
-
-                return (_asyncSolver.Result.Item1[0], _asyncSolver.Result.Item2);
-                
-                // return solver.Optimize(layouts, objectives, hyperparameters);
+                LocalObjectiveHandler handler = element.GetComponent<LocalObjectiveHandler>();
+                objectives.Add(handler.Objectives);
+                currentLayouts.Add(new Layout(handler.Id, element.transform));
             }
-            if (_localObjectiveHandler.Objectives.Count == 0)
+            
+            if (objectives.Count == 0)
             {
-                Debug.LogWarning($"[AdaptationManager.OptimizeLayout()]: Unable to find any objectives on adaptation manager game object...");
+                Debug.LogWarning($"[AdaptationManager.OptimizeLayout()]: Unable to find any objectives on adaptation manager game objects...");
                 return (new List<Layout> { layout }, 0.0f);
             }
-            // return solver.Optimize(layout, LocalObjectiveHandler.Objectives, hyperparameters);
-            
-            // if (waitingForOptimization == false)
+                
+                // async starts
+                // if (_waitingForOptimization == false)
+                // {
+                //     _waitingForOptimization = true;
+                //     if (AsyncSolverOptimizeCoroutine != null)
+                //         StopCoroutine(AsyncSolverOptimizeCoroutine);
+                    // AsyncSolverOptimizeCoroutine = StartCoroutine(_asyncSolver.OptimizeCoroutine(currentLayouts, objectives, hyperparameters));
+                // }
+
+                // if (_asyncSolver.Result.Item1 != null)
+                // {
+                //     _waitingForOptimization = false;
+                // }
+                //
+                // return (null, _asyncSolver.Result.Item2);
+                
+                // return solver.Optimize(layouts, objectives, hyperparameters);
+            // }
+            // if (_localObjectiveHandler.Objectives.Count == 0)
             // {
-                // waitingForOptimization = true;
-                // if (AsyncSolverOptimizeCoroutine != null)
-                //     StopCoroutine(AsyncSolverOptimizeCoroutine);
-            StartCoroutine(_asyncSolver.OptimizeCoroutine(layout, _localObjectiveHandler.Objectives, hyperparameters));
+            //     Debug.LogWarning($"[AdaptationManager.OptimizeLayout()]: Unable to find any objectives on adaptation manager game object...");
+            //     return (new List<Layout> { layout }, 0.0f);
             // }
 
-            // if (asyncSolver.Result.Item1 != null)
-            // {
-            //     waitingForOptimization = false;
-            // }
+            Debug.Log($"Invoking solver: {solver}");
+            StartCoroutine(_asyncSolver.OptimizeCoroutine(currentLayouts, objectives, hyperparameters));
             return (null, _asyncSolver.Result.Item2);
         }
 
-        public (List<Layout>, float, float) AsyncOptimizeLayout()
-        {
-            if (isActiveAndEnabled == false)
-            {
-                Debug.LogError($"[AdaptationManager.AsyncOptimizeLayout()]: AdaptationManager on {gameObject.name} is disabled!");
-                return (new List<Layout> { layout }, 0.0f, 0.0f);
-            }
-
-            // The adaptation manager is responsible for knowing the layout (e.g. what to optimize)
-            // The properties to be optimized should be obtained dynamically in the future, but for now we hardcode 
-            // the properties we want to optimize.
-            if (isGlobal)
-            {
-                List<List<LocalObjective>> objectives = new List<List<LocalObjective>>();
-                List<Layout> layouts = new List<Layout>();
-                foreach (var element in uiElements)
-                {
-                    AdaptationManager adaptationManager = element.GetComponent<AdaptationManager>();
-                    objectives.Add(adaptationManager._localObjectiveHandler.Objectives);
-                    layouts.Add(adaptationManager.layout);
-                }
-
-                if (_waitingForOptimization == false)
-                {
-                    _waitingForOptimization = true;
-                    if (AsyncSolverOptimizeCoroutine != null)
-                        StopCoroutine(AsyncSolverOptimizeCoroutine);
-                    AsyncSolverOptimizeCoroutine = StartCoroutine(_asyncSolver.OptimizeCoroutine(layouts, objectives, hyperparameters));
-                }
-
-                if (_asyncSolver.Result.Item1 != null)
-                {
-                    _waitingForOptimization = false;
-                }
-
-                return (_asyncSolver.Result.Item1[0], 0f, 0f);
-            }
-
-            if (_localObjectiveHandler.Objectives.Count == 0)
-                return (new List<Layout> { layout }, 0.0f, 0.0f);
-
-            // if (waitingForOptimization == false)
-            // {
-            //     waitingForOptimization = true;
-            //     if (asyncSolverOptimizeCoroutine != null)
-            //         StopCoroutine(asyncSolverOptimizeCoroutine);
-            //     asyncSolverOptimizeCoroutine = StartCoroutine(asyncSolver.OptimizeCoroutine(layout, LocalObjectiveHandler.Objectives, hyperparameters));
-            // }
-            //
-            // if (asyncSolver.Result.Item1 != null)
-            // {
-            //     waitingForOptimization = false;
-            // }
-
-            // return (asyncSolver.Result);
-            return (new List<Layout> { layout }, 0.0f, 0.0f);
-        }
+        // public (List<Layout>, float, float) AsyncOptimizeLayout()
+        // {
+        //     if (isActiveAndEnabled == false)
+        //     {
+        //         Debug.LogError($"[AdaptationManager.AsyncOptimizeLayout()]: AdaptationManager on {gameObject.name} is disabled!");
+        //         return (new List<Layout> { layout }, 0.0f, 0.0f);
+        //     }
+        //
+        //     List<float> hyperparameters = new List<float>();
+        //     if (solver == Solver.SimulatedAnnealing)
+        //     {
+        //         hyperparameters.Add(iterations);
+        //         hyperparameters.Add(minimumTemperature);
+        //         hyperparameters.Add(initialTemperature);
+        //         hyperparameters.Add(annealingSchedule);
+        //         hyperparameters.Add(earlyStopping);
+        //     }
+        //     // The adaptation manager is responsible for knowing the layout (e.g. what to optimize)
+        //     // The properties to be optimized should be obtained dynamically in the future, but for now we hardcode 
+        //     // the properties we want to optimize.
+        //     if (isGlobal)
+        //     {
+        //         List<List<LocalObjective>> objectives = new List<List<LocalObjective>>();
+        //         List<Layout> layouts = new List<Layout>();
+        //         foreach (var element in uiElements)
+        //         {
+        //             AdaptationManager adaptationManager = element.GetComponent<AdaptationManager>();
+        //             objectives.Add(adaptationManager._localObjectiveHandler.Objectives);
+        //             layouts.Add(adaptationManager.layout);
+        //         }
+        //
+        //         if (_waitingForOptimization == false)
+        //         {
+        //             _waitingForOptimization = true;
+        //             if (AsyncSolverOptimizeCoroutine != null)
+        //                 StopCoroutine(AsyncSolverOptimizeCoroutine);
+        //             AsyncSolverOptimizeCoroutine = StartCoroutine(_asyncSolver.OptimizeCoroutine(layouts, objectives, hyperparameters));
+        //         }
+        //
+        //         if (_asyncSolver.Result.Item1 != null)
+        //         {
+        //             _waitingForOptimization = false;
+        //         }
+        //
+        //         return (_asyncSolver.Result.Item1[0], 0f, 0f);
+        //     }
+        //
+        //     if (_localObjectiveHandler.Objectives.Count == 0)
+        //         return (new List<Layout> { layout }, 0.0f, 0.0f);
+        //
+        //     return (new List<Layout> { layout }, 0.0f, 0.0f);
+        // }
 
         public float ComputeCost(Layout l = null, bool verbose = false)
         {
@@ -524,7 +437,7 @@ namespace AUIT
 
         public float? AsyncComputeCost()
         {
-            if (this.isActiveAndEnabled == false)
+            if (isActiveAndEnabled == false)
             {
                 Debug.LogError($"[AdaptationManager.AsyncComputeCost()]: AdaptationManager on {gameObject.name} is disabled!");
                 return 0.0f;

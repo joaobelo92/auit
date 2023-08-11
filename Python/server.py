@@ -12,7 +12,7 @@ from networking.messages import (
 )
 from solver import optimize_layout
 
-def handle_request(request_type, request_data, verbose=False):
+def handle_request(request_type, request_data, verbose):
     """Return a tuple of the response type and the response data."""
     # If request type is HelloRequest, return a HelloResponse
     if request_type == "H":
@@ -30,16 +30,13 @@ def handle_request(request_type, request_data, verbose=False):
             request_data.initial_layout,
         )
         return "o", OptimizationResponse(solutions=solutions, suggested=suggested_layout)
-    if request_type == "P":
-        if verbose: print("Received a Problem Layout")
-        return "h", None
     # If request type is unknown, return an ErrorResponse
     else:
         if verbose: print("Received an unknown request type: %s" % request_type)
         return "x", ErrorResponse(error="Unknown request type: %s" % request_type)
 
 
-def run_server(port=5555, verbose=False):
+def run_server(port=5555, verbose=True):
     """Run the server."""
     # Create a context and a socket
     context = zmq.Context()

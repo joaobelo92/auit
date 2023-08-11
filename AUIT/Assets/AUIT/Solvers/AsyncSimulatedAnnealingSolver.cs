@@ -2,14 +2,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using AUIT.AdaptationObjectives;
 using AUIT.AdaptationObjectives.Definitions;
-using NetMQ;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-namespace AUIT.Solvers.Experimental
+namespace AUIT.Solvers
 {
     public class AsyncSimulatedAnnealingSolver : IAsyncSolver
     {
@@ -31,7 +29,7 @@ namespace AUIT.Solvers.Experimental
 
         public IEnumerator OptimizeCoroutine(Layout layout, List<LocalObjective> objectives, List<float> hyperparameters)
         {
-            this.result = (null, 0.0f, 0.0f);
+            result = (null, 0.0f, 0.0f);
 
             float cost = float.PositiveInfinity;
             Layout bestLayout = layout.Clone();
@@ -42,7 +40,7 @@ namespace AUIT.Solvers.Experimental
             float earlyStopping = hyperparameters[4];
 
             float startTime = Time.realtimeSinceStartup;
-            float frameTime = 0.0f;
+            float frameTime;
             for (int i = 0; i < iterations; i++)
             {
                 float temperature = Mathf.Max(minTemperature, initialTemperature * Mathf.Pow(alpha, i));
@@ -80,12 +78,11 @@ namespace AUIT.Solvers.Experimental
             float previousCost = objectives.Sum(objective => objective.CostFunction(layout)) / objectives.Count;
 
             result = (new List<Layout> { bestLayout }, cost, previousCost);
-            yield break;
         }
 
         public IEnumerator OptimizeCoroutine(List<Layout> initialLayouts, List<List<LocalObjective>> objectives, List<float> hyperparameters)
         {
-            this.result = (null, 0.0f, 0.0f);
+            result = (null, 0.0f, 0.0f);
 
             float cost = float.PositiveInfinity;
             List<Layout> bestLayout = initialLayouts.Select(item => item.Clone()).ToList();
@@ -176,7 +173,6 @@ namespace AUIT.Solvers.Experimental
             previousCost /= objectives.Count;
             
             result = (bestLayout, cost, previousCost);
-            yield break;
         }
     }
 }

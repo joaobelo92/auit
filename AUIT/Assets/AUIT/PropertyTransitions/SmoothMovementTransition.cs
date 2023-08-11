@@ -26,7 +26,7 @@ namespace AUIT.PropertyTransitions
             Vector3 startPosition = objectTransform.transform.position;
             Vector3 endPosition = target;
  
-            AdaptationManager.IsAdapting = true;
+            // AdaptationManager.IsAdapting = true;
             while (startPosition != endPosition && (Time.time - startime) * adaptationSpeed < 1f)
             {
                 Vector3 result = Vector3.Lerp(startPosition, target, (Time.time - startime) * adaptationSpeed);
@@ -35,7 +35,7 @@ namespace AUIT.PropertyTransitions
 
                 yield return null;
             }
-            AdaptationManager.IsAdapting = false;
+            // AdaptationManager.IsAdapting = false;
         }
     }
 }
