@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using AUIT.AdaptationObjectives.Definitions;
+using AUIT.PropertyTransitions;
 using UnityEngine;
 
 namespace AUIT.AdaptationObjectives
@@ -9,67 +10,62 @@ namespace AUIT.AdaptationObjectives
     {
         public string Id { get; } = Guid.NewGuid().ToString();
 
-        protected readonly List<Type> objectiveTypes = new ();
-        /// <summary>
-        /// List of objective types that this handler will manage
-        /// </summary>
-        public IReadOnlyCollection<Type> ObjectiveTypes => objectiveTypes.AsReadOnly();
+        private readonly List<Type> _objectiveTypes = new ();
 
-        protected readonly List<LocalObjective> objectives = new ();
         /// <summary>
         /// List of objectives that this handler will manage
         /// Can't see yet why we will need a setter
         /// </summary>
-        public List<LocalObjective> Objectives => objectives;
-        
-        protected readonly List<OptimizationTarget> optimizationTargets = new ();
+        public List<LocalObjective> Objectives { get; } = new ();
 
-        public IReadOnlyCollection<OptimizationTarget> OptimizationTargets => optimizationTargets.AsReadOnly();
-
-        // In contrast to the older objectives, properties we optimize for (e.g. GoalPosition, GoalRotation) 
-        // might have to be more flexible and will be dependent on the objectives.
-        // What does this element optimize for and how to make that clear? 
-        // Some possibilities: Position, Rotation, Scale, LoD, Visibility and Modality
-        // Note: Scale is dependent on distance of the object from the user. Probably need something better
-        // "Target" or source of context will also be moved to the objective
+        private readonly List<OptimizationTarget> _optimizationTargets = new ();
 
         public void RegisterObjective(LocalObjective objective)
         {
-            if (objectives.Contains(objective))
+            if (Objectives.Contains(objective))
                 return;
 
-            if (objectiveTypes.Contains(objective.GetType()))
+            if (_objectiveTypes.Contains(objective.GetType()))
             {
                 Debug.LogWarning($"A objective of type {objective.GetType()} has already been added");
                 Destroy(objective);
                 return;
             }
 
-            objectives.Add(objective);
-            objectiveTypes.Add(objective.GetType());
+            Objectives.Add(objective);
+            _objectiveTypes.Add(objective.GetType());
             RegisterOptimizationTarget(objective.OptimizationTarget);
         }
 
         public void UnregisterObjective(LocalObjective objective)
         {
-            if (!objectives.Contains(objective))
+            if (!Objectives.Contains(objective))
                 return;
 
-            objectives.Remove(objective);
-            objectiveTypes.Remove(objective.GetType());
+            Objectives.Remove(objective);
+            _objectiveTypes.Remove(objective.GetType());
             UnregisterOptimizationTarget(objective.OptimizationTarget);
         }
 
         private void RegisterOptimizationTarget(OptimizationTarget optimizationTarget)
         {
-            if (!optimizationTargets.Contains(optimizationTarget))
-                optimizationTargets.Add(optimizationTarget);
+            if (!_optimizationTargets.Contains(optimizationTarget))
+                _optimizationTargets.Add(optimizationTarget);
         }
 
         private void UnregisterOptimizationTarget(OptimizationTarget optimizationTarget)
         {
-            if (optimizationTargets.Contains(optimizationTarget))
-                optimizationTargets.Remove(optimizationTarget);
+            if (_optimizationTargets.Contains(optimizationTarget))
+                _optimizationTargets.Remove(optimizationTarget);
         }
+
+        #region PropertyTransitionLogic
+
+        public void Transition(Layout layout)
+        {
+            // TODO: loop and apply all transitions, locally manage them
+        }
+
+        #endregion
     }
 }

@@ -10,7 +10,7 @@ namespace AUIT.AdaptationObjectives
     {
         #region Context Source Logic
 
-        protected LocalObjectiveHandler ObjectiveHandler;
+        private LocalObjectiveHandler _objectiveHandler;
 
         [SerializeField]
         private ContextSource contextSource = ContextSource.Gaze;
@@ -192,15 +192,15 @@ namespace AUIT.AdaptationObjectives
 
         protected virtual void Awake()
         {
-            if (ObjectiveHandler == null)
-                ObjectiveHandler = GetComponent<LocalObjectiveHandler>();
+            if (_objectiveHandler == null)
+                _objectiveHandler = GetComponent<LocalObjectiveHandler>();
         }
 
         protected virtual void OnEnable()
         {
-            if (ObjectiveHandler == null)
-                ObjectiveHandler = GetComponent<LocalObjectiveHandler>();
-            ObjectiveHandler.RegisterObjective(this);
+            if (_objectiveHandler == null)
+                _objectiveHandler = GetComponent<LocalObjectiveHandler>();
+            _objectiveHandler.RegisterObjective(this);
             RefreshContextSource();
         }
 
@@ -211,8 +211,8 @@ namespace AUIT.AdaptationObjectives
 
         protected virtual void OnDisable()
         {
-            if (ObjectiveHandler != null)
-                ObjectiveHandler.UnregisterObjective(this);
+            if (_objectiveHandler != null)
+                _objectiveHandler.UnregisterObjective(this);
         }
 
         #endregion

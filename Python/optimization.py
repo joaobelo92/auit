@@ -216,7 +216,7 @@ def generate_pareto_optimal_layouts_and_suggested(
         seed=1,
         callback=PrintProgress(n_gen=n_gen),
         # verbose=True,
-        save_history=True,
+        save_history=False, # setting this to true leads to a crash // pymoo 0.6.0.1
         copy_algorithm=False,
     )
 

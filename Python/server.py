@@ -7,7 +7,6 @@ from networking.messages import (
     HelloResponse,
     ErrorResponse,
     OptimizationResponse,
-    EvaluationResponse,
     from_json,
 )
 from solver import optimize_layout
@@ -36,7 +35,7 @@ def handle_request(request_type, request_data, verbose):
         return "x", ErrorResponse(error="Unknown request type: %s" % request_type)
 
 
-def run_server(port=5555, verbose=True):
+def run_server(port=5555, verbose=False):
     """Run the server."""
     # Create a context and a socket
     context = zmq.Context()

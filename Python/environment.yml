@@ -2,7 +2,7 @@ name: auit
 channels:
   - defaults
 dependencies:
-  - python=3.9
+  - python
   - numpy
   - pyzmq
   - tqdm
@@ -10,5 +10,6 @@ dependencies:
   - pandas
   - ipympl
   - jupyter
+  - pip
   - pip:
     - pymoo

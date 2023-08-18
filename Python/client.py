@@ -11,7 +11,7 @@ from networking.messages import (
 from networking.layout import Layout
 
 
-def handle_response(response_type, response_data, verbose=True):
+def handle_response(response_type, response_data, verbose=False):
     """Handle a response."""
     # If response type is HelloResponse, print a message
     if response_type == "h":
@@ -30,7 +30,7 @@ def handle_response(response_type, response_data, verbose=True):
         if verbose: print("Received an unknown response type: %s" % response_type)
 
 
-def send_request(socket, request_type, request_data, verbose=True):
+def send_request(socket, request_type, request_data, verbose=False):
     """Send a request and return the response."""
     # If verbose, print a message
     if verbose:
@@ -70,7 +70,7 @@ def send_hello_request(socket):
     return send_request(socket, request_type, request_data)
 
 
-def send_costs_request(socket, layouts, verbose=True):
+def send_costs_request(socket, layouts, verbose=False):
     """Send an EvaluationRequest and return the response."""
     # Print a message
     if verbose:

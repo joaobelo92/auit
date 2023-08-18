@@ -90,6 +90,7 @@ class Element:
 
     def from_dict(data) -> Element:
         """Return a UI element from a dictionary."""
+        print(data["id"])
         return Element(
             id=data["id"],
             position=Position.from_json(data["position"]),

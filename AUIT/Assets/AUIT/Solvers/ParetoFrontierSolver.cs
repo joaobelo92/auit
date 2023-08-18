@@ -17,24 +17,24 @@ namespace AUIT.Solvers
     public class ParetoFrontierSolver : IAsyncSolver
     {
         public AdaptationManager adaptationManager { get; set; }
-        public NetMQRuntime serverRuntime;
-        public NetMQRuntime clientRuntime;
-        public Thread serverThread;
+        public NetMQRuntime ServerRuntime;
+        private NetMQRuntime _clientRuntime;
+        private Thread _serverThread;
 
         public (List<List<Layout>>, float, float) Result { get; set; }
 
         public void Initialize()
         {
             
-            serverThread = new Thread(Networking);
-            serverThread.Start();
+            _serverThread = new Thread(Networking);
+            _serverThread.Start();
 
             void Networking()
             {
-                using (serverRuntime = new NetMQRuntime())
+                using (ServerRuntime = new NetMQRuntime())
                 {
                      Debug.Log("attempting to start server");
-                     serverRuntime.Run(ServerAsync()); 
+                     ServerRuntime.Run(ServerAsync()); 
                 }
                 
                 async Task ServerAsync()
@@ -61,7 +61,7 @@ namespace AUIT.Solvers
                                         costs = adaptationManager.EvaluateLayouts(payload)
                                     };
                                     response = JsonConvert.SerializeObject(evaluationResponse);
-                                    Debug.Log("Sending evaluation response: " + response);
+                                    // Debug.Log("Sending evaluation response: " + response);
                                     server.SendFrame("e" + response);
                                     break;
                                 default:
@@ -79,77 +79,6 @@ namespace AUIT.Solvers
         {
             throw new NotImplementedException();
         }
-
-        // public IEnumerator OptimizeCoroutine(Layout initialLayout, List<LocalObjective> objectives, List<float> hyperparameters)
-        // {
-        //     Result = (null, 0f, 0f);
-        //     
-        //     Debug.Log($"sending optimization request");
-        //     var optimizationRequest = new
-        //     OptimizationRequest {
-        //         initialLayout = UIConfiguration.FromLayout(initialLayout),
-        //         nObjectives = objectives.Count
-        //     };
-        //     
-        //     var clientThread = new Thread(Client);
-        //     clientThread.Start();
-        //     string result = "";
-        //     
-        //     void Client()
-        //     {
-        //         using (clientRuntime = new NetMQRuntime())
-        //         {
-        //             Debug.Log("attempting to start client");
-        //             clientRuntime.Run(ClientAsync()); 
-        //         
-        //             async Task ClientAsync() {
-        //                 var requestSocket = new RequestSocket();
-        //                 requestSocket.Connect("tcp://localhost:5555");
-        //         
-        //                 requestSocket.SendFrame("O" + JsonUtility.ToJson(optimizationRequest));
-        //             
-        //                 // Debug.Log("request sent: " + "O" + JsonUtility.ToJson(optimizationRequest));
-        //                 (result, _) = await requestSocket.ReceiveFrameStringAsync();
-        //                 clientRuntime.Dispose();
-        //             }
-        //         }
-        //     }
-        //     
-        //     while (result == "")
-        //     {
-        //         yield return null;
-        //     }
-        //     
-        //     var optimizationResponse = JsonUtility.FromJson<OptimizationResponse>(result.Substring(1));
-        //     var solutions = JsonUtility.FromJson<Wrapper<string>>(optimizationResponse.solutions);
-        //     List<List<Layout>> suggestedUIConfigurations = new List<List<Layout>>(); // List of UI configurations to store suggested adaptations
-        //     // For each adaptation (i.e., new UI configuration) in the returned solutions
-        //     foreach (var suggestedUIConfigurationString in solutions.items)
-        //     {
-        //         // Convert the string to a list of Layout objects and add it to the list of suggested UI configurations
-        //         var suggestedUIConfiguration = JsonUtility.FromJson<Wrapper<Layout>>(suggestedUIConfigurationString);
-        //         suggestedUIConfigurations.Add(suggestedUIConfiguration.items.ToList());
-        //     }
-        //
-        //     // Suggested layout for next active adaptation
-        //     var suggestedAdaptation = JsonUtility.FromJson<Wrapper<Layout>>(optimizationResponse.suggested);
-        //
-        //     // If suggestedAdaptation is in suggestedUIConfigurations, move it to the first position
-        //     if (suggestedUIConfigurations.Contains(suggestedAdaptation.items.ToList()))
-        //     {
-        //         suggestedUIConfigurations.Remove(suggestedAdaptation.items.ToList());
-        //         suggestedUIConfigurations.Insert(0, suggestedAdaptation.items.ToList());
-        //     }
-        //     else
-        //     {
-        //         // If suggestedAdaptation is not in suggestedUIConfigurations, add it to the first position
-        //         suggestedUIConfigurations.Insert(0, suggestedAdaptation.items.ToList());
-        //     }
-        //
-        //     // todo: add costs
-        //     Result = (suggestedUIConfigurations, 0f, 0f);
-        //
-        // }
 
         public IEnumerator OptimizeCoroutine(List<Layout> initialLayouts, List<List<LocalObjective>> objectives, List<float> hyperparameters)
         {
@@ -170,10 +99,10 @@ namespace AUIT.Solvers
             
             void Client()
             {
-                using (clientRuntime = new NetMQRuntime())
+                using (_clientRuntime = new NetMQRuntime())
                 {
                     Debug.Log("attempting to start client");
-                    clientRuntime.Run(ClientAsync()); 
+                    _clientRuntime.Run(ClientAsync()); 
                 
                     async Task ClientAsync() {
                         var requestSocket = new RequestSocket();
@@ -183,7 +112,7 @@ namespace AUIT.Solvers
                     
                         // Debug.Log("request sent: " + "O" + JsonUtility.ToJson(optimizationRequest));
                         (result, _) = await requestSocket.ReceiveFrameStringAsync();
-                        clientRuntime.Dispose();
+                        _clientRuntime.Dispose();
                     }
                 }
             }
