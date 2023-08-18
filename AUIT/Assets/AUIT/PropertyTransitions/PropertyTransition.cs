@@ -8,16 +8,13 @@ namespace AUIT.PropertyTransitions
     {
         [HideInInspector]
         protected AdaptationManager AdaptationManager;
+        
+        // TODO: refactor to work with local handler
         protected virtual void Awake()
         {
             if (AdaptationManager == null)
             {
                 AdaptationManager = GetComponent<AdaptationManager>();
-            }
-
-            if (AdaptationManager == null)
-            {
-                Debug.LogError("No AdaptationManager component found on " + name + ".");
             }
         }
         

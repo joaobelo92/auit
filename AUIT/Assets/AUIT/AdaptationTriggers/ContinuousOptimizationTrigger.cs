@@ -46,22 +46,10 @@ namespace AUIT.AdaptationTriggers
         private bool ShouldApplyAdaptation()
         {
             bool costIsBelowOptiThreshold;
-            if (runAsynchronous)
-            {
-                if (AdaptationManager.AsyncComputeCost() == null)
-                    return false;
+            previousCost = AdaptationManager.ComputeCost();
+            costIsBelowOptiThreshold = previousCost <= optimizationThreshold;
 
-                
-                previousCost = AdaptationManager.AsyncComputeCost().Value;
-                costIsBelowOptiThreshold = previousCost <= optimizationThreshold;
-            }
-            else
-            {
-                previousCost = AdaptationManager.ComputeCost();
-                costIsBelowOptiThreshold = previousCost <= optimizationThreshold;
-            }
-
-            return enabled && !costIsBelowOptiThreshold && !AdaptationManager.IsAdapting;
+            return enabled && !costIsBelowOptiThreshold;
         }
 
         public override void ApplyStrategy()

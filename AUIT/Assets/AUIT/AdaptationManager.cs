@@ -10,21 +10,12 @@ using AUIT.SelectionStrategies;
 using AUIT.Solvers;
 using AUIT.AdaptationObjectives.Definitions;
 using NetMQ;
-using UnityEditor;
+using UnityEngine.Serialization;
 
 namespace AUIT
 {
     public sealed class AdaptationManager : MonoBehaviour
     {
-
-        /*
-         * Adaptation managers must always be connected to a objective (1-1 relation) 
-         * While a objective has the responsibility of providing better ui layouts, the adaptation manager will be
-         * responsible for deciding when and how that information will be applied.
-         * Managers follow one adaptation trigger (for now at least) and can support multiple property transitions.
-         * Because the adaptation triggers are "triggered" by the property transition, these could be dependencies
-         * of an adaptation trigger that are added automatically to make the creator's task easier.
-        */
 
         private LocalObjectiveHandler _localObjectiveHandler;
         private AdaptationTrigger _adaptationTrigger;
@@ -39,24 +30,6 @@ namespace AUIT
 
         [SerializeField]
         private Solver solver = Solver.SimulatedAnnealing;
-        // public Solver solver
-        // {
-        //     get => _solver;
-        //     set
-        //     {
-        //         _solver = value;
-        //         if (value == Solver.GeneticAlgorithm)
-        //         {
-        //             _asyncSolver = new ParetoFrontierSolver();
-        //
-        //             AsyncIO.ForceDotNet.Force();
-        //             layout = new Layout(transform);
-        //             _asyncSolver.adaptationManager = this;
-        //             Debug.Log("Attempting to start solver");
-        //             _asyncSolver.Initialize();
-        //         }
-        //     }
-        // }
 
         [Tooltip("Number of iterations the solver will run for. A higher number can lead to better" +
                  "solutions but take longer to execute.")]
@@ -71,43 +44,38 @@ namespace AUIT
         public float earlyStopping = 0.02f;
         
         private IAsyncSolver _asyncSolver = new AsyncSimulatedAnnealingSolver();
-        private Coroutine AsyncSolverOptimizeCoroutine { get; set; }
 
         private bool _waitingForOptimization;
 
         private bool _job;
-        public List<List<Layout>> LayoutJob;
-        public List<List<float>> JobResult;
+        private List<List<Layout>> _layoutJob;
+        private List<List<float>> _jobResult;
 
         private SelectionStrategy _selectionStrategy;
 
         // To be phased out for multiple layouts
         private Layout _layout;
 
-        public List<GameObject> uiElements;
-        private List<(GameObject, LocalObjectiveHandler)> _uiElements;
-
-        public bool IsAdapting
-        {
-            get
-            {
-                foreach (var element in uiElements)
-                {
-                    // TODO: implement logic to check if it is adapting
-                }
-                return false;
-            }
-        }
+        public List<GameObject> gameObjects;
+        private (GameObject, LocalObjectiveHandler)[] _gameObjects;
 
         #region MonoBehaviour Implementation
 
-        private void Awake()
-        {
-        }
-
-        // Start is called before the first frame update
         private void Start()
         {
+            _gameObjects = new (GameObject, LocalObjectiveHandler)[gameObjects.Count];
+            GameObject[] gameObjectsArray = gameObjects.ToArray();
+            for (int i = 0; i < _gameObjects.Length; i++)
+            {
+                LocalObjectiveHandler goLocalObjectiveHandler = gameObjectsArray[i]
+                    .GetComponent<LocalObjectiveHandler>();
+                if (goLocalObjectiveHandler == null)
+                {
+                    Debug.LogError($"No handler found in {gameObjectsArray[i].name}!");
+                }
+                _gameObjects[i] = (gameObjectsArray[i], gameObjectsArray[i].GetComponent<LocalObjectiveHandler>());
+            }
+            
             _isSelectionStrategyNotNull = _selectionStrategy != null;
             if (solver == Solver.GeneticAlgorithm)
             {
@@ -133,16 +101,20 @@ namespace AUIT
         {
             // TODO: stop assuming all jobs are evaluations
             if (!_job) return;
-            JobResult = new List<List<float>>();
-            foreach (var candidateLayout in LayoutJob)
+            _jobResult = new List<List<float>>();
+            foreach (var candidateLayout in _layoutJob)
             {
-                var costsForCandidateLayout = new List<float>(); 
-                foreach (var uiElement in candidateLayout)
+                var costsForCandidateLayout = new List<float>();
+                Layout[] candidateLayoutArray = candidateLayout.ToArray();
+                for (int i = 0; i < candidateLayoutArray.Length; i++)
                 {
-                    GameObject go = uiElements.First(go => go.GetComponent<LocalObjectiveHandler>().Id == uiElement.Id);
-                    costsForCandidateLayout.AddRange(go.GetComponent<LocalObjectiveHandler>().Objectives
-                        .Select(objective => objective.CostFunction(uiElement)));
-                    JobResult.Add(costsForCandidateLayout);
+                    if (developmentMode && _gameObjects[i].Item2.Id != candidateLayout[i].Id)
+                    {
+                        Debug.LogError("Ids do not match in evaluation request!");
+                    }
+                    costsForCandidateLayout.AddRange(_gameObjects[i].Item2.Objectives
+                        .Select(objective => objective.CostFunction(candidateLayoutArray[i])));
+                    _jobResult.Add(costsForCandidateLayout);
                 }
             }
             _job = false;
@@ -224,11 +196,11 @@ namespace AUIT
 
         public List<List<float>> EvaluateLayouts(List<List<Layout>> ls)
         {
-            LayoutJob = ls; // Assign the list of candidate layouts, each of which is a list of elements defined as a Layout, to the current job to be evaluated
+            _layoutJob = ls; // Assign the list of candidate layouts, each of which is a list of elements defined as a Layout, to the current job to be evaluated
             _job = true; // Set the job flag to true, which will trigger the job to be evaluated in the next dequeue action
 
             while (_job) {} // Wait for the job to be evaluated
-            return JobResult; // Return the result of the job (i.e., the costs of each candidate layout)
+            return _jobResult; // Return the result of the job (i.e., the costs of each candidate layout)
         }
 
         public (List<Layout>, float) OptimizeLayout()
@@ -254,11 +226,11 @@ namespace AUIT
             // the properties we want to optimize.
             List<List<LocalObjective>> objectives = new List<List<LocalObjective>>();
             List<Layout> currentLayouts = new List<Layout>();
-            foreach (var element in uiElements)
+
+            for (int i = 0; i < _gameObjects.Length; i++)
             {
-                LocalObjectiveHandler handler = element.GetComponent<LocalObjectiveHandler>();
-                objectives.Add(handler.Objectives);
-                currentLayouts.Add(new Layout(handler.Id, element.transform));
+                objectives.Add(_gameObjects[i].Item2.Objectives);
+                currentLayouts.Add(new Layout(_gameObjects[i].Item2.Id, _gameObjects[i].Item1.transform));
             }
             
             if (objectives.Count == 0)
@@ -274,109 +246,33 @@ namespace AUIT
 
         public float ComputeCost(Layout l = null, bool verbose = false)
         {
-            // TODO
-            if (l == null)
-            {
-                l = _layout;
-            }
+            l ??= _layout;
+            
             if (!isActiveAndEnabled)
             {
                 Debug.LogError($"[AdaptationManager.ComputeCost()]: AdaptationManager on {gameObject.name} is disabled!");
                 return 0.0f;
             }
-            float startTime = Time.realtimeSinceStartup;
-            float frameTime = 0.0f;
 
             List<List<LocalObjective>> globalObjectives = new List<List<LocalObjective>>();
             List<Layout> layouts = new List<Layout>();
-            foreach (var element in uiElements)
+            foreach (var element in gameObjects)
             {
                 AdaptationManager adaptationManager = element.GetComponent<AdaptationManager>();
-                if (adaptationManager == null || adaptationManager._layout == null)
-                    throw new Exception($"No local adaptation manager found on {element.name}");
                 globalObjectives.Add(adaptationManager._localObjectiveHandler.Objectives);
                 layouts.Add(adaptationManager._layout);
             }
 
             float cost = 0;
-            for (int i = 0; i < uiElements.Count; i++)
+            for (int i = 0; i < gameObjects.Count; i++)
             {
                 cost += globalObjectives[i].Sum(objective => objective.Weight * objective.CostFunction(layouts[i])) / globalObjectives[i].Count;
             }
             cost /= globalObjectives.Count;
-            frameTime = Time.realtimeSinceStartup - startTime;
             return cost;
         }
-
-        Coroutine computeCostCorutine;
-        private float? ComputedCost = null;
-        private bool waitingForComputeCost = false;
+        
         private bool _isSelectionStrategyNotNull;
-
-        public float? AsyncComputeCost()
-        {
-            if (isActiveAndEnabled == false)
-            {
-                Debug.LogError($"[AdaptationManager.AsyncComputeCost()]: AdaptationManager on {gameObject.name} is disabled!");
-                return 0.0f;
-            }
-
-            if (waitingForComputeCost == false)
-            {
-                waitingForComputeCost = true;
-                if (computeCostCorutine != null)
-                    StopCoroutine(computeCostCorutine);
-                computeCostCorutine = StartCoroutine(ComputeCostCoroutine());
-            }
-
-            if (ComputedCost != null)
-            {
-                waitingForComputeCost = false;
-            }
-            return ComputedCost;
-        }
-
-        public IEnumerator ComputeCostCoroutine()
-        {
-            if (!isActiveAndEnabled)
-            {
-                Debug.LogError($"[AdaptationManager.ComputeCostCoroutine()]: AdaptationManager on {gameObject.name} is disabled!");
-                yield break;
-            }
-            ComputedCost = null;
-            float startTime = Time.realtimeSinceStartup;
-            float frameTime = 0.0f;
-            float cost = 0;
-
-            List<List<LocalObjective>> globalObjectives = new List<List<LocalObjective>>();
-            List<Layout> layouts = new List<Layout>();
-            foreach (var element in uiElements)
-            {
-                AdaptationManager adaptationManager = element.GetComponent<AdaptationManager>();
-                if (adaptationManager == null || adaptationManager._layout == null)
-                    throw new Exception($"No local adaptation manager found on {element.name}");
-                globalObjectives.Add(adaptationManager._localObjectiveHandler.Objectives);
-                layouts.Add(adaptationManager._layout);
-            }
-
-            for (int i = 0; i < uiElements.Count; i++)
-            {
-                foreach (var objective in globalObjectives[i])
-                {
-                    cost += objective.Weight * objective.CostFunction(layouts[i]);
-                    frameTime = Time.realtimeSinceStartup - startTime;
-                    if (frameTime >= 0.01f)
-                    {
-                        Debug.Log($"Frame time: {frameTime}");
-                        yield return new WaitForFixedUpdate();
-                        startTime = Time.realtimeSinceStartup;
-                    }
-                }
-                cost /= globalObjectives[i].Count;
-            }
-            cost /= globalObjectives.Count;
-            ComputedCost = cost;
-        }
 
         #region Adaptation Logic
         // When an adaptation is invoked, the manager will contain the method for doing so. This is necessary as 
@@ -404,7 +300,7 @@ namespace AUIT
                                      $"strategy. Applying the first solution by default. GameObject: {name}");
                 // pick first layout and apply property transitions
                 Layout[] layoutArray = layouts.First().ToArray();
-                GameObject[] elementArray = uiElements.ToArray();
+                GameObject[] elementArray = gameObjects.ToArray();
                 for (int i = 0; i < layoutArray.Length; i++)
                 {
                     if (developmentMode)
