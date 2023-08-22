@@ -10,7 +10,6 @@ using AUIT.SelectionStrategies;
 using AUIT.Solvers;
 using AUIT.AdaptationObjectives.Definitions;
 using NetMQ;
-using UnityEngine.Serialization;
 
 namespace AUIT
 {
@@ -350,5 +349,14 @@ namespace AUIT
         
         #endregion
 
+        public void RegisterMultiElementObjective(MultiElementObjective multiElementObjective)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void UnregisterMultiElementObjective(MultiElementObjective multiElementObjective)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -4,9 +4,10 @@ using System.Linq;
 using AUIT.AdaptationObjectives.Definitions;
 using AUIT.AdaptationObjectives.Extras;
 using UnityEngine;
+using UnityEngine.Serialization;
 using Random = UnityEngine.Random;
 
-namespace AUIT.AdaptationObjectives
+namespace AUIT.AdaptationObjectives.Objectives
 {
     public class OcclusionObjective : LocalObjective
     {
@@ -22,24 +23,24 @@ namespace AUIT.AdaptationObjectives
         private Dictionary<Vector3, bool> keyPoints;
 
         [Header("Debugging")]
-        public bool ShowDebugLines = false;
+        public bool showDebugLines;
 
-        private bool topRightIsOccluded;
-        private bool bottomRightIsOccluded;
-        private bool bottomLeftIsOccluded;
-        private bool topLeftIsOccluded;
+        private bool _topRightIsOccluded;
+        private bool _bottomRightIsOccluded;
+        private bool _bottomLeftIsOccluded;
+        private bool _topLeftIsOccluded;
 
-        private float minX = float.PositiveInfinity;
-        private float minY = float.PositiveInfinity;
-        private float minZ = float.PositiveInfinity;
-        private float maxX = float.NegativeInfinity;
-        private float maxY = float.NegativeInfinity;
-        private float maxZ = float.NegativeInfinity;
+        private float _minX = float.PositiveInfinity;
+        private float _minY = float.PositiveInfinity;
+        private float _minZ = float.PositiveInfinity;
+        private float _maxX = float.NegativeInfinity;
+        private float _maxY = float.NegativeInfinity;
+        private float _maxZ = float.NegativeInfinity;
 
-        private Vector3 boundMin;
-        private Vector3 boundMax;
+        private Vector3 _boundMin;
+        private Vector3 _boundMax;
 
-        private float prevCost = 1f;
+        private float _prevCost = 1f;
 
         private void Reset()
         {
@@ -53,7 +54,7 @@ namespace AUIT.AdaptationObjectives
             {
                 ContextSource = ContextSource.PlayerPose;
             }
-            occlusionMask &= ~(1 << this.gameObject.layer);
+            occlusionMask &= ~(1 << gameObject.layer);
 
             Renderer[] renderers = GetComponentsInChildren<Renderer>();
             if (GetComponent<Renderer>() != null)
@@ -63,18 +64,18 @@ namespace AUIT.AdaptationObjectives
 
             for (int i = 0; i < renderers.Length; i++)
             {
-                minX = renderers[i].bounds.min.x < minX ? renderers[i].bounds.min.x : minX;
-                minY = renderers[i].bounds.min.y < minY ? renderers[i].bounds.min.y : minY;
-                minZ = renderers[i].bounds.min.z < minZ ? renderers[i].bounds.min.z : minZ;
+                _minX = renderers[i].bounds.min.x < _minX ? renderers[i].bounds.min.x : _minX;
+                _minY = renderers[i].bounds.min.y < _minY ? renderers[i].bounds.min.y : _minY;
+                _minZ = renderers[i].bounds.min.z < _minZ ? renderers[i].bounds.min.z : _minZ;
 
-                maxX = renderers[i].bounds.max.x > maxX ? renderers[i].bounds.max.x : maxX;
-                maxY = renderers[i].bounds.max.y > maxY ? renderers[i].bounds.max.y : maxY;
-                maxZ = renderers[i].bounds.max.z > maxZ ? renderers[i].bounds.max.z : maxZ;
+                _maxX = renderers[i].bounds.max.x > _maxX ? renderers[i].bounds.max.x : _maxX;
+                _maxY = renderers[i].bounds.max.y > _maxY ? renderers[i].bounds.max.y : _maxY;
+                _maxZ = renderers[i].bounds.max.z > _maxZ ? renderers[i].bounds.max.z : _maxZ;
             }
 
             Matrix4x4 objInv = transform.worldToLocalMatrix;
-            boundMin = objInv.MultiplyPoint(new Vector3(minX, minY, minZ));
-            boundMax = objInv.MultiplyPoint(new Vector3(maxX, maxY, maxZ));
+            _boundMin = objInv.MultiplyPoint(new Vector3(_minX, _minY, _minZ));
+            _boundMax = objInv.MultiplyPoint(new Vector3(_maxX, _maxY, _maxZ));
 
             InitializeKeyPointsGrid();
         }
@@ -102,8 +103,8 @@ namespace AUIT.AdaptationObjectives
                 cost += keyPoints[keyPoint] ? 1 : 0;
             }
 
-            prevCost = cost / keyPoints.Count;
-            return prevCost;
+            _prevCost = cost / keyPoints.Count;
+            return _prevCost;
         }
 
         public override Layout OptimizationRule(Layout optimizationTarget, Layout initialLayout = null)
@@ -113,7 +114,7 @@ namespace AUIT.AdaptationObjectives
             Vector3 contextSourcePosition = (Vector3)ContextSourceTransformTarget;
 
             Vector3 positionChange = Vector3.zero;
-            if (prevCost > 0 && Random.value < .5f)
+            if (_prevCost > 0 && Random.value < .5f)
             {
                 // Transform contextSourceTransform = (Transform)ContextSourceTransformTarget;
                 // Vector3 contextSourceToUI = transform.position - contextSourceTransform.position;
@@ -127,24 +128,21 @@ namespace AUIT.AdaptationObjectives
                 var randomlyOrdered = keyPoints.OrderBy(g => Guid.NewGuid());
                 foreach (var i in randomlyOrdered)
                 {
-                    if (i.Value)
-                    {
-                        RaycastHit hit;
-                        Vector3 targetKeyPointPos = trs.MultiplyPoint3x4(i.Key);
-                        Physics.Raycast(contextSourcePosition, i.Key, out hit, (contextSourcePosition - targetKeyPointPos).magnitude, occlusionMask);
-                        result.Position = hit.point + hit.normal * HelperMath.SampleNormalDistribution(1f, 0.5f) * stepMovement;
-                        break;
-                    }
+                    if (!i.Value) continue;
+                    Vector3 targetKeyPointPos = trs.MultiplyPoint3x4(i.Key);
+                    Physics.Raycast(contextSourcePosition, i.Key, out RaycastHit hit, (contextSourcePosition - targetKeyPointPos).magnitude, occlusionMask);
+                    result.Position = hit.point + hit.normal * (HelperMath.SampleNormalDistribution(1f, 0.5f) * stepMovement);
+                    break;
                 }
 
             }
-            else if (prevCost > 0 && Random.value < .8f) // move towards user 
+            else if (_prevCost > 0 && Random.value < .8f) // move towards user 
             {
                 Vector3 targetPosition = (Vector3)ContextSourceTransformTarget;
                 Vector3 currentPosition = optimizationTarget.Position;
 
                 Vector3 currentToTarget = (targetPosition - currentPosition).normalized;
-                positionChange = currentToTarget * HelperMath.SampleNormalDistribution(1f, 0.5f) * stepMovement;
+                positionChange = currentToTarget * (HelperMath.SampleNormalDistribution(1f, 0.5f) * stepMovement);
                 
                 result.Position += positionChange * stepMovement;
             }
@@ -165,10 +163,10 @@ namespace AUIT.AdaptationObjectives
 
         private void InitializeKeyPointsGrid()
         {
-            Vector3 topRightPos = boundMax;
-            Vector3 botLeftPos = boundMin;
-            Vector3 topLeftPos = new Vector3(boundMin.x, boundMax.y, boundMin.z);
-            Vector3 botRightPos = new Vector3(boundMax.x, boundMin.y, boundMax.z);
+            Vector3 topRightPos = _boundMax;
+            Vector3 botLeftPos = _boundMin;
+            Vector3 topLeftPos = new Vector3(_boundMin.x, _boundMax.y, _boundMin.z);
+            Vector3 botRightPos = new Vector3(_boundMax.x, _boundMin.y, _boundMax.z);
 
             keyPoints = new Dictionary<Vector3, bool>();
             for (int i = 0; i < keyPointSubdivisions + 2; i++)
@@ -195,7 +193,7 @@ namespace AUIT.AdaptationObjectives
 
         private void DrawDebugLines()
         {
-            if (ShowDebugLines == false)
+            if (showDebugLines == false)
                 return;
 
             Vector3 contextSourcePosition = (Vector3)ContextSourceTransformTarget;
@@ -203,7 +201,7 @@ namespace AUIT.AdaptationObjectives
             foreach (KeyValuePair<Vector3, bool> keyValuePair in keyPoints)
             {
                 Vector3 originToKeyPoint = transform.localToWorldMatrix.MultiplyPoint3x4(keyValuePair.Key);
-                Debug.DrawLine(contextSourcePosition, originToKeyPoint.normalized * originToKeyPoint.magnitude * 1f, keyValuePair.Value ? Color.black : Color.red);
+                Debug.DrawLine(contextSourcePosition, originToKeyPoint.normalized * (originToKeyPoint.magnitude * 1f), keyValuePair.Value ? Color.black : Color.red);
             }
         }
 

@@ -10,7 +10,7 @@ namespace AUIT.AdaptationObjectives
     {
         #region Context Source Logic
 
-        private LocalObjectiveHandler _objectiveHandler;
+        protected LocalObjectiveHandler ObjectiveHandler;
 
         [SerializeField]
         private ContextSource contextSource = ContextSource.Gaze;
@@ -18,7 +18,7 @@ namespace AUIT.AdaptationObjectives
         // In this initial version we will support Head (gaze), Player position and Hands
         // Player position will be retrieved from gaze, but some more sophisticated heuristic can be used to retrieve
         // body pose for example
-        public ContextSource ContextSource
+        protected ContextSource ContextSource
         {
             get => contextSource;
             set
@@ -32,24 +32,18 @@ namespace AUIT.AdaptationObjectives
             }
         }
 
-        private OptimizationTarget optimizationTarget = OptimizationTarget.Position;
-
-        public OptimizationTarget OptimizationTarget
-        {
-            get => optimizationTarget;
-            set => optimizationTarget = value;
-        }
+        public OptimizationTarget OptimizationTarget { get; set; } = OptimizationTarget.Position;
 
         // For context sources that are transforms, we follow MRTK's approach and add a Child GameObject to the 
         // GameObject with the transform of interest
-        private object contextSourceTarget;
+        private object _contextSourceTarget;
 
         /// <summary>
         /// In this initial iteration we will limit ourselves to Transforms, but the ContextSource must support other
         /// types in the future. Context sources, besides transforms such as gaze and position of limbs/objects
         /// can be geometry, cognitive load, lighting conditions and so on.
         /// </summary>
-        public object ContextSourceTransformTarget
+        protected object ContextSourceTransformTarget
         {
             get
             {
@@ -58,7 +52,7 @@ namespace AUIT.AdaptationObjectives
                 // the objective.
                 if (IsContextSourceTransform(contextSource))
                 {
-                    GameObject contextSourceGameObject = (GameObject)contextSourceTarget;
+                    GameObject contextSourceGameObject = (GameObject)_contextSourceTarget;
                     // Create copies of position and rotation
 
                     if (contextSource == ContextSource.PlayerPose)
@@ -134,11 +128,11 @@ namespace AUIT.AdaptationObjectives
 
         private void DetachFromCurrentTrackedObject()
         {
-            if (contextSourceTarget != null)
+            if (_contextSourceTarget != null)
             {
-                GameObject contextSourceGameObject = (GameObject)contextSourceTarget;
+                GameObject contextSourceGameObject = (GameObject)_contextSourceTarget;
                 Destroy(contextSourceGameObject);
-                contextSourceTarget = null;
+                _contextSourceTarget = null;
             }
         }
 
@@ -170,7 +164,7 @@ namespace AUIT.AdaptationObjectives
 
         private void TrackTransform(Transform target)
         {
-            if (contextSourceTarget != null || target == null) 
+            if (_contextSourceTarget != null || target == null) 
                 return;
 
             string name = $"LocalObjective Target on {target.gameObject.name}";
@@ -178,7 +172,7 @@ namespace AUIT.AdaptationObjectives
 
             tracker.transform.parent = target;
 
-            contextSourceTarget = tracker;
+            _contextSourceTarget = tracker;
         }
 
         private static bool IsContextSourceTransform(ContextSource contextSource)
@@ -192,15 +186,15 @@ namespace AUIT.AdaptationObjectives
 
         protected virtual void Awake()
         {
-            if (_objectiveHandler == null)
-                _objectiveHandler = GetComponent<LocalObjectiveHandler>();
+            if (ObjectiveHandler == null)
+                ObjectiveHandler = GetComponent<LocalObjectiveHandler>();
         }
 
         protected virtual void OnEnable()
         {
-            if (_objectiveHandler == null)
-                _objectiveHandler = GetComponent<LocalObjectiveHandler>();
-            _objectiveHandler.RegisterObjective(this);
+            if (ObjectiveHandler == null)
+                ObjectiveHandler = GetComponent<LocalObjectiveHandler>();
+            ObjectiveHandler.RegisterObjective(this);
             RefreshContextSource();
         }
 
@@ -211,8 +205,8 @@ namespace AUIT.AdaptationObjectives
 
         protected virtual void OnDisable()
         {
-            if (_objectiveHandler != null)
-                _objectiveHandler.UnregisterObjective(this);
+            if (ObjectiveHandler != null)
+                ObjectiveHandler.UnregisterObjective(this);
         }
 
         #endregion
