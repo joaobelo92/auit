@@ -33,6 +33,7 @@ namespace AUIT.AdaptationObjectives.Objectives
                 _occlusionObjectiveCamera = cameraObject.AddComponent<Camera>();
                 _occlusionObjectiveCamera.fieldOfView = 120f;
                 _occlusionObjectiveCamera.nearClipPlane = 0.01f;
+                _occlusionObjectiveCamera.targetDisplay = 0;
             }
             else
             {
