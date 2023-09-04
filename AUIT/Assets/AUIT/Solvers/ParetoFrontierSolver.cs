@@ -16,12 +16,12 @@ namespace AUIT.Solvers
 {
     public class ParetoFrontierSolver : IAsyncSolver
     {
-        public AdaptationManager adaptationManager { get; set; }
+        public AdaptationManager AdaptationManager { get; set; }
         public NetMQRuntime ServerRuntime;
         private NetMQRuntime _clientRuntime;
         private Thread _serverThread;
 
-        public (List<List<Layout>>, float, float) Result { get; set; }
+        public (List<List<Layout>>, float, float) Result { get; private set; }
 
         public void Initialize()
         {
@@ -40,44 +40,36 @@ namespace AUIT.Solvers
                 async Task ServerAsync()
                 {
                     AsyncIO.ForceDotNet.Force();
-                    using (var server = new ResponseSocket("tcp://*:5556"))
+                    using var server = new ResponseSocket("tcp://*:5556");
+                    Debug.Log("server started");
+                        
+                    while (true)
                     {
-                        Debug.Log("server started");
+                        string message;
+                        (message, _) = await server.ReceiveFrameStringAsync();
+                        // Debug.Log($"Received a request at endpoint: {message[0]}");
                         
-                        while (true)
+                        switch (message[0])
                         {
-                            string message;
-                            (message, _) = await server.ReceiveFrameStringAsync();
-                            // Debug.Log($"Received a request at endpoint: {message[0]}");
-                        
-                            string response;
-                            switch (message[0])
-                            {
-                                case 'E':
-                                    string payload = message.Substring(1);
-                                    // Debug.Log("computing costs: " + payload);
-                                    var evaluationResponse = new EvaluationResponse
-                                    {
-                                        costs = adaptationManager.EvaluateLayouts(payload)
-                                    };
-                                    response = JsonConvert.SerializeObject(evaluationResponse);
-                                    // Debug.Log("Sending evaluation response: " + response);
-                                    server.SendFrame("e" + response);
-                                    break;
-                                default:
-                                    Debug.Log("Unknown request");
-                                    server.SendFrame("Unknown request");
-                                    break;
-                            }
+                            case 'E':
+                                string payload = message.Substring(1);
+                                // Debug.Log("computing costs: " + payload);
+                                var evaluationResponse = new EvaluationResponse
+                                {
+                                    costs = AdaptationManager.EvaluateLayouts(payload)
+                                };
+                                string response = JsonConvert.SerializeObject(evaluationResponse);
+                                // Debug.Log("Sending evaluation response: " + response);
+                                server.SendFrame("e" + response);
+                                break;
+                            default:
+                                Debug.Log("Unknown request");
+                                server.SendFrame("Unknown request");
+                                break;
                         }
                     }
                 }
             }
-        }
-
-        public IEnumerator OptimizeCoroutine(Layout initialLayout, List<LocalObjective> objectives, List<float> hyperparameters)
-        {
-            throw new NotImplementedException();
         }
 
         public IEnumerator OptimizeCoroutine(List<Layout> initialLayouts, List<List<LocalObjective>> objectives, List<float> hyperparameters)

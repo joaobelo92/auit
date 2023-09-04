@@ -81,7 +81,7 @@ namespace AUIT
                 _asyncSolver = new ParetoFrontierSolver();
             
                 AsyncIO.ForceDotNet.Force();
-                _asyncSolver.adaptationManager = this;
+                _asyncSolver.AdaptationManager = this;
                 Debug.Log("Attempting to start solver");
                 _asyncSolver.Initialize();
             }
@@ -113,8 +113,8 @@ namespace AUIT
                     }
                     costsForCandidateLayout.AddRange(_gameObjects[i].Item2.Objectives
                         .Select(objective => objective.CostFunction(candidateLayoutArray[i])));
-                    _jobResult.Add(costsForCandidateLayout);
                 }
+                _jobResult.Add(costsForCandidateLayout);
             }
             _job = false;
         }
@@ -182,25 +182,30 @@ namespace AUIT
 
         public List<List<float>> EvaluateLayouts(string payload)
         {
-            var evaluationRequest = JsonUtility.FromJson<Wrapper<string>>(payload);
-            List<List<Layout>> layouts = new List<List<Layout>>(); 
+            Wrapper<string> evaluationRequest = JsonUtility.FromJson<Wrapper<string>>(payload);
+            List<List<Layout>> layouts = new List<List<Layout>>();
             foreach (var l in evaluationRequest.items)
             {
-                var e = JsonUtility.FromJson<Wrapper<Layout>>(l);
+                Wrapper<Layout> e = JsonUtility.FromJson<Wrapper<Layout>>(l);
                 layouts.Add(e.items.ToList());
             }
+            
+            _layoutJob = layouts; 
+            _job = true; 
+            
+            while (_job) {} 
 
-            return EvaluateLayouts(layouts);
+            return _jobResult;
         }
 
-        public List<List<float>> EvaluateLayouts(List<List<Layout>> ls)
-        {
-            _layoutJob = ls; // Assign the list of candidate layouts, each of which is a list of elements defined as a Layout, to the current job to be evaluated
-            _job = true; // Set the job flag to true, which will trigger the job to be evaluated in the next dequeue action
-
-            while (_job) {} // Wait for the job to be evaluated
-            return _jobResult; // Return the result of the job (i.e., the costs of each candidate layout)
-        }
+        // public List<List<float>> EvaluateLayouts(List<List<Layout>> ls)
+        // {
+        //     _layoutJob = ls; // Assign the list of candidate layouts, each of which is a list of elements defined as a Layout, to the current job to be evaluated
+        //     _job = true; // Set the job flag to true, which will trigger the job to be evaluated in the next dequeue action
+        //
+        //     while (_job) {} // Wait for the job to be evaluated
+        //     return _jobResult; // Return the result of the job (i.e., the costs of each candidate layout)
+        // }
 
         public (List<Layout>, float) OptimizeLayout()
         {

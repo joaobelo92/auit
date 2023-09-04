@@ -1,9 +1,7 @@
 ﻿using AUIT.AdaptationObjectives.Definitions;
-using AUIT.AdaptationObjectives.Extras;
 using UnityEngine;
-using Random = UnityEngine.Random;
 
-namespace AUIT.AdaptationObjectives
+namespace AUIT.AdaptationObjectives.Objectives
 {
     /// <summary>
     /// This objective is used to minimize the angle between the vector from the

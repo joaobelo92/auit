@@ -16,7 +16,7 @@ namespace AUIT.Solvers
 
         (List<Layout>, float, float) result;
         private IAsyncSolver asyncSolverImplementation;
-        public AdaptationManager adaptationManager { get; set; }
+        public AdaptationManager AdaptationManager { get; set; }
         
         // todo: fix
         public (List<List<Layout>>, float, float) Result { get; set; }
