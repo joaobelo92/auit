@@ -114,6 +114,9 @@ class LayoutProblem(Problem):
                 ]
             )
 
+            print(costs)
+            print(costs.shape)
+
             # Set the objectives
             out["F"] = costs
 
@@ -142,7 +145,7 @@ class LayoutProblem(Problem):
         for i in range(0, len(x), 7):
             items.append(
                 networking.element.Element(
-                    id=self.initial_layout.items[i].id,
+                    id=self.initial_layout.items[i//7].id,
                     position=networking.element.Position(x=x[i], y=x[i + 1], z=x[i + 2]),
                     rotation=networking.element.Rotation(x=x[i + 3], y=x[i + 4], z=x[i + 5], w=x[i + 6]),
                 )

@@ -61,7 +61,7 @@ namespace AUIT.Solvers
                                         costs = adaptationManager.EvaluateLayouts(payload)
                                     };
                                     response = JsonConvert.SerializeObject(evaluationResponse);
-                                    // Debug.Log("Sending evaluation response: " + response);
+                                    Debug.Log("Sending evaluation response: " + response);
                                     server.SendFrame("e" + response);
                                     break;
                                 default:
