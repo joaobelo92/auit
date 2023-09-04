@@ -81,7 +81,7 @@ namespace AUIT
                 _asyncSolver = new ParetoFrontierSolver();
             
                 AsyncIO.ForceDotNet.Force();
-                _asyncSolver.adaptationManager = this;
+                _asyncSolver.AdaptationManager = this;
                 Debug.Log("Attempting to start solver");
                 _asyncSolver.Initialize();
             }

@@ -8,11 +8,10 @@ namespace AUIT.Solvers
 {
     public interface IAsyncSolver
     {
-        AdaptationManager adaptationManager { set; }
+        AdaptationManager AdaptationManager { set; }
         (List<List<Layout>>, float, float) Result { get; }
         
         void Initialize();
-        IEnumerator OptimizeCoroutine(Layout initialLayout, List<LocalObjective> objectives, List<float> hyperparameters);
         IEnumerator OptimizeCoroutine(List<Layout> initialLayouts, List<List<LocalObjective>> objectives, List<float> hyperparameters);
     }
 }
