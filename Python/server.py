@@ -23,12 +23,13 @@ def handle_request(request_type, request_data, verbose):
         if verbose:
             print("Received an OptimizationRequest")
             print("request_data:", request_data)
-        solutions, suggested_layout = optimize_layout(
+        manager_id, solutions, suggested_layout = optimize_layout(
+            request_data.manager_id,
             request_data.n_objectives,
             request_data.n_constraints,
             request_data.initial_layout,
         )
-        return "o", OptimizationResponse(solutions=solutions, suggested=suggested_layout)
+        return "o", OptimizationResponse(manager_id=manager_id, solutions=solutions, suggested=suggested_layout)
     # If request type is unknown, return an ErrorResponse
     else:
         if verbose: print("Received an unknown request type: %s" % request_type)

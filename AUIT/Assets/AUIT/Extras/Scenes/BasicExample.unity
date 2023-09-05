@@ -154,6 +154,74 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1226842596}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &546640633
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 546640636}
+  - component: {fileID: 546640635}
+  - component: {fileID: 546640634}
+  m_Layer: 0
+  m_Name: AUIT (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &546640634
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 546640633}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c1c9e896dc04e018422414eacbd58d2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  interval: 30
+  timeoutThreshold: 10
+--- !u!114 &546640635
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 546640633}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6bd4eb42210b9d8489de1655cf9238f5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  solver: 1
+  iterations: 1500
+  developmentMode: 1
+  minimumTemperature: 0.000001
+  initialTemperature: 10000
+  annealingSchedule: 0.98
+  earlyStopping: 0.02
+  gameObjects:
+  - {fileID: 1916628227}
+--- !u!4 &546640636
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 546640633}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -1.303455, y: -11.27686, z: -14.474407}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &642232613
 GameObject:
   m_ObjectHideFlags: 0
@@ -206,7 +274,6 @@ MonoBehaviour:
   annealingSchedule: 0.98
   earlyStopping: 0.02
   gameObjects:
-  - {fileID: 1916628227}
   - {fileID: 1473003096}
 --- !u!4 &642232616
 Transform:
@@ -850,4 +917,5 @@ SceneRoots:
   - {fileID: 1916628236}
   - {fileID: 1226842596}
   - {fileID: 642232616}
+  - {fileID: 546640636}
   - {fileID: 1473003105}

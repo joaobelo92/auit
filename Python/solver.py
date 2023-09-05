@@ -11,8 +11,8 @@ import networking.layout
 
 
 def optimize_layout(
-    n_objectives: int, n_constraints: int, initial_layout: networking.layout.Layout
-) -> tuple[list[networking.layout.Layout], networking.layout.Layout]:
+    manager_id: str, n_objectives: int, n_constraints: int, initial_layout: networking.layout.Layout
+) -> tuple[str, list[networking.layout.Layout], networking.layout.Layout]:
     """Return the Pareto optimal solutions to the layout optimization problem
     and a suggested layout."""
     # Create a context and a socket
@@ -23,11 +23,11 @@ def optimize_layout(
 
     # Generate the Pareto optimal layouts and the suggested layout
     layouts, suggested_layout = optimization.generate_pareto_optimal_layouts_and_suggested(
-        n_objectives, n_constraints, initial_layout, socket
+        manager_id, n_objectives, n_constraints, initial_layout, socket
     )
 
     # Return the Pareto optimal solutions
-    return layouts, suggested_layout
+    return manager_id, layouts, suggested_layout
 
 
 def main():

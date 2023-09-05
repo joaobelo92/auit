@@ -119,7 +119,7 @@ class HelloResponse(Response):
 class OptimizationRequest(Request):
     """An optimization request is a request sent from AUIT to the solver
     to receive the Pareto optimal solutions to a layout optimization problem."""
-
+    manager_id: str
     n_objectives: int  # Number of objectives
     initial_layout: Layout  # Initial layout
     n_constraints: int = 0  # Number of inequality constraints (<= 0)
@@ -161,6 +161,7 @@ class OptimizationRequest(Request):
             if type(data["initialLayout"]) is dict \
             else Layout.from_json(data["initialLayout"])
         return OptimizationRequest(
+            manager_id=data["managerId"],
             n_objectives=data["nObjectives"],
             n_constraints=data["nConstraints"] if "nConstraints" in data else 0,
             initial_layout=initial_layout,
@@ -207,7 +208,7 @@ class OptimizationRequest(Request):
 class OptimizationResponse(Response):
     """An optimization response is a response sent from the solver to AUIT
     that contains the Pareto optimal solutions to the layout optimization problem."""
-
+    manager_id: str
     solutions: List[Layout]
     suggested: Layout
 
@@ -328,6 +329,7 @@ class OptimizationResponse(Response):
 
         """
         return json.dumps({
+            "manager_id": self.manager_id,
             "solutions": json.dumps({"items": [solution.to_json() for solution in self.solutions]}), # Required for compatibility with AUIT desearialization
             "suggested": self.suggested.to_json(),
         })
@@ -339,6 +341,7 @@ class EvaluationRequest(Request):
     to get the vectors of costs for a list of layouts including the
     costs associated with constraint violations."""
 
+    manager_id: str
     layouts: List[Layout]
 
     def from_json(message_data: str) -> EvaluationRequest:
@@ -414,6 +417,7 @@ class EvaluationRequest(Request):
 
         """
         return json.dumps({
+            "manager_id": self.manager_id,
             "items": [layout.to_json() for layout in self.layouts], # TODO: This is a temporary fix for the issue with the JSON serialization of the Layout class. It should be replaced with the following line once the issue is fixed.
             # "items": [layout.__dict__() for layout in self.layouts],
         })
