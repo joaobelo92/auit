@@ -8,7 +8,7 @@ namespace AUIT.Solvers
 {
     public interface IAsyncSolver
     {
-        AdaptationManager AdaptationManager { set; }
+        AdaptationManager AdaptationManager { set; get; }
         (List<List<Layout>>, float, float) Result { get; }
         
         void Initialize();

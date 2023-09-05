@@ -54,6 +54,7 @@ class LayoutProblem(Problem):
 
     def __init__(
         self,
+        manager_id: str,
         n_objectives: int,
         n_constraints: int,
         initial_layout: networking.layout.Layout,
@@ -92,8 +93,8 @@ class LayoutProblem(Problem):
             **kwargs,
         )
 
-        # Store the socket
         self.socket = socket
+        self.manager_id = manager_id
 
     def _evaluate(self, x: np.ndarray, out, *args, **kwargs):
         """Evaluate the problem."""
@@ -101,7 +102,7 @@ class LayoutProblem(Problem):
         layouts = [self._x_to_layout(x[i]) for i in range(x.shape[0])]
 
         # Send the layouts to the server and receive the costs
-        response_type, response_data = client.send_costs_request(self.socket, layouts)
+        response_type, response_data = client.send_costs_request(self.socket, self.manager_id, layouts)
 
         # Check if the response is an EvaluationResponse
         if response_type == "e":
@@ -113,9 +114,6 @@ class LayoutProblem(Problem):
                     for layout_costs in response_data.costs
                 ]
             )
-
-            print(costs)
-            print(costs.shape)
 
             # Set the objectives
             out["F"] = costs
@@ -175,6 +173,7 @@ def get_algorithm(n_objectives: int, pop_size: int = 100, seed: int = 1):
 
 # Function to generate the Pareto optimal layouts (i.e., the Pareto front)
 def generate_pareto_optimal_layouts_and_suggested(
+    manager_id: str,
     n_objectives: int,
     n_constraints: int,
     initial_layout: networking.layout.Layout,
@@ -198,6 +197,7 @@ def generate_pareto_optimal_layouts_and_suggested(
 
     # Create the problem
     problem = LayoutProblem(
+        manager_id=manager_id,
         n_objectives=n_objectives,
         n_constraints=n_constraints,
         initial_layout=initial_layout,

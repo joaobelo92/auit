@@ -15,6 +15,7 @@ namespace AUIT
 {
     public sealed class AdaptationManager : MonoBehaviour
     {
+        public string Id { get; } = Guid.NewGuid().ToString();
 
         private LocalObjectiveHandler _localObjectiveHandler;
         private AdaptationTrigger _adaptationTrigger;
@@ -92,8 +93,7 @@ namespace AUIT
         {
             if (solver != Solver.GeneticAlgorithm) return;
             ParetoFrontierSolver paretoFrontierSolver = (ParetoFrontierSolver) _asyncSolver;
-            paretoFrontierSolver.ServerRuntime.Dispose();
-            NetMQConfig.Cleanup(false);
+            paretoFrontierSolver.Destroy();
         }
 
         private void RunJobs()

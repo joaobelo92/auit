@@ -37,7 +37,6 @@ def send_request(socket, request_type, request_data, verbose=False):
         print("Sending a %s request" % request_type)
         print("request_data:", request_data)
 
-
     # Send the request
     socket.send_string(
         request_type + request_data.to_json()
@@ -70,7 +69,7 @@ def send_hello_request(socket):
     return send_request(socket, request_type, request_data)
 
 
-def send_costs_request(socket, layouts, verbose=False):
+def send_costs_request(socket, manager_id, layouts, verbose=False):
     """Send an EvaluationRequest and return the response."""
     # Print a message
     if verbose:
@@ -79,6 +78,7 @@ def send_costs_request(socket, layouts, verbose=False):
     # Construct the request
     request_type = "E"
     request_data = EvaluationRequest(
+        manager_id=manager_id,
         layouts=layouts,
     )
 

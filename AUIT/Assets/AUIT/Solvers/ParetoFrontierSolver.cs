@@ -17,59 +17,68 @@ namespace AUIT.Solvers
     public class ParetoFrontierSolver : IAsyncSolver
     {
         public AdaptationManager AdaptationManager { get; set; }
-        public NetMQRuntime ServerRuntime;
+        // private NetMQRuntime _serverRuntime;
         private NetMQRuntime _clientRuntime;
-        private Thread _serverThread;
+        // private Thread _serverThread;
+        private PythonServer _pythonServer;
+        private Thread _clientThread;
 
         public (List<List<Layout>>, float, float) Result { get; private set; }
 
+        public void Destroy()
+        {
+            _pythonServer.UnbindSolver(this);
+        }
+
         public void Initialize()
         {
+            _pythonServer = PythonServer.GetInstance();
+            _pythonServer.BindSolver(this);
             
-            _serverThread = new Thread(Networking);
-            _serverThread.Start();
+            // _serverThread = new Thread(Networking);
+            // _serverThread.Start();
 
-            void Networking()
-            {
-                using (ServerRuntime = new NetMQRuntime())
-                {
-                     Debug.Log("attempting to start server");
-                     ServerRuntime.Run(ServerAsync()); 
-                }
-                
-                async Task ServerAsync()
-                {
-                    AsyncIO.ForceDotNet.Force();
-                    using var server = new ResponseSocket("tcp://*:5556");
-                    Debug.Log("server started");
-                        
-                    while (true)
-                    {
-                        string message;
-                        (message, _) = await server.ReceiveFrameStringAsync();
-                        // Debug.Log($"Received a request at endpoint: {message[0]}");
-                        
-                        switch (message[0])
-                        {
-                            case 'E':
-                                string payload = message.Substring(1);
-                                // Debug.Log("computing costs: " + payload);
-                                var evaluationResponse = new EvaluationResponse
-                                {
-                                    costs = AdaptationManager.EvaluateLayouts(payload)
-                                };
-                                string response = JsonConvert.SerializeObject(evaluationResponse);
-                                // Debug.Log("Sending evaluation response: " + response);
-                                server.SendFrame("e" + response);
-                                break;
-                            default:
-                                Debug.Log("Unknown request");
-                                server.SendFrame("Unknown request");
-                                break;
-                        }
-                    }
-                }
-            }
+            // void Networking()
+            // {
+            //     using (_serverRuntime = new NetMQRuntime())
+            //     {
+            //          Debug.Log("attempting to start server");
+            //          _serverRuntime.Run(ServerAsync()); 
+            //     }
+            //     
+            //     async Task ServerAsync()
+            //     {
+            //         AsyncIO.ForceDotNet.Force();
+            //         using var server = new ResponseSocket("tcp://*:5556");
+            //         Debug.Log("server started");
+            //             
+            //         while (true)
+            //         {
+            //             string message;
+            //             (message, _) = await server.ReceiveFrameStringAsync();
+            //             // Debug.Log($"Received a request at endpoint: {message[0]}");
+            //             
+            //             switch (message[0])
+            //             {
+            //                 case 'E':
+            //                     string payload = message.Substring(1);
+            //                     // Debug.Log("computing costs: " + payload);
+            //                     var evaluationResponse = new EvaluationResponse
+            //                     {
+            //                         costs = AdaptationManager.EvaluateLayouts(payload)
+            //                     };
+            //                     string response = JsonConvert.SerializeObject(evaluationResponse);
+            //                     // Debug.Log("Sending evaluation response: " + response);
+            //                     server.SendFrame("e" + response);
+            //                     break;
+            //                 default:
+            //                     Debug.Log("Unknown request");
+            //                     server.SendFrame("Unknown request");
+            //                     break;
+            //             }
+            //         }
+            //     }
+            // }
         }
 
         public IEnumerator OptimizeCoroutine(List<Layout> initialLayouts, List<List<LocalObjective>> objectives, List<float> hyperparameters)
@@ -81,6 +90,7 @@ namespace AUIT.Solvers
             int nObjectives = objectives.Sum(layout => layout.Count);
             var optimizationRequest = new
             OptimizationRequest {
+                managerId = AdaptationManager.Id,
                 initialLayout = UIConfiguration.FromLayout(initialLayouts),
                 nObjectives = nObjectives
             };
@@ -105,6 +115,7 @@ namespace AUIT.Solvers
                         // Debug.Log("request sent: " + "O" + JsonUtility.ToJson(optimizationRequest));
                         (result, _) = await requestSocket.ReceiveFrameStringAsync();
                         _clientRuntime.Dispose();
+                        requestSocket.Close();
                     }
                 }
             }
@@ -113,6 +124,9 @@ namespace AUIT.Solvers
             {
                 yield return null;
             }
+            
+            if (clientThread.IsAlive)
+                clientThread.Join();
             
             var optimizationResponse = JsonUtility.FromJson<OptimizationResponse>(result.Substring(1));
             var solutions = JsonUtility.FromJson<Wrapper<string>>(optimizationResponse.solutions);
