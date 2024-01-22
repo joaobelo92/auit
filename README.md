@@ -6,9 +6,8 @@ For more information about each different component refer to the publication.
 
 ## To run and use AUIT
 AUIT can be imported into an existing project by importing its respective Unity package in Unity.
-The toolkit can be tested in the Unity Editor (v2020.3.33f1) and does not require additional software (see https://unity3d.com/get-unity/download/archive for installing Unity 2020.3.33f1).
-However, running the scenes on a Microsoft HoloLens 2 requires the installation of certain compilation tools (see https://docs.microsoft.com/en-us/windows/mixed-reality/develop/install-the-tools).
-This repository uses MRTK to simulate camera movement and prototyping with 3D UIs, but AUIT can be used without it (it has no dependencies).
+The toolkit can be tested in the Unity Editor (v2022.3) and does not require additional software.
+We are working on new features for AUIT. Reach out to jbelo@cs.uni-saarland.de if interested.
 
 ## Getting started
 1. See example scene for a basic setup with one cube virtual object.
