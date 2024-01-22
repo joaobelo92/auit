@@ -6,7 +6,7 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 0
-    path: Assets/AUIT/Scenes/AdaptationManagerTest.unity
+    path: Assets/AUIT/Extras/Scenes/AdaptationManagerTest.unity
     guid: 9fc0d4010bbf28b4594072e72b8655ab
   - enabled: 0
     path: Assets/Video/Scenes/Demo1 - UI Breakdown & Adaptation.unity
@@ -34,5 +34,5 @@ EditorBuildSettings:
     guid: 0e0d9745cbbde114cad91b4891406c29
   m_configObjects:
     Unity.XR.WindowsMR.Settings: {fileID: 11400000, guid: a7cc499ad1cb2624d82a66cc184bdb74, type: 2}
-    com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 8af70b3845e9cda43910490281b74021, type: 2}
+    com.unity.xr.management.loader_settings: {fileID: 11400000, guid: eb093bd22e91c834d90872a1cfc74b8c, type: 2}
     com.unity.xr.openxr.settings4: {fileID: 11400000, guid: 02f4cc2bad1ab4cd592661859b8d8760, type: 2}
