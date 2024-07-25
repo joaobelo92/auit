@@ -5,31 +5,26 @@ using UnityEngine;
 
 namespace AUIT.PropertyTransitions
 {
-    public class SmoothMovementTransition : PropertyTransition, IPositionAdaptation
+    public class SmoothMovementTransition : PropertyTransition
     {
         [SerializeField]
         private float transitionSpeed = 1.0f;
 
-        public void Adapt(Transform objectTransform, Vector3 target)
+        public override void Adapt(Layout layout)
         {
-            StartCoroutine(SmoothMovement(objectTransform, target, transitionSpeed));
+            StartCoroutine(SmoothMovement(layout, transitionSpeed));
         }
 
-        public void Adapt(GameObject ui, List<Layout> target)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        private IEnumerator SmoothMovement(Transform objectTransform, Vector3 target, float adaptationSpeed)
+        private IEnumerator SmoothMovement(Layout layout, float adaptationSpeed)
         {
             float startime = Time.time;
-            Vector3 startPosition = objectTransform.transform.position;
-            Vector3 endPosition = target;
+            Vector3 startPosition = transform.position;
+            Vector3 endPosition = layout.Position;
  
             // AdaptationManager.IsAdapting = true;
             while (startPosition != endPosition && (Time.time - startime) * adaptationSpeed < 1f)
             {
-                Vector3 result = Vector3.Lerp(startPosition, target, (Time.time - startime) * adaptationSpeed);
+                Vector3 result = Vector3.Lerp(startPosition, endPosition, (Time.time - startime) * adaptationSpeed);
                 if (!float.IsNaN(result.x) && !float.IsNaN(result.y) && !float.IsNaN(result.z))
                     transform.position = result;
 

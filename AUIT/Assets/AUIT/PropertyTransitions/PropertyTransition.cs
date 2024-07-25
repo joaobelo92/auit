@@ -22,34 +22,18 @@ namespace AUIT.PropertyTransitions
         {
             if (AdaptationManager != null)
             {
-                AdaptationManager.RegisterPropertyTransition(this);
+                AdaptationManager.RegisterTransition(this);
             }
         }
         protected virtual void OnDestroy()
         {
             if (AdaptationManager != null)
             {
-                AdaptationManager.UnregisterPropertyTransition(this);
+                AdaptationManager.UnregisterTransition(this);
             }
         }
-    }
-
-    public interface IPositionAdaptation
-    {
-        public void Adapt(Transform objectTransform, Vector3 target);
         
-        public void Adapt(GameObject ui, List<Layout> target);
-    }
-
-    public interface IRotationAdaptation
-    {
-        public void Adapt(Transform objectTransform, Quaternion target);
-        public void Adapt(GameObject ui, List<Layout> target);
-    }
-
-    public interface IScaleAdaptation
-    {
-        public void Adapt(Transform objectTransform, Vector3 target);
-        public void Adapt(GameObject ui, List<Layout> target);
+        
+        public abstract void Adapt(Layout layout);
     }
 }

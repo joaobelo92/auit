@@ -1,29 +1,37 @@
 using System.Collections.Generic;
 using AUIT.AdaptationObjectives.Definitions;
+using UnityEditor;
 using UnityEngine;
 
 namespace AUIT.AdaptationTriggers
 {
     public class OnRequestOptimizationTrigger : AdaptationTrigger
     {
-        
-        [SerializeField]
-        private float timeoutThreshold = 100000f;
-        
-        public override void ApplyStrategy()
+        public override async void ApplyStrategy()
         {
-            Debug.Log("Interval Optimization Running...");
+            if (enabled == false)
+                return;
+            
+            var (layouts, cost) = await AdaptationManager.OptimizeLayout();
+            
+            AdaptationManager.Adapt(layouts);
         }
+    }
+    
+    [CustomEditor(typeof(OnRequestOptimizationTrigger))]
+    public class MyComponentEditor : Editor
+    {
+        public override void OnInspectorGUI()
+        {
+            // Draw the default Inspector
+            DrawDefaultInspector();
 
-        public void OptimizationRequest()
-        {
-            Debug.Log("You asked for it!");
-            StartCoroutine(AdaptationManager.OptimizeLayoutAndAdapt(timeoutThreshold, AdaptationLogic));
-        }
-        
-        private void AdaptationLogic(List<List<Layout>> layouts, float cost)
-        {   
-            // AdaptationManager.uiElements[i].GetComponent<AdaptationManager>().Adapt(layouts[i]);
+            // Add a custom button
+            OnRequestOptimizationTrigger trigger = (OnRequestOptimizationTrigger)target;
+            if (GUILayout.Button("Request Optimization"))
+            {
+                trigger.ApplyStrategy();
+            }
         }
     }
 }

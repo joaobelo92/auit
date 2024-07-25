@@ -22,7 +22,7 @@ namespace AUIT.AdaptationTriggers
             if (AdaptationManager == null)
                 return;
 
-            AdaptationManager.RegisterAdaptationTrigger(this);
+            AdaptationManager.RegisterTrigger(this);
         }
 
         protected virtual void OnDisable()
@@ -30,7 +30,7 @@ namespace AUIT.AdaptationTriggers
             if (AdaptationManager == null)
                 return;
                 
-            AdaptationManager.UnregisterAdaptationTrigger(this);
+            AdaptationManager.UnregisterTrigger(this);
         }
 
         // Current idea: Manager knows how to invoke solver and keeps track of update rate

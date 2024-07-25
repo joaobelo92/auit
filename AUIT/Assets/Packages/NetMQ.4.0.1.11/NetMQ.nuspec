@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>NetMQ</id>
+    <version>4.0.1.11</version>
+    <authors>NetMQ</authors>
+    <licenseUrl>https://github.com/zeromq/netmq/blob/master/COPYING.LESSER</licenseUrl>
+    <icon>NetMQLogoSquare-256px.png</icon>
+    <projectUrl>https://github.com/zeromq/netmq</projectUrl>
+    <description>A 100% native C# port of the lightweight high performance messaging library ZeroMQ</description>
+    <tags>ZeroMQ 0MQ CLRZMQ NetMQ Messaging ZMQ transport distributed</tags>
+    <repository type="git" url="https://github.com/zeromq/netmq.git" commit="40504cd28b2765593ec79a81afe7fc3fbf102d27" />
+    <dependencies>
+      <group targetFramework=".NETFramework4.5">
+        <dependency id="AsyncIO" version="0.1.69" exclude="Build,Analyzers" />
+        <dependency id="NaCl.Net" version="0.1.13" exclude="Build,Analyzers" />
+        <dependency id="System.Threading.Tasks.Extensions" version="4.5.4" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework=".NETFramework4.7">
+        <dependency id="AsyncIO" version="0.1.69" exclude="Build,Analyzers" />
+        <dependency id="NaCl.Net" version="0.1.13" exclude="Build,Analyzers" />
+        <dependency id="System.Threading.Tasks.Extensions" version="4.5.4" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework=".NETStandard2.0">
+        <dependency id="AsyncIO" version="0.1.69" exclude="Build,Analyzers" />
+        <dependency id="NaCl.Net" version="0.1.13" exclude="Build,Analyzers" />
+        <dependency id="System.ServiceModel.Primitives" version="4.9.0" exclude="Build,Analyzers" />
+        <dependency id="System.Threading.Tasks.Extensions" version="4.5.4" exclude="Build,Analyzers" />
+        <dependency id="System.ValueTuple" version="4.5.0" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework=".NETStandard2.1">
+        <dependency id="AsyncIO" version="0.1.69" exclude="Build,Analyzers" />
+        <dependency id="NaCl.Net" version="0.1.13" exclude="Build,Analyzers" />
+        <dependency id="System.ServiceModel.Primitives" version="4.9.0" exclude="Build,Analyzers" />
+        <dependency id="System.ValueTuple" version="4.5.0" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+    <frameworkAssemblies>
+      <frameworkAssembly assemblyName="Microsoft.CSharp" targetFramework=".NETFramework4.5, .NETFramework4.7" />
+      <frameworkAssembly assemblyName="System" targetFramework=".NETFramework4.5, .NETFramework4.7" />
+      <frameworkAssembly assemblyName="System.ServiceModel" targetFramework=".NETFramework4.5, .NETFramework4.7" />
+    </frameworkAssemblies>
+  </metadata>
+</package>

@@ -52,7 +52,7 @@ namespace AUIT.AdaptationTriggers
             return enabled && !costIsBelowOptiThreshold;
         }
 
-        public override void ApplyStrategy()
+        public override async void ApplyStrategy()
         {
             if (AdaptationManager.isActiveAndEnabled == false)
                 return;
@@ -66,12 +66,12 @@ namespace AUIT.AdaptationTriggers
             //     return;
             // }
 
-            var (layouts, cost) = AdaptationManager.OptimizeLayout();
+            var (layouts, cost) = await AdaptationManager.OptimizeLayout();
 
             bool shouldAdapt = previousCost - cost > adaptationThreshold;
             print($"cost diff: {previousCost - cost}");
-            // if (shouldAdapt)
-            //     AdaptationManager.Adapt(layouts);
+            if (shouldAdapt)
+                AdaptationManager.Adapt(layouts);
         }
     }
 }

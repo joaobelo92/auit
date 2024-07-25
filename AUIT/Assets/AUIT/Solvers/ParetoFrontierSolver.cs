@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 using AUIT.AdaptationObjectives;
 using AUIT.AdaptationObjectives.Definitions;
 using AUIT.Extras;
+using Cysharp.Threading.Tasks;
 using NetMQ;
 using NetMQ.Sockets;
-using Newtonsoft.Json;
 using UnityEngine;
 
 namespace AUIT.Solvers
@@ -34,54 +34,9 @@ namespace AUIT.Solvers
         {
             _pythonServer = PythonServer.GetInstance();
             _pythonServer.BindSolver(this);
-            
-            // _serverThread = new Thread(Networking);
-            // _serverThread.Start();
-
-            // void Networking()
-            // {
-            //     using (_serverRuntime = new NetMQRuntime())
-            //     {
-            //          Debug.Log("attempting to start server");
-            //          _serverRuntime.Run(ServerAsync()); 
-            //     }
-            //     
-            //     async Task ServerAsync()
-            //     {
-            //         AsyncIO.ForceDotNet.Force();
-            //         using var server = new ResponseSocket("tcp://*:5556");
-            //         Debug.Log("server started");
-            //             
-            //         while (true)
-            //         {
-            //             string message;
-            //             (message, _) = await server.ReceiveFrameStringAsync();
-            //             // Debug.Log($"Received a request at endpoint: {message[0]}");
-            //             
-            //             switch (message[0])
-            //             {
-            //                 case 'E':
-            //                     string payload = message.Substring(1);
-            //                     // Debug.Log("computing costs: " + payload);
-            //                     var evaluationResponse = new EvaluationResponse
-            //                     {
-            //                         costs = AdaptationManager.EvaluateLayouts(payload)
-            //                     };
-            //                     string response = JsonConvert.SerializeObject(evaluationResponse);
-            //                     // Debug.Log("Sending evaluation response: " + response);
-            //                     server.SendFrame("e" + response);
-            //                     break;
-            //                 default:
-            //                     Debug.Log("Unknown request");
-            //                     server.SendFrame("Unknown request");
-            //                     break;
-            //             }
-            //         }
-            //     }
-            // }
         }
 
-        public IEnumerator OptimizeCoroutine(List<Layout> initialLayouts, List<List<LocalObjective>> objectives, List<float> hyperparameters)
+        public async UniTask<(List<List<Layout>>, float)> OptimizeCoroutine(List<Layout> initialLayouts, List<List<LocalObjective>> objectives, List<float> hyperparameters)
         {
             Result = (null, 0f, 0f);
             
@@ -95,9 +50,12 @@ namespace AUIT.Solvers
                 nObjectives = nObjectives
             };
             
-            var clientThread = new Thread(Client);
-            clientThread.Start();
             string result = "";
+            Client();
+            
+            // var clientThread = new Thread(Client);
+            // clientThread.Start();
+            // string result = "";
             
             void Client()
             {
@@ -120,13 +78,10 @@ namespace AUIT.Solvers
                 }
             }
             
-            while (result == "")
-            {
-                yield return null;
-            }
+            await UniTask.WaitUntil(() => result != "");
             
-            if (clientThread.IsAlive)
-                clientThread.Join();
+            // if (clientThread.IsAlive)
+            //     clientThread.Join();
             
             var optimizationResponse = JsonUtility.FromJson<OptimizationResponse>(result.Substring(1));
             var solutions = JsonUtility.FromJson<Wrapper<string>>(optimizationResponse.solutions);
@@ -154,8 +109,7 @@ namespace AUIT.Solvers
                 suggestedUIConfigurations.Insert(0, suggestedAdaptation.items.ToList());
             }
 
-            // todo: add costs
-            Result = (suggestedUIConfigurations, 0f, 0f);
+            return (suggestedUIConfigurations, 0f);
         }
     }
 }

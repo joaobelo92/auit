@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using AUIT.AdaptationObjectives;
 using AUIT.AdaptationObjectives.Definitions;
+using Cysharp.Threading.Tasks;
 
 namespace AUIT.Solvers
 {
@@ -12,6 +13,6 @@ namespace AUIT.Solvers
         (List<List<Layout>>, float, float) Result { get; }
         
         void Initialize();
-        IEnumerator OptimizeCoroutine(List<Layout> initialLayouts, List<List<LocalObjective>> objectives, List<float> hyperparameters);
+        UniTask<(List<List<Layout>>, float)> OptimizeCoroutine(List<Layout> initialLayouts, List<List<LocalObjective>> objectives, List<float> hyperparameters);
     }
 }

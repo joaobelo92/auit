@@ -8,6 +8,12 @@ namespace AUIT.AdaptationObjectives
 {
     public class LocalObjectiveHandler : MonoBehaviour
     {
+        private PropertyTransition[] _propertyTransitions;
+        private void Start()
+        {
+            _propertyTransitions = this.GetComponents<PropertyTransition>();
+        }
+
         public string Id { get; } = Guid.NewGuid().ToString();
 
         private readonly List<Type> _objectiveTypes = new ();
@@ -63,7 +69,10 @@ namespace AUIT.AdaptationObjectives
 
         public void Transition(Layout layout)
         {
-            // TODO: loop and apply all transitions, locally manage them
+            foreach (PropertyTransition propertyTransition in _propertyTransitions)
+            {
+                propertyTransition.Adapt(layout);
+            }
         }
 
         #endregion

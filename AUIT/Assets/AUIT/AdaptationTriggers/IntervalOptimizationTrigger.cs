@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using AUIT.AdaptationObjectives.Definitions;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace AUIT.AdaptationTriggers
@@ -9,31 +11,24 @@ namespace AUIT.AdaptationTriggers
 
         [SerializeField]
         private float interval = 5f;
-        
-        [SerializeField]
-        private float timeoutThreshold = 10f;
-        
 
-        protected void Start()
+        void Start()
         {
-            InvokeRepeating("ApplyStrategy", 0.5f, interval);
+            ApplyStrategy();
         }
 
-        public override void ApplyStrategy()
+        public override async void ApplyStrategy()
         {
             if (enabled == false)
                 return;
 
             Debug.Log("Interval Optimization Running...");
-
-            Debug.Log(AdaptationManager);
             
-            StartCoroutine(AdaptationManager.OptimizeLayoutAndAdapt(timeoutThreshold, AdaptationLogic));
-        }
-
-        private void AdaptationLogic(List<List<Layout>> layouts, float cost)
-        {
+            var (layouts, cost) = await AdaptationManager.OptimizeLayout();
+            
             AdaptationManager.Adapt(layouts);
+            await UniTask.Delay(TimeSpan.FromSeconds(interval));
+            ApplyStrategy();
         }
     }
 }
