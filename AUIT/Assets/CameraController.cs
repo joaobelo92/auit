@@ -19,20 +19,16 @@ public class CameraController : MonoBehaviour
         float verticalInput = Input.GetAxis("Vertical");
         float upDownInput = Input.GetAxis("UpDown");
 
-        // Get the camera's forward and right vectors
-        Vector3 cameraForward = transform.forward;
-        Vector3 cameraRight = transform.right;
-
-        // Flatten the vectors on the XZ plane
-        cameraForward.y = 0;
-        cameraRight.y = 0;
-        cameraForward.Normalize();
-        cameraRight.Normalize();
-
         // Calculate the desired movement direction based on camera rotation
-        Vector3 moveDirection = (cameraForward * verticalInput + cameraRight * horizontalInput + Vector3.up * upDownInput)
-                                * moveSpeed * Time.deltaTime;
-        transform.Translate(moveDirection);
+        transform.Translate(
+            new Vector3(
+                horizontalInput,
+                upDownInput,
+                verticalInput
+            )
+            * moveSpeed
+            * Time.deltaTime
+        );
 
         // Check for mouse rotation button
         if (Input.GetMouseButtonDown(1))
