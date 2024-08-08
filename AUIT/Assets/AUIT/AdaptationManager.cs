@@ -62,6 +62,8 @@ namespace AUIT
 
         private (GameObject, LocalObjectiveHandler)[] _gameObjects;
 
+        // flag to signal that the manager has been initialized
+        [NonSerialized]
         public bool initialized = false;
 
         #region MonoBehaviour Implementation
