@@ -10,10 +10,18 @@ namespace AUIT.AdaptationTriggers
     {
 
         [SerializeField]
+        [Tooltip("Interval in seconds between each optimization")]
         private float interval = 5f;
 
         void Start()
         {
+            // wait till AdaptationManager is initialized
+            while (AdaptationManager.initialized != true)
+            {
+                // wait for 100ms
+                System.Threading.Thread.Sleep(100);
+            }
+
             ApplyStrategy();
         }
 

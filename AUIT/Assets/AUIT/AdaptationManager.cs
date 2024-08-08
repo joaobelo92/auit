@@ -59,7 +59,10 @@ namespace AUIT
         private Layout _layout;
 
         public List<GameObject> gameObjectsToOptimize;
+
         private (GameObject, LocalObjectiveHandler)[] _gameObjects;
+
+        public bool initialized = false;
 
         #region MonoBehaviour Implementation
 
@@ -95,6 +98,9 @@ namespace AUIT
                 _asyncSolver.Initialize();
                 InvokeRepeating(nameof(RunJobs), 0, 0.0001f);
             }
+
+            // Set flag to signal that the manager has been initialized
+            initialized = true;
         }
 
         private void OnDestroy()
