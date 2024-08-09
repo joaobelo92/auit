@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace AUIT.PropertyTransitions
 {
-    public class SmoothMovementTransition : PropertyTransition
+    public class LinearInterpolationTransition : PropertyTransition
     {
         [SerializeField]
         private float movementSpeed = 1.0f;
@@ -16,7 +16,7 @@ namespace AUIT.PropertyTransitions
 
         public override void Adapt(Layout layout)
         {
-            StartCoroutine(SmoothMovement(layout));
+            StartCoroutine(interpolateLinearly(layout));
         }
 
         private bool transitionNotDone(float start, float speed)
@@ -24,7 +24,7 @@ namespace AUIT.PropertyTransitions
             return (Time.time - start) * speed < 1f;
         }
 
-        private IEnumerator SmoothMovement(Layout layout)
+        private IEnumerator interpolateLinearly(Layout layout)
         {
             float starttime = Time.time;
             Vector3 startPosition = transform.position;

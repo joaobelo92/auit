@@ -7,6 +7,12 @@ namespace AUIT.PropertyTransitions
 {
     public class InstantaneousTransition : PropertyTransition
     {
+        [SerializeField]
+        private bool transformPosition = true;
+        [SerializeField]
+        private bool transformRotation = true;
+        [SerializeField]
+        private bool transformScale = true;
 
         public override void Adapt(Layout layout)
         {
@@ -15,9 +21,19 @@ namespace AUIT.PropertyTransitions
 
         private IEnumerator transitionInstantaneously(Layout layout)
         {
-            transform.position = layout.Position;
-            transform.rotation = layout.Rotation;
-            transform.localScale = layout.Scale;
+            if (transformPosition) {
+                transform.position = layout.Position;
+            }
+
+            if (transformRotation) {
+                transform.rotation = layout.Rotation;
+            }
+
+            if (transformScale) {
+                transform.localScale = layout.Scale;
+            }
+
+            yield return null;
         }
     }
 }
