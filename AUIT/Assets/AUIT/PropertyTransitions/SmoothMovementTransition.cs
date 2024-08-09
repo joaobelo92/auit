@@ -8,9 +8,10 @@ namespace AUIT.PropertyTransitions
     public class SmoothMovementTransition : PropertyTransition
     {
         [SerializeField]
-
         private float movementSpeed = 1.0f;
+        [SerializeField]
         private float rotationSpeed = 1.0f;
+        [SerializeField]
         private float scalingSpeed = 1.0f;
 
         public override void Adapt(Layout layout)
