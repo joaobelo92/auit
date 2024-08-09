@@ -16,7 +16,9 @@ namespace AUIT.PropertyTransitions
 
         public override void Adapt(Layout layout)
         {
-            StartCoroutine(transitionInstantaneously(layout));
+            if (this.enabled) {
+                StartCoroutine(transitionInstantaneously(layout));
+            }
         }
 
         private IEnumerator transitionInstantaneously(Layout layout)

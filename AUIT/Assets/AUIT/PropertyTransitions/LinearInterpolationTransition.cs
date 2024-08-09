@@ -16,7 +16,10 @@ namespace AUIT.PropertyTransitions
 
         public override void Adapt(Layout layout)
         {
-            StartCoroutine(interpolateLinearly(layout));
+            // if the adaptation is enabled, start the interpolation
+            if (this.enabled) {
+                StartCoroutine(interpolateLinearly(layout));
+            }
         }
 
         private bool transitionNotDone(float start, float speed)
