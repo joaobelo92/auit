@@ -50,23 +50,23 @@ namespace AUIT.PropertyTransitions
             // find the t value that is closest to the time
             float accuracyRange = 0.01f / totalTime;
             float t = 0.5f;
-            float nextT = 0.5f;
             float stepsize = 0.5f;
-            float currentX = 2.0f;
-            while (Mathf.Abs(currentX - time) > accuracyRange)
+            float currentX = time;
+            int i = 0;
+            do
             {
-                t = nextT;
-                currentX = this.cubicBezierFromPointDimensions(t, this.point1.x, this.point2.x);
+                i++;
                 if (currentX < time)
                 {
-                    nextT += stepsize;
+                    t += stepsize;
                 }
                 else if (currentX > time)
                 {
-                    nextT -= stepsize;
+                    t -= stepsize;
                 }
+                currentX = this.cubicBezierFromPointDimensions(t, this.point1.x, this.point2.x);
                 stepsize /= 2;
-            }
+            } while (Mathf.Abs(currentX - time) > accuracyRange);
             
             float y = this.cubicBezierFromPointDimensions(t, this.point1.y, this.point2.y);
             return y;
@@ -220,7 +220,7 @@ namespace AUIT.PropertyTransitions
 
             // calculate the transition value based on the current Bezier curve
             // to improve performance, we give accurace TODO: remove when algorithm is improved
-            return this.transitionBezier.getBezierValue(timepoint, timespan);
+            return this.transitionBezier.getBezierValue(timepoint, this.duration);
         }
     }
 
