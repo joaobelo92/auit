@@ -33,20 +33,42 @@ namespace AUIT.PropertyTransitions
             return this.point1 == list[0] && this.point2 == list[1];
         }
 
-        public float getBezierValue(float time)
+        private float cubicBezierFromPointDimensions(float t, float p1, float p2)
         {
-            // TODO: implement correctly
-            // calculate the bezier y value for a given time (which is x in this case)
-            // P(t) = (1-t)**3 * P0 + t*P1*(3*(1-t)**2) + P2*(3*(1-t)*t**2) + P3*t**3
-            float x = time;
-            // calculate t based on x
-            // x(t) = x1*3*(1-t)**2*t + x2*3*(1-t)*t**2 + t**3  
-            float t = x;
             // first part of formula will always be 0 & last part will always be t**3 (since P3 is (1,1))
-            float y =
-                this.point1.y * 3 * Mathf.Pow((1-t), 2) * t +
-                this.point2.y * 3 * (1-t) * Mathf.Pow(t, 2) +
-                Mathf.Pow(t, 3);
+            return  p1 * 3 * Mathf.Pow((1-t), 2) * t +
+                    p2 * 3 * (1-t) * Mathf.Pow(t, 2) +
+                    Mathf.Pow(t, 3);
+        }
+
+        public float getBezierValue(float time, float totalTime)
+        {
+            // TODO: implement better (by rearranging the formula)
+            // TODO: maybe precompute or improve step algorithm at least
+            // !!! VERY INEFFICIENT !!!
+            // For now interpolate
+            // find the t value that is closest to the time
+            float accuracyRange = 0.01f / totalTime;
+            float t = 0.5f;
+            float nextT = 0.5f;
+            float stepsize = 0.5f;
+            float currentX = 2.0f;
+            while (Mathf.Abs(currentX - time) > accuracyRange)
+            {
+                t = nextT;
+                currentX = this.cubicBezierFromPointDimensions(t, this.point1.x, this.point2.x);
+                if (currentX < time)
+                {
+                    nextT += stepsize;
+                }
+                else if (currentX > time)
+                {
+                    nextT -= stepsize;
+                }
+                stepsize /= 2;
+            }
+            
+            float y = this.cubicBezierFromPointDimensions(t, this.point1.y, this.point2.y);
             return y;
         }
     }
@@ -197,7 +219,8 @@ namespace AUIT.PropertyTransitions
             timepoint = Mathf.Min(1, Mathf.Max(0, timepoint));
 
             // calculate the transition value based on the current Bezier curve
-            return this.transitionBezier.getBezierValue(timepoint);
+            // to improve performance, we give accurace TODO: remove when algorithm is improved
+            return this.transitionBezier.getBezierValue(timepoint, timespan);
         }
     }
 
