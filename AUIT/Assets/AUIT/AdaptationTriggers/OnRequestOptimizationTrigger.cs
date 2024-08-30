@@ -16,6 +16,14 @@ namespace AUIT.AdaptationTriggers
             
             AdaptationManager.Adapt(layouts);
         }
+
+        private void Update()
+        {
+            if (Input.GetButtonDown("Optimization Request"))
+            {
+                ApplyStrategy();
+            }
+        }
     }
     
     [CustomEditor(typeof(OnRequestOptimizationTrigger))]
