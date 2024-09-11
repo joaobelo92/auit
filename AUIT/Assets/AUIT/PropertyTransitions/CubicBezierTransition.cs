@@ -19,13 +19,47 @@ namespace AUIT.PropertyTransitions
         [SerializeField]
         private Vector2 point2;
 
+        public delegate float BezierEasingFunction(float t, float totalTime);
+        // bezier calculation function
+        private BezierEasingFunction bezierFunction;
+
+        const int NEWTON_ITERATIONS = 4;
+        const float NEWTON_MIN_SLOPE = 0.001f;
+        const float SUBDIVISION_PRECISION = 0.0000001f;
+        const int SUBDIVISION_MAX_ITERATIONS = 10;
+
+        const int kSplineTableSize = 11;
+        const float kSampleStepSize = 1.0f / (kSplineTableSize - 1.0f);
+        private float[] sampleValues = new float[kSplineTableSize];
+
         // ensure x values are between 0 and 1 to prevent more than one result for any given t
         public CubicBezier(float p1X, float p1Y, float p2X, float p2Y)
+        {
+            setValues(p1X, p1Y, p2X, p2Y);
+        }
+
+        // callback to when some values might have changed
+        public void OnValidate() {
+            // ensure values are correctly set and correct compute function is determined
+            setValues(this.point1.x, this.point1.y, this.point2.x, this.point2.y);
+        }
+
+        private void setValues(float p1X, float p1Y, float p2X, float p2Y)
         {
             p1X = Mathf.Min(1, Mathf.Max(0, p1X));
             p2X = Mathf.Min(1, Mathf.Max(0, p2X));
             this.point1 = new Vector2(p1X, p1Y);
             this.point2 = new Vector2(p2X, p2Y);
+
+            if (p1X == p1Y && p2X == p2Y) {
+                this.bezierFunction = this.linearEasing;
+            } else {
+                // Precompute samples table
+                for (int i = 0; i < kSplineTableSize; ++i) {
+                    this.sampleValues[i] = this.calcBezier(i * kSampleStepSize, p1X, p2X);
+                }
+                this.bezierFunction = this.nodeJsMethodToFindY;
+            }
         }
 
         public Vector2[] toList()
@@ -38,6 +72,7 @@ namespace AUIT.PropertyTransitions
             return this.point1 == list[0] && this.point2 == list[1];
         }
 
+        ////// outdated naive methods start
         // TODO: optimize more by rearranging the formula
         private float cubicBezierFromPointDimensions(float t, float p1, float p2)
         {
@@ -45,53 +80,6 @@ namespace AUIT.PropertyTransitions
             return  p1 * 3 * Mathf.Pow((1-t), 2) * t +
                     p2 * 3 * (1-t) * Mathf.Pow(t, 2) +
                     Mathf.Pow(t, 3);
-        }
-
-        // TODO: optimize more by rearranging the formula
-        private float calculateTangent(float t, float p1, float p2)
-        {
-            // calculate the tangent of the curve at the given t value (1st derivate)
-            return  3 * (p1 - (4 * p1 + 3 * t * p1) * t) +
-                    3 * t * (2 * p2 - 3 * t * p2) +
-                    3 * t * t;
-        }
-
-        private float newtonsMethodToFindT(float time, float totalTime) {
-            // use Newton's method to find the t value that gives the closest x value to the time
-            // https://en.wikipedia.org/wiki/Newton's_method
-            // the minimal accuracy for the calculated time value
-            float accuracy = 0.01f / totalTime;
-            // the initial t value, choose current time value as approximation
-            float approximatedT = time;
-            // the difference between the time and calculated x value (max 1)
-            float diffTimeX = 1.0f;
-            // to prevent infinite loops, set a counter
-            // WARNING: limits the accuracy of the result (for very high total times)
-            int counter = 0;
-            while (Mathf.Abs(diffTimeX) > accuracy && counter < 100)
-            {
-                counter++;
-                // calculate the tangent of the curve at the current t value
-                float tangent = Mathf.Abs(this.calculateTangent(approximatedT, this.point1.x, this.point2.x));
-                // if the tangent is 0, we have found the correct t value
-                if (tangent == 0)
-                {
-                    break;
-                }
-                // calculate the bezier value at the current t value
-                diffTimeX = this.cubicBezierFromPointDimensions(approximatedT, this.point1.x, this.point2.x) - time;
-                Debug.Log("diffTimeX: " + diffTimeX + " time: " + time + " t: " + approximatedT + " tangent: " + tangent);
-                // calculate the new t value based on the tangent
-                approximatedT -= diffTimeX / tangent;
-                // DEBUG
-                if (approximatedT > 1 || approximatedT < 0)
-                {
-                    Debug.Log("Newton's method failed, t value out of bounds: " + approximatedT);
-                    break;
-                }
-            }
-            Debug.Log("Newton's method iterations: " + counter + " with diffTimeX: " + diffTimeX + " and found t: " + approximatedT);
-            return approximatedT;
         }
 
         // TODO: replace with newtons method
@@ -119,52 +107,104 @@ namespace AUIT.PropertyTransitions
             return t;
         }
 
-        private float firefoxMethodToFindT(float time, float totalTime)
-        {
-            float A(float aA1, float aA2) { return 1.0f - 3.0f * aA2 + 3.0f * aA1; }
-            float B(float aA1, float aA2) { return 3.0f * aA2 - 6.0f * aA1; }
-            float C(float aA1)  { return 3.0f * aA1; }
-
-            // Returns x(t) given t, x1, and x2, or y(t) given t, y1, and y2.
-            float CalcBezier(float aT, float aA1, float aA2) {
-                return ((A(aA1, aA2)*aT + B(aA1, aA2))*aT + C(aA1))*aT;
-            }
-
-            // Returns dx/dt given t, x1, and x2, or dy/dt given t, y1, and y2.
-            float GetSlope(float aT, float aA1, float aA2) {
-                return 3.0f * A(aA1, aA2)*aT*aT + 2.0f * B(aA1, aA2) * aT + C(aA1);
-            }
-
-            float GetTForX(float aX) {
-                // Newton raphson iteration
-                var aGuessT = aX;
-                var currentX = 0.0f;
-                for (var i = 0; i < 4; ++i) {
-                    var currentSlope = GetSlope(aGuessT, this.point1.x, this.point2.x);
-                    if (currentSlope == 0.0) return aGuessT;
-                    currentX = CalcBezier(aGuessT, this.point1.x, this.point2.x) - aX;
-                    aGuessT -= currentX / currentSlope;
-                }
-                Debug.Log("currentX: " + currentX);
-                return aGuessT;
-            }
-
-            return GetTForX(time);
+        private float stupidMethodToFindY(float time, float totalTime) {
+            float t = stupidMethodToFindT(time, totalTime);
+            return this.cubicBezierFromPointDimensions(t, this.point1.y, this.point2.y);
         }
+        ////// outdated naive methods end
 
-        // TODO: maybe improve performance with precalculated lookup table
-        public float getBezierValue(float time, float totalTime)
-        {
-            // test for linear bezier to improve performance
-            if (this.point1.x == this.point1.y && this.point2.x == this.point2.y)
-            {
+        private float nodeJsMethodToFindY(float time, float totalTime) {
+            // since floats might be inaccurate
+            if (time == 0 || time == 1) {
                 return time;
             }
-            // if not linear, do normal bezier calculation
-            float t = this.stupidMethodToFindT(time, totalTime);   
-            float y = this.cubicBezierFromPointDimensions(t, this.point1.y, this.point2.y);
-            Debug.Log("t: " + t + " y: " + y + " time: " + time + " point1: " + this.point1 + " point2: " + this.point2);
-            return y;
+            return this.calcBezier(this.getTForX(time), this.point1.y, this.point2.y);
+        }
+
+        private float linearEasing (float x, float totalTime) {
+            return x;
+        }
+        
+        private float A(float aA1, float aA2) {
+            return 1.0f - 3.0f * aA2 + 3.0f * aA1;
+        }
+        private float B(float aA1, float aA2) {
+            return 3.0f * aA2 - 6.0f * aA1;
+        }
+        private float C(float aA1) {
+            return 3.0f * aA1;
+        }
+
+        // Returns x(t) given t, x1, and x2, or y(t) given t, y1, and y2.
+        private float calcBezier(float aT, float aA1, float aA2) {
+            return ((this.A(aA1, aA2) * aT + this.B(aA1, aA2)) * aT + this.C(aA1)) * aT;
+        }
+
+        // Returns dx/dt given t, x1, and x2, or dy/dt given t, y1, and y2.
+        private float getSlope(float aT, float aA1, float aA2) {
+            return 3.0f * this.A(aA1, aA2) * aT * aT + 2.0f * this.B(aA1, aA2) * aT + this.C(aA1);
+        }
+
+        private float binarySubdivide (float aX, float aA, float aB, float mX1, float mX2) {
+            float currentX = 0.0f;
+            float currentT = 0.0f;
+            int i = 0;
+            do {
+                currentT = aA + (aB - aA) / 2.0f;
+                currentX = this.calcBezier(currentT, mX1, mX2) - aX;
+                if (currentX > 0.0f) {
+                aB = currentT;
+                } else {
+                aA = currentT;
+                }
+            } while (Mathf.Abs(currentX) > SUBDIVISION_PRECISION && ++i < SUBDIVISION_MAX_ITERATIONS);
+            return currentT;
+        }
+
+        private float newtonRaphsonIterate (float aX, float aGuessT, float mX1, float mX2) {
+            for (float i = 0; i < NEWTON_ITERATIONS; ++i) {
+            float currentSlope = this.getSlope(aGuessT, mX1, mX2);
+            if (currentSlope == 0.0) {
+                return aGuessT;
+            }
+            float currentX = this.calcBezier(aGuessT, mX1, mX2) - aX;
+            aGuessT -= currentX / currentSlope;
+            }
+            return aGuessT;
+        }
+
+
+        private float getTForX (float aX) {
+            float intervalStart = 0.0f;
+            int currentSample = 1;
+            int lastSample = kSplineTableSize - 1;
+
+            for (; currentSample != lastSample && this.sampleValues[currentSample] <= aX; ++currentSample) {
+            intervalStart += kSampleStepSize;
+            }
+            --currentSample;
+
+            // Interpolate to provide an initial guess for t
+            float dist = (aX - this.sampleValues[currentSample]) / (this.sampleValues[currentSample + 1] - this.sampleValues[currentSample]);
+            float guessForT = intervalStart + dist * kSampleStepSize;
+
+            float initialSlope = this.getSlope(guessForT, this.point1.x, this.point2.x);
+            if (initialSlope >= NEWTON_MIN_SLOPE) {
+                return this.newtonRaphsonIterate(aX, guessForT, this.point1.x, this.point2.x);
+            } else if (initialSlope == 0.0) {
+                return guessForT;
+            } else {
+                return this.binarySubdivide(aX, intervalStart, intervalStart + kSampleStepSize, this.point1.x, this.point2.x);
+            }
+        }
+
+        public float getBezierValue(float time, float totalTime)
+        {
+            // float savedTime = Time.realtimeSinceStartup;
+            float result = this.bezierFunction(time, totalTime);
+            // Debug.Log("Time: " + (Time.realtimeSinceStartup - savedTime));
+
+            return result;
         }
     }
 
@@ -223,6 +263,8 @@ namespace AUIT.PropertyTransitions
                 this.transitionBezier = modeToBezier(this.transitionMode);
                 updateOldValues();
             }
+
+            this.transitionBezier.OnValidate();
         }
 
         // update the old values
@@ -368,7 +410,6 @@ namespace AUIT.PropertyTransitions
                 if (movementBezier.duration > 0 && timespan < movementBezier.duration)
                 {
                     Vector3 resultPosition = Vector3.LerpUnclamped(startPosition, endPosition, movementBezier.timespanToTransitionValue(timespan));
-                    Debug.Log(resultPosition);
                     if (!float.IsNaN(resultPosition.x) && !float.IsNaN(resultPosition.y) && !float.IsNaN(resultPosition.z))
                         transform.position = resultPosition;
                 } else if (timespan >= movementBezier.duration && !posDone)
