@@ -44,6 +44,7 @@ namespace AUIT.PropertyTransitions
             setValues(this.point1.x, this.point1.y, this.point2.x, this.point2.y);
         }
 
+        // set the values of the bezier curve (ensure correct number ranges) & determine the correct compute function
         private void setValues(float p1X, float p1Y, float p2X, float p2Y)
         {
             p1X = Mathf.Min(1, Mathf.Max(0, p1X));

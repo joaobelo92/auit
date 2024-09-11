@@ -5,8 +5,8 @@ namespace AUIT.AdaptationTriggers
 {
     public class ContinuousOptimizationTrigger : AdaptationTrigger
     {
-        [SerializeField, Tooltip("Running asynchronously will spread computations over multiple frames, making the result come later but not heavily impact framerate.")]
-        private bool runAsynchronous = false;
+        // [SerializeField, Tooltip("Running asynchronously will spread computations over multiple frames, making the result come later but not heavily impact framerate.")]
+        // private bool runAsynchronous = false;
 
         [Header("Thresholds")]
         [SerializeField]
@@ -14,10 +14,10 @@ namespace AUIT.AdaptationTriggers
         [SerializeField]
         private float adaptationThreshold = 0.1f;
 
-        [Header("Limit optimization run time")]
-        [SerializeField]
-        private float optimizationTimeout = 5.0f;
-        private float optimizationTimeStart = 0.0f;
+        // [Header("Limit optimization run time")]
+        // [SerializeField]
+        // private float optimizationTimeout = 5.0f;
+        // private float optimizationTimeStart = 0.0f;
 
         private float previousCost;
 
