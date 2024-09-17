@@ -264,7 +264,7 @@ namespace AUIT
             else // otherwise, apply the property transitions each UI element contains
             {
                 if (layouts.Count > 1)
-                    Debug.LogWarning("Solver is computing multiple layouts but no there is no " +
+                    Debug.LogWarning("Solver is computing multiple layouts but there is no " +
                                      "solution selection strategy. Applying the first solution " +
                                      $"by default. GameObject: {name}");
                 // pick first layout and apply property transitions

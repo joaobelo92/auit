@@ -15,20 +15,49 @@ Running the OculusExample scene requires the [Oculus Integration package](https:
 0. Have a compatible unity version installed (if paretto frontier optimization is wanted, a compatible python version is also necessary, but more on that later)
 1. Clone or download the git repository.
 2. Import AUIT in unity, either by just opening it with unity, or drag and dropping it into your current project.
-3. See example scene for a basic setup with one cube virtual object.
+   - See example scene (insert path to scene here) for a basic setup with one cube virtual object.
+3. Create **one** game object and put the *Adaptation Manager* script & at least one *Optimization Trigger* inside (in example scenes it is always called *auit*)
 4. To create an adaptive UI, add each of the two required components to the user interface (a game object) to adapt (note that some dependencies will be added automatically, such as the local objective handler):
 - Adaptation Objectives (context source defines which context widget to use. A context source can be e.g. the player position, the camera view, etc.)
   - Field Of View Objective ()
   - Distance Interval Objective (position the game object in a range of distances from the context source)
   - Look Towards Objective ()
-- Property Transitions
-  - Cubic bezier transition
+- Property Transitions (how the game object should transition to the new state)
+  - Cubic bezier transition (the transition path is linearly interpreted, the speed is determined by a user defined cubic bezier function)
 
 - Adaptation Manager (contains the Solver)
 - Adaptation Trigger
   - 
 
-For multiple UI element it is possible to add a Global Solver, so all the optimization runs in a single optimization loop. In this case, each UI element to be optimized must be referenced in a solver with the option "Global Solver" set to true.
+## Multi objective optimization with paretto frontier & python
+1. Make sure you have python and a package manager installed (for the purposes of this tutorial we will use conda)
+2. Navigate into `./Python/` and make sure you have all packages in `environment.yml` installed (if you are using conda, simply run `conda env create -f ./environment.yml` to set up a new environment called **auit** with all necessaray packages installed. After the command has finished you should be able to run `conda activate auit` to activate the auit environment.)
+3. Now run `python ./solver.py` to start the paretto frontier solver.
+4. It should now prompt you on which port the server is listening (e.g. *Listening on port 5555...*)
+
 
 ## Navigating the source code
 The components for AUIT described in our publication can be found in Assets > AUIT. All the components our toolkit currently supports are inside their correspondent directories (AdaptationObjectives, AdaptationTriggers, Solvers, and PropertyTransitions), with the exception of ContextSources - these are currently directly accessed by AdaptationObjectives since at the moment we only use sources of context that are already available in Unity.
+
+```
+├── AUIT
+├── Python
+    └──
+├── .gitignore
+└── README.md
+```
+
+## Troubleshooting
+- Some keyboard-inputs behave weirdly or you don't have the expected control?
+  - In unity navigate to Edit > Project Settings > Input Manager > Axes (dropdown) and make sure the controls are bound correctly
+    - **Horizontal** for left right movement
+    - **Vertical** for forward backward movement
+    - **UpDown** for upwards and downwards movement
+    - **Optimization Request** to use the *On Request Optimization Trigger* with a hotkey
+
+
+<details>
+<summary>Is a dropdown native markdown?</summary>
+<br>
+Yay or nay?
+</details>
