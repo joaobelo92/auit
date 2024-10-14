@@ -37,7 +37,7 @@ Running the OculusExample scene requires the [Oculus Integration package](https:
 
 
 ## Navigating the source code
-The components for AUIT described in our publication can be found in Assets > AUIT. All the components our toolkit currently supports are inside their correspondent directories (AdaptationObjectives, AdaptationTriggers, Solvers, and PropertyTransitions), with the exception of ContextSources - these are currently directly accessed by AdaptationObjectives since at the moment we only use sources of context that are already available in Unity.
+The components for AUIT described in our publication can be found in Assets > AUIT. All the components our toolkit currently supports are inside their correspondent directories ([AdaptationObjectives](./AUIT/Assets/AUIT/SelectionStrategies/), AdaptationTriggers, Solvers, and PropertyTransitions), with the exception of ContextSources - these are currently directly accessed by AdaptationObjectives since at the moment we only use sources of context that are already available in Unity.
 
 ```
 ├── AUIT
