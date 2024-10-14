@@ -42,22 +42,17 @@ The components for AUIT described in our publication can be found in Assets > AU
 ```
 ├── AUIT
 ├── Python
-    └──
+│   └──
 ├── .gitignore
 └── README.md
 ```
 
 ## Troubleshooting
-- Some keyboard-inputs behave weirdly or you don't have the expected control?
-  - In unity navigate to Edit > Project Settings > Input Manager > Axes (dropdown) and make sure the controls are bound correctly
-    - **Horizontal** for left right movement
-    - **Vertical** for forward backward movement
-    - **UpDown** for upwards and downwards movement
-    - **Optimization Request** to use the *On Request Optimization Trigger* with a hotkey
-
-
 <details>
-<summary>Is a dropdown native markdown?</summary>
-<br>
-Yay or nay?
+<summary>Some keyboard-inputs behave weirdly or you don't have the expected control?</summary>
+In unity navigate to Edit > Project Settings > Input Manager > Axes (dropdown) and make sure the controls are bound correctly
+ - **Horizontal** for left right movement
+ - **Vertical** for forward backward movement
+ - **UpDown** for upwards and downwards movement
+ - **Optimization Request** to use the *On Request Optimization Trigger* with a hotkey
 </details>
