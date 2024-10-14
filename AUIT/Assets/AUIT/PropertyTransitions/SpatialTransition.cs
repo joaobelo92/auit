@@ -365,7 +365,7 @@ namespace AUIT.PropertyTransitions
         }
     }
 
-    public class CubicBezierTransition : PropertyTransition
+    public class SpatialTransition : PropertyTransition
     {
         [SerializeField]
         private TransitionModeSelection movementBezier = new TransitionModeSelection();
