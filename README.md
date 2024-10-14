@@ -51,8 +51,10 @@ The components for AUIT described in our publication can be found in Assets > AU
 <details>
 <summary>Some keyboard-inputs behave weirdly or you don't have the expected control?</summary>
 In unity navigate to Edit > Project Settings > Input Manager > Axes (dropdown) and make sure the controls are bound correctly
- - **Horizontal** for left right movement
- - **Vertical** for forward backward movement
- - **UpDown** for upwards and downwards movement
- - **Optimization Request** to use the *On Request Optimization Trigger* with a hotkey
+<ul>
+  <li><b>Horizontal</b> for left right movement</li>
+  <li><b>Vertical</b> for forward backward movement</li>
+  <li><b>UpDown</b> for upwards and downwards movement</li>
+  <li><b>Optimization Request</b> to use the *On Request Optimization Trigger* with a hotkey</li>
+</ul>
 </details>
