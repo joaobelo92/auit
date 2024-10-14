@@ -41,8 +41,16 @@ The components for AUIT described in our publication can be found in Assets > AU
 
 ```
 ├── AUIT
+│   └── Assets
+        └── AUIT
+            ├── [AdaptationObjectives](./AUIT/Assets/AUIT/SelectionStrategies/)
+            ├── AdaptationTriggers
+            ├── Extras
+            ├── PropertyTransitions
+            ├── SelectionStrategies
+            └── Solvers
 ├── Python
-│   └──
+
 ├── .gitignore
 └── README.md
 ```
