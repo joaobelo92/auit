@@ -77,7 +77,7 @@ namespace AUIT
             // Collect  adaptation objectives from the game objects to optimize
             for (int i = 0; i < _gameObjects.Length; i++)
             {
-                var goLocalObjectiveHandler = gameObjectsArray[i]
+                LocalObjectiveHandler goLocalObjectiveHandler = gameObjectsArray[i]
                     .GetComponent<LocalObjectiveHandler>();
                 if (goLocalObjectiveHandler == null)
                 {
@@ -98,6 +98,8 @@ namespace AUIT
                 _asyncSolver.AdaptationManager = this;
                 Debug.Log("Attempting to start solver");
                 _asyncSolver.Initialize();
+                // TODO: understand why its now just called on the GeneticAlgorithmSolver
+                //  and why its running at 10000Hz instead of 100Hz
                 InvokeRepeating(nameof(RunJobs), 0, 0.0001f);
             }
 
@@ -108,6 +110,14 @@ namespace AUIT
         private void OnDestroy()
         {
             if (solver != Solver.GeneticAlgorithm) return;
+
+            // TODO: should check for other Genetic Algorithm solver, 
+            // to ensure correctness of cast
+
+            // if (_asyncSolver is ParetoFrontierSolver)
+            // {
+            //    (ParetoFrontierSolver) _asyncSolver.Destroy();
+            // }
             ParetoFrontierSolver paretoFrontierSolver =
                 (ParetoFrontierSolver)_asyncSolver;
             paretoFrontierSolver.Destroy();
@@ -254,7 +264,7 @@ namespace AUIT
             else // otherwise, apply the property transitions each UI element contains
             {
                 if (layouts.Count > 1)
-                    Debug.LogWarning("Solver is computing multiple layouts but no there is no " +
+                    Debug.LogWarning("Solver is computing multiple layouts but there is no " +
                                      "solution selection strategy. Applying the first solution " +
                                      $"by default. GameObject: {name}");
                 // pick first layout and apply property transitions
