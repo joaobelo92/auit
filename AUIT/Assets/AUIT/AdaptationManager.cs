@@ -61,7 +61,7 @@ namespace AUIT
             // async methods work as expected
             AsyncIO.ForceDotNet.Force();
             
-            _asyncSolver = new AsyncSimulatedAnnealingSolver();
+            _asyncSolver = new SimulatedAnnealingSolver();
             solverSettings = _asyncSolver;
         }
         
@@ -73,7 +73,7 @@ namespace AUIT
             switch (solverType)
             {
                 case Solver.SimulatedAnnealing:
-                    _asyncSolver = new AsyncSimulatedAnnealingSolver();
+                    _asyncSolver = new SimulatedAnnealingSolver();
                     break;
                 case Solver.GeneticAlgorithm:
                     _asyncSolver = new ParetoFrontierSolver();
