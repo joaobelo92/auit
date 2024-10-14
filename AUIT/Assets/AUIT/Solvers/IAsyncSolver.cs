@@ -7,12 +7,13 @@ using Cysharp.Threading.Tasks;
 
 namespace AUIT.Solvers
 {
-    public interface IAsyncSolver
-    {
-        AdaptationManager AdaptationManager { set; get; }
-        (List<List<Layout>>, float, float) Result { get; }
-        
-        void Initialize();
-        UniTask<(List<List<Layout>>, float)> OptimizeCoroutine(List<Layout> initialLayouts, List<List<LocalObjective>> objectives, List<float> hyperparameters);
+    public abstract class IAsyncSolver
+    { 
+        public void Initialize() {}
+        public void Destroy() {}
+        public abstract UniTask<(List<List<Layout>>, float)> OptimizeCoroutine(
+            List<Layout> initialLayouts,
+            List<List<LocalObjective>> objectives
+        );
     }
 }

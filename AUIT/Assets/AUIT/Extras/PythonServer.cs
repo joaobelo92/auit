@@ -77,14 +77,14 @@ namespace AUIT.Extras
                             // Debug.Log("computing costs: " + payload);
                             Wrapper<string> evaluationRequest = JsonUtility.FromJson<Wrapper<string>>(payload);
                             string managerId = evaluationRequest.manager_id;
-                            AdaptationManager manager = _solvers.First(s => s.AdaptationManager.Id == managerId).AdaptationManager;
-                            var evaluationResponse = new EvaluationResponse
-                            {
-                                costs = manager.EvaluateLayouts(payload)
-                            };
-                            string response = JsonConvert.SerializeObject(evaluationResponse);
-                            // Debug.Log("Sending evaluation response: " + response);
-                            server.SendFrame("e" + response);
+                            // AdaptationManager manager = _solvers.First(s => s.AdaptationManager.Id == managerId).AdaptationManager;
+                            // var evaluationResponse = new EvaluationResponse
+                            // {
+                            //     costs = manager.EvaluateLayouts(payload)
+                            // };
+                            // string response = JsonConvert.SerializeObject(evaluationResponse);
+                            // // Debug.Log("Sending evaluation response: " + response);
+                            // server.SendFrame("e" + response);
                             break;
                         default:
                             Debug.Log("Unknown request");

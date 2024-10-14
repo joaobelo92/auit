@@ -16,36 +16,31 @@ namespace AUIT.Solvers
 {
     public class ParetoFrontierSolver : IAsyncSolver
     {
-        public AdaptationManager AdaptationManager { get; set; }
         // private NetMQRuntime _serverRuntime;
         private NetMQRuntime _clientRuntime;
         // private Thread _serverThread;
         private PythonServer _pythonServer;
         private Thread _clientThread;
-
-        public (List<List<Layout>>, float, float) Result { get; private set; }
-
-        public void Destroy()
+        
+        public new void Destroy()
         {
             _pythonServer.UnbindSolver(this);
         }
 
-        public void Initialize()
+        public new void Initialize()
         {
             _pythonServer = PythonServer.GetInstance();
             _pythonServer.BindSolver(this);
         }
 
-        public async UniTask<(List<List<Layout>>, float)> OptimizeCoroutine(List<Layout> initialLayouts, List<List<LocalObjective>> objectives, List<float> hyperparameters)
+        public override async UniTask<(List<List<Layout>>, float)> OptimizeCoroutine(List<Layout> initialLayouts, List<List<LocalObjective>> objectives)
         {
-            Result = (null, 0f, 0f);
-            
             Debug.Log($"sending optimization request");
             // Check number of objectives across layouts
             int nObjectives = objectives.Sum(layout => layout.Count);
             var optimizationRequest = new
             OptimizationRequest {
-                managerId = AdaptationManager.Id,
+                managerId = "-1",
                 initialLayout = UIConfiguration.FromLayout(initialLayouts),
                 nObjectives = nObjectives
             };

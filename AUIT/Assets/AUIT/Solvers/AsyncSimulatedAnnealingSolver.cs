@@ -8,31 +8,27 @@ using Random = UnityEngine.Random;
 
 namespace AUIT.Solvers
 {
+    [System.Serializable]
     public class AsyncSimulatedAnnealingSolver : IAsyncSolver
     {
-        private IAsyncSolver asyncSolverImplementation;
-        public AdaptationManager AdaptationManager { get; set; }
-        
-        // todo: fix
-        public (List<List<Layout>>, float, float) Result { get; set; }
+        [Tooltip("Number of iterations the solver will run for. A higher " +
+                 "number can lead to better solutions but take longer to " +
+                 "execute.")]
+        public int iterations = 1500;
+        public float minimumTemperature = 0.000001f;
+        public float initialTemperature = 10000f;
+        // annealingSchedule = alpha
+        public float annealingSchedule = 0.98f;
+        public float earlyStopping = 0.02f;
+        public int iterationsPerFrame = 50;
 
-        // hyperparemeters; [0] Iterations [1] Minimum temperature; [2] Initial temperature; [3] alpha
-        // [4] early stopping [5] iterations per frame
-        public void Initialize()
-        {
-            
-        }
-
-        public async UniTask<(List<List<Layout>>, float)> OptimizeCoroutine(List<Layout> initialLayouts, List<List<LocalObjective>> objectives, List<float> hyperparameters)
+        public override async UniTask<(List<List<Layout>>, float)> OptimizeCoroutine(
+            List<Layout> initialLayouts, 
+            List<List<LocalObjective>> objectives
+            )
         {
             float cost = float.PositiveInfinity;
             List<Layout> bestLayout = initialLayouts.Select(item => item.Clone()).ToList();
-            int iterations = (int)hyperparameters[0];
-            float minTemperature = hyperparameters[1];
-            float initialTemperature = hyperparameters[2];
-            float alpha = hyperparameters[3];
-            float earlyStopping = hyperparameters[4];
-            int iterationsPerFrame = (int)hyperparameters[5];
 
             List<List<float>> objectiveCosts = new List<List<float>>();
             List<float> totalObjectiveCosts = new List<float>();
@@ -52,7 +48,7 @@ namespace AUIT.Solvers
 
             for (int i = 0; i < iterations; i++)
             {
-                float temperature = Mathf.Max(minTemperature, initialTemperature * Mathf.Pow(alpha, i));
+                float temperature = Mathf.Max(minimumTemperature, initialTemperature * Mathf.Pow(annealingSchedule, i));
                 List<Layout> currentLayout = bestLayout.Select(item => item.Clone()).ToList();
 
                 // get highest objective and use its optimization rule

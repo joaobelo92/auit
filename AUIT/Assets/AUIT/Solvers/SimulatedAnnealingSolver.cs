@@ -7,7 +7,7 @@ using Random = UnityEngine.Random;
 
 namespace AUIT.Solvers
 {
-    public class SimulatedAnnealingSolver : ISolver
+    public class SimulatedAnnealingSolver
     {
         // hyperparemeters; [0] Iterations [1] Minimum temperature; [2] Initial temperature; [3] alpha
         public (List<Layout>, float) Optimize(Layout layout, List<LocalObjective> objectives, List<float> hyperparameters)
