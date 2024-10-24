@@ -58,7 +58,7 @@ public class ObjectivesEditor : EditorWindow
             bindItem = (item, index) => { ((Label)item).text = objectiveNames[index]; },
             itemsSource = objectiveNames
         };
-        leftPane.onSelectionChange += OnObjectiveSelectionChange;
+        leftPane.selectionChanged += OnObjectiveSelectionChange;
         splitView.Add(leftPane);
         _mRightPane = new VisualElement();
         splitView.Add(_mRightPane);
