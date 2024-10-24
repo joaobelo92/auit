@@ -1,16 +1,17 @@
 using System.Collections.Generic;
 using AUIT.AdaptationObjectives.Definitions;
+using AUIT.Extras;
 using UnityEngine;
 
 namespace AUIT.SelectionStrategies
 {
     public class InPlaceSelectionStrategy : SelectionStrategy
     {
-        public override void Adapt(List<List<Layout>> layouts)
+        public override void Adapt(UIConfiguration[] layouts)
         {
-            foreach (List<Layout> layout in layouts)
+            foreach (UIConfiguration layout in layouts)
             {
-                Debug.Log($"Trying to apply layout: {layout[0].Position}");
+                Debug.Log($"Trying to apply layout: {layout.elements[0].Position}");
             }
         }
     }

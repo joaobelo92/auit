@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using AUIT.AdaptationObjectives.Definitions;
+using AUIT.Extras;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
@@ -32,9 +33,9 @@ namespace AUIT.AdaptationTriggers
 
             Debug.Log("Interval Optimization Running...");
             
-            var (layouts, cost) = await AdaptationManager.OptimizeLayout();
+            OptimizationResponse response = await AdaptationManager.OptimizeLayout();
             
-            AdaptationManager.Adapt(layouts);
+            AdaptationManager.Adapt(response.solutions);
             await UniTask.Delay(TimeSpan.FromSeconds(interval));
             ApplyStrategy();
         }

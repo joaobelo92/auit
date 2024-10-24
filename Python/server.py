@@ -36,7 +36,7 @@ def handle_request(request_type, request_data, verbose):
         return "x", ErrorResponse(error="Unknown request type: %s" % request_type)
 
 
-def run_server(port=5555, verbose=False):
+def run_server(port=5555, verbose=True):
     """Run the server."""
     # Create a context and a socket
     context = zmq.Context()

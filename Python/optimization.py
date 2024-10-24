@@ -139,18 +139,18 @@ class LayoutProblem(Problem):
     def _x_to_layout(self, x):
         """Convert the decision variables to a layout."""
         # Create a list of items
-        items = []
+        elements = []
         for i in range(0, len(x), 7):
-            items.append(
+            elements.append(
                 networking.element.Element(
-                    id=self.initial_layout.items[i//7].id,
+                    id=self.initial_layout.elements[i//7].id,
                     position=networking.element.Position(x=x[i], y=x[i + 1], z=x[i + 2]),
                     rotation=networking.element.Rotation(x=x[i + 3], y=x[i + 4], z=x[i + 5], w=x[i + 6]),
                 )
             )
 
         # Create and return the layout
-        return networking.layout.Layout(items=items)
+        return networking.layout.Layout(elements=elements)
 
 
 # Function to create an algorithm instance (pop size: Exp. 1-2: 1000, Exp. 3: 4)

@@ -271,11 +271,15 @@ class OptimizationResponse(Response):
                 if type(data["suggested"]) is dict \
                 else Layout.from_json(data["suggested"])
         else:
-            suggested_layout = Layout.from_dict(data["solutions"]["items"][0]) \
-                if type(data["solutions"]["items"][0]) is dict \
-                else Layout.from_json(data["solutions"]["items"][0])
+            suggested_layout = Layout.from_dict(data["solutions"][0]) \
+                if type(data["solutions"][0]) is dict \
+                else Layout.from_json(data["solutions"][0])
         return OptimizationResponse(
-            solutions=[Layout.from_dict(solution) if isinstance(solution, dict) else Layout.from_json(solution) for solution in data["solutions"]["items"]],
+            solutions=[
+                Layout.from_dict(solution) if isinstance(solution, dict)
+                else Layout.from_json(solution)
+                for solution in data["solutions"]
+            ],
             suggested=suggested_layout
         )
 
@@ -330,8 +334,9 @@ class OptimizationResponse(Response):
         """
         return json.dumps({
             "manager_id": self.manager_id,
-            "solutions": json.dumps({"items": [solution.to_json() for solution in self.solutions]}), # Required for compatibility with AUIT desearialization
-            "suggested": self.suggested.to_json(),
+            "solutions": [solution.__dict__() for solution in self.solutions],
+            "suggested": self.suggested.__dict__(),
+            
         })
 
 
@@ -352,9 +357,9 @@ class EvaluationRequest(Request):
 
         The JSON strings for the messages defined here are:
             - EvaluationRequest ("E"): {
-                "items": [
+                "layouts": [
                     {
-                        "items": [
+                        "elements": [
                             {
                                 "id": <str>,
                                 "position": {
@@ -379,7 +384,11 @@ class EvaluationRequest(Request):
         """
         data = json.loads(message_data)
         return EvaluationRequest(
-            layouts=[Layout.from_dict(layout) if isinstance(layout, dict) else Layout.from_json(layout) for layout in data["items"]],
+            layouts=[
+                Layout.from_dict(layout) if isinstance(layout, dict)
+                else Layout.from_json(layout)
+                for layout in data["layouts"]
+            ],
         )
     
     def to_json(self) -> str:
@@ -391,9 +400,9 @@ class EvaluationRequest(Request):
 
         The JSON strings for the messages defined here are:
             - EvaluationRequest ("E"): {
-                "items": [
+                "layouts": [
                     {
-                        "items": [
+                        "elements": [
                             {
                                 "id": <str>,
                                 "position": {
@@ -418,8 +427,7 @@ class EvaluationRequest(Request):
         """
         return json.dumps({
             "manager_id": self.manager_id,
-            "items": [layout.to_json() for layout in self.layouts], # TODO: This is a temporary fix for the issue with the JSON serialization of the Layout class. It should be replaced with the following line once the issue is fixed.
-            # "items": [layout.__dict__() for layout in self.layouts],
+            "layouts": [layout.__dict__() for layout in self.layouts]
         })
 
 

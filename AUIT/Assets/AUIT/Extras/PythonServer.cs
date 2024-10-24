@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -8,6 +9,7 @@ using NetMQ;
 using NetMQ.Sockets;
 using Newtonsoft.Json;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace AUIT.Extras
 {
@@ -20,12 +22,16 @@ namespace AUIT.Extras
         private NetMQRuntime _clientRuntime;
         private readonly Thread _serverThread;
         private Thread _clientThread;
+
+        private Dictionary<string, AdaptationManager> _managers;
         
         private PythonServer()
         {
             _solvers = new List<IAsyncSolver>();
+            _managers = new Dictionary<string, AdaptationManager>();
             _serverThread = new Thread(Networking);
             _serverThread.Start();
+            
         }
 
         public static PythonServer GetInstance()
@@ -75,16 +81,33 @@ namespace AUIT.Extras
                         case 'E':
                             string payload = message.Substring(1);
                             // Debug.Log("computing costs: " + payload);
-                            Wrapper<string> evaluationRequest = JsonUtility.FromJson<Wrapper<string>>(payload);
-                            string managerId = evaluationRequest.manager_id;
-                            AdaptationManager manager = _solvers.First(s => s.AdaptationManager.Id == managerId).AdaptationManager;
-                            var evaluationResponse = new EvaluationResponse
+                            try
                             {
-                                costs = manager.EvaluateLayouts(payload)
-                            };
-                            string response = JsonConvert.SerializeObject(evaluationResponse);
-                            // Debug.Log("Sending evaluation response: " + response);
-                            server.SendFrame("e" + response);
+                                EvaluationRequest evaluationRequest = JsonConvert.DeserializeObject<EvaluationRequest>(payload, new JsonSerializerSettings
+                                {
+                                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                                });
+                            
+                                string managerId = evaluationRequest.manager_id;
+                                AdaptationManager manager = _solvers.First(s => s.AdaptationManager.Id == managerId).AdaptationManager;
+                                var evaluationResponse = new EvaluationResponse
+                                {
+                                    costs = manager.EvaluateLayouts(evaluationRequest)
+                                };
+                                string response = JsonConvert.SerializeObject(
+                                    evaluationResponse,
+                                    new JsonSerializerSettings
+                                    {
+                                        ReferenceLoopHandling =
+                                            ReferenceLoopHandling.Ignore
+                                    });
+                                // Debug.Log("Sending evaluation response: " + response);
+                                server.SendFrame("e" + response);
+                            }
+                            catch (Exception e)
+                            {
+                                Debug.Log(e);
+                            }
                             break;
                         default:
                             Debug.Log("Unknown request");

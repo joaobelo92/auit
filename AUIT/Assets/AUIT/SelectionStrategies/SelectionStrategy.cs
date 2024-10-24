@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using AUIT.AdaptationObjectives.Definitions;
+using AUIT.Extras;
 using UnityEngine;
 
 namespace AUIT.SelectionStrategies
@@ -34,7 +35,7 @@ namespace AUIT.SelectionStrategies
 
         #endregion
 
-        public abstract void Adapt(List<List<Layout>> layouts);
+        public abstract void Adapt(UIConfiguration[] layouts);
     }
    
 }

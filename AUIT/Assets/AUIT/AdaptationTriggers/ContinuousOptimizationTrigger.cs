@@ -1,4 +1,5 @@
 using System.Collections;
+using AUIT.Extras;
 using UnityEngine;
 
 namespace AUIT.AdaptationTriggers
@@ -66,12 +67,12 @@ namespace AUIT.AdaptationTriggers
             //     return;
             // }
 
-            var (layouts, cost) = await AdaptationManager.OptimizeLayout();
+            OptimizationResponse response = await AdaptationManager.OptimizeLayout();
 
-            bool shouldAdapt = previousCost - cost > adaptationThreshold;
-            print($"cost diff: {previousCost - cost}");
+            bool shouldAdapt = true;
+            print($"Threshold not working, need to add cost logic in Optimization Response");
             if (shouldAdapt)
-                AdaptationManager.Adapt(layouts);
+                AdaptationManager.Adapt(response.solutions);
         }
     }
 }

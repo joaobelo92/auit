@@ -8,6 +8,7 @@ using AUIT.AdaptationObjectives;
 using AUIT.SelectionStrategies;
 using AUIT.Solvers;
 using AUIT.AdaptationObjectives.Definitions;
+using AUIT.Extras;
 using Cysharp.Threading.Tasks;
 using UnityEngine.Serialization;
 
@@ -45,12 +46,12 @@ namespace AUIT
         public float earlyStopping = 0.02f;
         public int iterationsPerFrame = 50;
         
-        private IAsyncSolver _asyncSolver = new AsyncSimulatedAnnealingSolver();
+        private IAsyncSolver _asyncSolver;
 
         private bool _waitingForOptimization;
 
         private bool _job;
-        private List<List<Layout>> _layoutJob;
+        private UIConfiguration[] _layoutJob;
         private List<List<float>> _jobResult;
 
         private SelectionStrategy _selectionStrategy;
@@ -90,16 +91,18 @@ namespace AUIT
 
             // If solver is a genetic algorithm initialize server/client
             _isSelectionStrategyNotNull = _selectionStrategy != null;
+            if (solver == Solver.SimulatedAnnealing)
+            {
+                _asyncSolver = new AsyncSimulatedAnnealingSolver();
+            }
             if (solver == Solver.GeneticAlgorithm)
             {
                 _asyncSolver = new ParetoFrontierSolver();
-            
+                
                 AsyncIO.ForceDotNet.Force();
                 _asyncSolver.AdaptationManager = this;
                 Debug.Log("Attempting to start solver");
                 _asyncSolver.Initialize();
-                // TODO: understand why its now just called on the GeneticAlgorithmSolver
-                //  and why its running at 10000Hz instead of 100Hz
                 InvokeRepeating(nameof(RunJobs), 0, 0.0001f);
             }
 
@@ -152,14 +155,14 @@ namespace AUIT
             _propertyTransitions.Remove(propertyTransition);
         }
 
-        public async UniTask<(List<List<Layout>>, float)> OptimizeLayout()
+        public async UniTask<OptimizationResponse> OptimizeLayout()
         {
             if (isActiveAndEnabled == false)
             {
                 Debug.LogError($"[AdaptationManager.OptimizeLayout()]: " +
                                $"AdaptationManager on " +
                                $"{gameObject.name} is disabled!");
-                return (null, 0.0f);
+                return null;
             }
             
             List<float> hyperparameters = new List<float>();
@@ -195,16 +198,15 @@ namespace AUIT
                 Debug.LogWarning($"[AdaptationManager.OptimizeLayout()]: " +
                                  $"Unable to find any objectives on " +
                                  $"adaptation manager game objects...");
-                return (null, 0.0f);
+                return null;
             }
 
             Debug.Log($"Invoking solver: {solver}");
-            
-            (List<List<Layout>> result, float costs) = await _asyncSolver.
+            OptimizationResponse response = await _asyncSolver.
                 OptimizeCoroutine(currentLayouts, objectives, hyperparameters);
             
-            Debug.Log($"First res: {result[0][0].Position}");
-            return (result, costs);
+            Debug.Log($"First res: {response.suggested.elements[0].Position}");
+            return response;
         }
 
         public float ComputeCost(Layout l = null, bool verbose = false)
@@ -247,7 +249,7 @@ namespace AUIT
         // (e.g., pareto optimal adaptations). It will be necessary to support property transitions
         // with more responsibilities such as picking from various layouts
         
-        public void Adapt(List<List<Layout>> layouts)
+        public void Adapt(UIConfiguration[] layouts)
         {
             if (!isActiveAndEnabled)
             {
@@ -263,12 +265,12 @@ namespace AUIT
             }
             else // otherwise, apply the property transitions each UI element contains
             {
-                if (layouts.Count > 1)
+                if (layouts.Length > 1)
                     Debug.LogWarning("Solver is computing multiple layouts but there is no " +
                                      "solution selection strategy. Applying the first solution " +
                                      $"by default. GameObject: {name}");
                 // pick first layout and apply property transitions
-                Layout[] layoutArray = layouts.First().ToArray();
+                Layout[] layoutArray = layouts[0].elements;
                 GameObject[] elementArray = gameObjectsToOptimize.ToArray();
                 for (int i = 0; i < layoutArray.Length; i++)
                 {
@@ -328,11 +330,11 @@ namespace AUIT
             foreach (var candidateLayout in _layoutJob)
             {
                 var costsForCandidateLayout = new List<float>();
-                Layout[] candidateLayoutArray = candidateLayout.ToArray();
-                for (int i = 0; i < candidateLayoutArray.Length; i++)
+                Layout[] candidateLayoutArray = candidateLayout.elements;
+                for (int i = 0; i < candidateLayout.elements.Length; i++)
                 {
                     if (developmentMode && _gameObjects[i].Item2.Id !=
-                        candidateLayout[i].Id)
+                        candidateLayout.elements[i].Id)
                     {
                         Debug.LogError("Ids do not match in evaluation " +
                                        "request!");
@@ -349,20 +351,10 @@ namespace AUIT
         }
 
 
-        public List<List<float>> EvaluateLayouts(string payload)
+        public List<List<float>> EvaluateLayouts(EvaluationRequest evaluationRequest)
         {
-            // Debug.Log("san");
-            Wrapper<string> evaluationRequest =
-                JsonUtility.FromJson<Wrapper<string>>(payload);
-            List<List<Layout>> layouts = new List<List<Layout>>();
-            foreach (var l in evaluationRequest.items)
-            {
-                Wrapper<Layout> e = JsonUtility.FromJson<Wrapper<Layout>>(l);
-                layouts.Add(e.items.ToList());
-            }
-
-            _layoutJob = layouts; 
-            _job = true; 
+            _layoutJob = evaluationRequest.layouts; 
+            _job = true;
             
             while (_job) {} 
             

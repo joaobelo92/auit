@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using AUIT.AdaptationObjectives.Definitions;
+using AUIT.Extras;
 using UnityEditor;
 using UnityEngine;
 
@@ -12,9 +13,9 @@ namespace AUIT.AdaptationTriggers
             if (enabled == false)
                 return;
             
-            var (layouts, cost) = await AdaptationManager.OptimizeLayout();
+            OptimizationResponse response = await AdaptationManager.OptimizeLayout();
             
-            AdaptationManager.Adapt(layouts);
+            AdaptationManager.Adapt(response.solutions);
         }
 
         private void Update()

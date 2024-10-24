@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using AUIT.AdaptationObjectives;
 using AUIT.AdaptationObjectives.Definitions;
+using AUIT.Extras;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -23,7 +24,7 @@ namespace AUIT.Solvers
             
         }
 
-        public async UniTask<(List<List<Layout>>, float)> OptimizeCoroutine(List<Layout> initialLayouts, List<List<LocalObjective>> objectives, List<float> hyperparameters)
+        public async UniTask<OptimizationResponse> OptimizeCoroutine(List<Layout> initialLayouts, List<List<LocalObjective>> objectives, List<float> hyperparameters)
         {
             float cost = float.PositiveInfinity;
             List<Layout> bestLayout = initialLayouts.Select(item => item.Clone()).ToList();
@@ -103,8 +104,10 @@ namespace AUIT.Solvers
                     await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
                 }
             }
+
+            UIConfiguration best = new UIConfiguration(bestLayout.ToArray());
+            return new OptimizationResponse(best);
             
-            return (new List<List<Layout>> { bestLayout }, cost);
         }
     }
 }

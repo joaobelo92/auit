@@ -8,7 +8,12 @@ namespace AUIT.Extras
     [Serializable]
     public class OptimizationResponse
     {
-        public string solutions;  // will be UIConfiguration[]
-        public string suggested;  // will be UIConfiguration
+        public UIConfiguration[] solutions;
+        public UIConfiguration suggested;
+
+        public OptimizationResponse(UIConfiguration suggested)
+        {
+            this.suggested = suggested;
+        }
     }
 }
