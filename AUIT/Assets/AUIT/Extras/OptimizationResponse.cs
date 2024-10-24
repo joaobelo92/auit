@@ -14,6 +14,7 @@ namespace AUIT.Extras
         public OptimizationResponse(UIConfiguration suggested)
         {
             this.suggested = suggested;
+            solutions = new[] { suggested };
         }
     }
 }
