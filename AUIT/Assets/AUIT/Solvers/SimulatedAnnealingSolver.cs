@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using AUIT.Extras;
 using AUIT.AdaptationObjectives;
 using AUIT.AdaptationObjectives.Definitions;
 using Cysharp.Threading.Tasks;
@@ -22,7 +23,7 @@ namespace AUIT.Solvers
         public float earlyStopping = 0.02f;
         public int iterationsPerFrame = 50;
 
-        public override async UniTask<(List<List<Layout>>, float)> OptimizeCoroutine(
+        public override async UniTask<OptimizationResponse> OptimizeCoroutine(
             List<Layout> initialLayouts, 
             List<List<LocalObjective>> objectives
             )
@@ -100,7 +101,9 @@ namespace AUIT.Solvers
                 }
             }
             
-            return (new List<List<Layout>> { bestLayout }, cost);
+            UIConfiguration best = new UIConfiguration(bestLayout.ToArray());
+            return new OptimizationResponse(best);
+            // return (new List<List<Layout>> { bestLayout }, cost);
         }
     }
 }

@@ -20,9 +20,6 @@ namespace AUIT.Solvers
             List<Layout> initialLayouts,
             List<List<LocalObjective>> objectives
         );
-        
-        // TODO: clean merge rests
-        AdaptationManager AdaptationManager { set; get; }
-        (List<List<Layout>>, float, float) Result { get; }
+        public AdaptationManager AdaptationManager { set; get; } 
     }
 }

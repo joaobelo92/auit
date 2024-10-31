@@ -89,7 +89,9 @@ namespace AUIT.Extras
                                 });
                             
                                 string managerId = evaluationRequest.manager_id;
-                                AdaptationManager manager = _solvers.First(s => s.AdaptationManager.Id == managerId).AdaptationManager;
+                                AdaptationManager manager = _solvers.First(s => 
+                                        s.AdaptationManager.Id == managerId
+                                    ).AdaptationManager;
                                 var evaluationResponse = new EvaluationResponse
                                 {
                                     costs = manager.EvaluateLayouts(evaluationRequest)

@@ -10,7 +10,6 @@ using AUIT.Solvers;
 using AUIT.AdaptationObjectives.Definitions;
 using AUIT.Extras;
 using Cysharp.Threading.Tasks;
-// using UnityEngine.Serialization;
 using UnityEngine;
 
 namespace AUIT
@@ -55,8 +54,9 @@ namespace AUIT
         [NonSerialized]
         public bool initialized = false;
         
-        // TODO: might be merge trash
-        AdaptationManager()
+        #region MonoBehaviour Implementation
+        
+        public AdaptationManager()
         {
             solverType = Solver.SimulatedAnnealing;
             // Ensure that .NET is completely initialized to make sure
@@ -67,9 +67,13 @@ namespace AUIT
             solverSettings = _asyncSolver;
         }
         
-        // TODO: might be merge trash
         // callback to when some values might have changed
         public void OnValidate()
+        {
+            this.initializeSolver();
+        }
+        
+        private void initializeSolver()
         {
             // make sure that the old solver is destroyed
             _asyncSolver.Destroy();
@@ -77,17 +81,23 @@ namespace AUIT
             {
                 case Solver.SimulatedAnnealing:
                     _asyncSolver = new SimulatedAnnealingSolver();
+                    
+                    _asyncSolver.Initialize();
                     break;
                 case Solver.GeneticAlgorithm:
                     _asyncSolver = new ParetoFrontierSolver();
+                    
+                    AsyncIO.ForceDotNet.Force();
+                    _asyncSolver.AdaptationManager = this;
+                    Debug.Log("Attempting to start solver");
+                    _asyncSolver.Initialize();
+                    InvokeRepeating(nameof(RunJobs), 0, 0.0001f);
                     break;
             }
             // TODO: merge solverSettings with _asyncSolver
             solverSettings = _asyncSolver;
         }
-
-        #region MonoBehaviour Implementation
-
+        
         private void Start()
         {
             // Start by gathering all the game objects to optimize
@@ -111,11 +121,11 @@ namespace AUIT
             _isSelectionStrategyNotNull = _selectionStrategy != null;
 
             // Set flag to signal that the manager has been initialized
-            _asyncSolver.Initialize();
-            Debug.Log("Starting solver...");
-            // TODO: understand why its now just called on the GeneticAlgorithmSolver
-            //  and why its running at 10000Hz instead of 100Hz
-            InvokeRepeating(nameof(RunJobs), 0, 0.0001f);
+            this.initializeSolver();
+            // Debug.Log("Starting solver...");
+            // // TODO: understand why its now just called on the GeneticAlgorithmSolver
+            // //  and why its running at 10000Hz instead of 100Hz
+            // InvokeRepeating(nameof(RunJobs), 0, 0.0001f);
             initialized = true;
         }
 
@@ -188,9 +198,9 @@ namespace AUIT
                 return null;
             }
 
-            Debug.Log($"Invoking solver: {solver}");
+            Debug.Log($"Invoking solver: {solverType}");
             OptimizationResponse response = await _asyncSolver.
-                OptimizeCoroutine(currentLayouts, objectives, hyperparameters);
+                OptimizeCoroutine(currentLayouts, objectives);
             
             Debug.Log($"First res: {response.suggested.elements[0].Position}");
             return response;
