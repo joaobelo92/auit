@@ -339,9 +339,8 @@ GameObject:
   - component: {fileID: 1356011229}
   - component: {fileID: 1356011228}
   - component: {fileID: 1356011227}
-  - component: {fileID: 1356011237}
+  - component: {fileID: 1356011235}
   - component: {fileID: 1356011236}
-  - component: {fileID: 1356011238}
   m_Layer: 0
   m_Name: Cube
   m_TagString: Untagged
@@ -503,6 +502,90 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1356011235
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1356011226}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aabe3db8faa65f141920e6ad30b20328, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  movementCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 1
+      outSlope: 1
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 1
+      outSlope: 1
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  rotationCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 1
+      outSlope: 1
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 1
+      outSlope: 1
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  scalingCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 1
+      outSlope: 1
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 1
+      outSlope: 1
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!114 &1356011236
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -512,37 +595,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1356011226}
   m_Enabled: 0
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ddc09cad827f2d445b7dadc4ca1a8a17, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  transformPosition: 0
-  transformRotation: 1
-  transformScale: 1
---- !u!114 &1356011237
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1356011226}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1ebc884c91544631a15d11944dec6e3f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  movementSpeed: 1
-  rotationSpeed: 1
-  scalingSpeed: 1
---- !u!114 &1356011238
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1356011226}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d9396943a97d565448e84bc3ad0b1ca9, type: 3}
+  m_Script: {fileID: 11500000, guid: 0979d6889d0a92445abc9ada71e534ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   movementBezier:
@@ -717,16 +770,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6bd4eb42210b9d8489de1655cf9238f5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  solver: 0
-  iterations: 1500
+  solverType: 0
+  solverSettings:
+    rid: 3032553454723137545
   developmentMode: 1
-  minimumTemperature: 0.000001
-  initialTemperature: 10000
-  annealingSchedule: 0.98
-  earlyStopping: 0.02
-  iterationsPerFrame: 50
   gameObjectsToOptimize:
   - {fileID: 1356011226}
+  references:
+    version: 2
+    RefIds:
+    - rid: 3032553454723137545
+      type: {class: AsyncSimulatedAnnealingSolver, ns: AUIT.Solvers, asm: Assembly-CSharp}
+      data:
+        iterations: 1500
+        minimumTemperature: 0.000001
+        initialTemperature: 10000
+        annealingSchedule: 0.98
+        earlyStopping: 0.02
+        iterationsPerFrame: 50
 --- !u!4 &2109665855
 Transform:
   m_ObjectHideFlags: 0

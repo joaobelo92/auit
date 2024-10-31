@@ -9,6 +9,9 @@ namespace AUIT.PropertyTransitions
     [System.Serializable]
     public class CubicBezier
     {
+//         [SerializeField]
+//         private AnimationCurve animationCurve;
+
         [Tooltip("The first control point of the cubic bezier curve.\n" +
                  "The x value should be between (including) 0 and 1.")]
         [SerializeField]

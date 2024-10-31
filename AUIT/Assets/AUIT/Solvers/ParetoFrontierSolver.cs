@@ -18,8 +18,14 @@ namespace AUIT.Solvers
 {
     public class ParetoFrontierSolver : IAsyncSolver
     {
+        public AdaptationManager AdaptationManager { get; set; }
+        // private NetMQRuntime _serverRuntime;
+        private NetMQRuntime _clientRuntime;
         // private Thread _serverThread;
         private PythonServer _pythonServer;
+        private Thread _clientThread;
+        
+        public new void Destroy()
 
         public AdaptationManager AdaptationManager { get; set; }
         public (List<List<Layout>>, float, float) Result { get; private set; }
@@ -29,13 +35,13 @@ namespace AUIT.Solvers
             _pythonServer.UnbindSolver(this);
         }
 
-        public void Initialize()
+        public new void Initialize()
         {
             _pythonServer = PythonServer.GetInstance();
             _pythonServer.BindSolver(this);
         }
 
-        public async UniTask<OptimizationResponse> OptimizeCoroutine(List<Layout> initialLayouts, List<List<LocalObjective>> objectives, List<float> hyperparameters)
+        public async UniTask<OptimizationResponse> OptimizeCoroutine(List<Layout> initialLayouts, List<List<LocalObjective>> objectives)
         {
             Result = (null, 0f, 0f);
             
@@ -44,11 +50,16 @@ namespace AUIT.Solvers
             int nObjectives = objectives.Sum(layout => layout.Count);
             var optimizationRequest = new
             OptimizationRequest {
-                managerId = AdaptationManager.Id,
+                managerId = AdaptationManager.Id, // TODO: decouple from manager object "-1",
                 initialLayout = UIConfiguration.FromLayout(initialLayouts),
                 nObjectives = nObjectives
             };
             
+            string result = "";
+            Client();
+            
+            // var clientThread = new Thread(Client);
+            // clientThread.Start();
             // string result = "";
             // Client();
             

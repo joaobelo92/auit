@@ -10,7 +10,8 @@ using AUIT.Solvers;
 using AUIT.AdaptationObjectives.Definitions;
 using AUIT.Extras;
 using Cysharp.Threading.Tasks;
-using UnityEngine.Serialization;
+// using UnityEngine.Serialization;
+using UnityEngine;
 
 namespace AUIT
 {
@@ -30,24 +31,11 @@ namespace AUIT
         }
 
         [SerializeField]
-        private Solver solver = Solver.SimulatedAnnealing;
-
-        [Tooltip("Number of iterations the solver will run for. A higher " +
-                 "number can lead to better solutions but take longer to " +
-                 "execute.")]
-        public int iterations = 1500;
-
-        public bool developmentMode = true;
-        
-        // Simulating annealing hyperparameters
-        public float minimumTemperature = 0.000001f;
-        public float initialTemperature = 10000f;
-        public float annealingSchedule = 0.98f;
-        public float earlyStopping = 0.02f;
-        public int iterationsPerFrame = 50;
-        
+        private Solver solverType;
         private IAsyncSolver _asyncSolver;
 
+        [SerializeReference] public IAsyncSolver solverSettings;
+        public bool developmentMode = true;
         private bool _waitingForOptimization;
 
         private bool _job;
@@ -66,6 +54,37 @@ namespace AUIT
         // flag to signal that the manager has been initialized
         [NonSerialized]
         public bool initialized = false;
+        
+        // TODO: might be merge trash
+        AdaptationManager()
+        {
+            solverType = Solver.SimulatedAnnealing;
+            // Ensure that .NET is completely initialized to make sure
+            // async methods work as expected
+            AsyncIO.ForceDotNet.Force();
+            
+            _asyncSolver = new SimulatedAnnealingSolver();
+            solverSettings = _asyncSolver;
+        }
+        
+        // TODO: might be merge trash
+        // callback to when some values might have changed
+        public void OnValidate()
+        {
+            // make sure that the old solver is destroyed
+            _asyncSolver.Destroy();
+            switch (solverType)
+            {
+                case Solver.SimulatedAnnealing:
+                    _asyncSolver = new SimulatedAnnealingSolver();
+                    break;
+                case Solver.GeneticAlgorithm:
+                    _asyncSolver = new ParetoFrontierSolver();
+                    break;
+            }
+            // TODO: merge solverSettings with _asyncSolver
+            solverSettings = _asyncSolver;
+        }
 
         #region MonoBehaviour Implementation
 
@@ -89,41 +108,20 @@ namespace AUIT
                     gameObjectsArray[i].GetComponent<LocalObjectiveHandler>());
             }
 
-            // If solver is a genetic algorithm initialize server/client
             _isSelectionStrategyNotNull = _selectionStrategy != null;
-            if (solver == Solver.SimulatedAnnealing)
-            {
-                _asyncSolver = new AsyncSimulatedAnnealingSolver();
-            }
-            if (solver == Solver.GeneticAlgorithm)
-            {
-                _asyncSolver = new ParetoFrontierSolver();
-                
-                AsyncIO.ForceDotNet.Force();
-                _asyncSolver.AdaptationManager = this;
-                Debug.Log("Attempting to start solver");
-                _asyncSolver.Initialize();
-                InvokeRepeating(nameof(RunJobs), 0, 0.0001f);
-            }
 
             // Set flag to signal that the manager has been initialized
+            _asyncSolver.Initialize();
+            Debug.Log("Starting solver...");
+            // TODO: understand why its now just called on the GeneticAlgorithmSolver
+            //  and why its running at 10000Hz instead of 100Hz
+            InvokeRepeating(nameof(RunJobs), 0, 0.0001f);
             initialized = true;
         }
 
         private void OnDestroy()
         {
-            if (solver != Solver.GeneticAlgorithm) return;
-
-            // TODO: should check for other Genetic Algorithm solver, 
-            // to ensure correctness of cast
-
-            // if (_asyncSolver is ParetoFrontierSolver)
-            // {
-            //    (ParetoFrontierSolver) _asyncSolver.Destroy();
-            // }
-            ParetoFrontierSolver paretoFrontierSolver =
-                (ParetoFrontierSolver)_asyncSolver;
-            paretoFrontierSolver.Destroy();
+            _asyncSolver.Destroy();
         }
 
 
@@ -163,17 +161,6 @@ namespace AUIT
                                $"AdaptationManager on " +
                                $"{gameObject.name} is disabled!");
                 return null;
-            }
-            
-            List<float> hyperparameters = new List<float>();
-            if (solver == Solver.SimulatedAnnealing)
-            {
-                hyperparameters.Add(iterations);
-                hyperparameters.Add(minimumTemperature);
-                hyperparameters.Add(initialTemperature);
-                hyperparameters.Add(annealingSchedule);
-                hyperparameters.Add(earlyStopping);
-                hyperparameters.Add(iterationsPerFrame);
             }
             
             // The adaptation manager is responsible for knowing the layout 
