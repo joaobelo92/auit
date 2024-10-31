@@ -68,10 +68,10 @@ namespace AUIT
         }
         
         // callback to when some values might have changed
-        public void OnValidate()
-        {
-            this.initializeSolver();
-        }
+        // public void OnValidate()
+        // {
+        //     this.initializeSolver();
+        // }
         
         private void initializeSolver()
         {
@@ -90,7 +90,7 @@ namespace AUIT
                     AsyncIO.ForceDotNet.Force();
                     _asyncSolver.AdaptationManager = this;
                     Debug.Log("Attempting to start solver");
-                    _asyncSolver.Initialize();
+                    _asyncSolver.Initialize(); // not working correctly
                     InvokeRepeating(nameof(RunJobs), 0, 0.0001f);
                     break;
             }
@@ -118,14 +118,34 @@ namespace AUIT
                     gameObjectsArray[i].GetComponent<LocalObjectiveHandler>());
             }
 
+            // _isSelectionStrategyNotNull = _selectionStrategy != null;
+            //
+            // // Set flag to signal that the manager has been initialized
+            // this.initializeSolver();
+            // // Debug.Log("Starting solver...");
+            // // // TODO: understand why its now just called on the GeneticAlgorithmSolver
+            // // //  and why its running at 10000Hz instead of 100Hz
+            // // InvokeRepeating(nameof(RunJobs), 0, 0.0001f);
+            // initialized = true;
+            
+            // If solver is a genetic algorithm initialize server/client
             _isSelectionStrategyNotNull = _selectionStrategy != null;
+            if (solverType == Solver.SimulatedAnnealing)
+            {
+                _asyncSolver = new SimulatedAnnealingSolver();
+            }
+            if (solverType == Solver.GeneticAlgorithm)
+            {
+                _asyncSolver = new ParetoFrontierSolver();
+                
+                AsyncIO.ForceDotNet.Force();
+                _asyncSolver.AdaptationManager = this;
+                Debug.Log("Attempting to start solver");
+                _asyncSolver.Initialize();
+                InvokeRepeating(nameof(RunJobs), 0, 0.0001f);
+            }
 
             // Set flag to signal that the manager has been initialized
-            this.initializeSolver();
-            // Debug.Log("Starting solver...");
-            // // TODO: understand why its now just called on the GeneticAlgorithmSolver
-            // //  and why its running at 10000Hz instead of 100Hz
-            // InvokeRepeating(nameof(RunJobs), 0, 0.0001f);
             initialized = true;
         }
 
