@@ -49,13 +49,14 @@ MonoBehaviour:
     backend: 0
     solver: SimulatedAnnealing
   solverSettings:
-    rid: 1320836174484602964
+    rid: 1320836174484602973
   developmentMode: 1
-  gameObjectsToOptimize: []
+  gameObjectsToOptimize:
+  - {fileID: 0}
   references:
     version: 2
     RefIds:
-    - rid: 1320836174484602964
+    - rid: 1320836174484602973
       type: {class: SimulatedAnnealingSolver, ns: AUIT.Solvers, asm: Assembly-CSharp}
       data:
         constraints: []

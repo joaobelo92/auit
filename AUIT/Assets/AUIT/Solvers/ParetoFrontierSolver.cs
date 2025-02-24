@@ -1,7 +1,5 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Drawing.Printing;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,13 +18,14 @@ namespace AUIT.Solvers
     {
         private PythonServer _pythonServer;
         
-        public new void Destroy()
+        public override void Destroy()
         {
             _pythonServer.UnbindSolver(this);
         }
 
-        public new void Initialize()
+        public override void Initialize()
         {
+            Debug.Log("Pareto FrontierSolver initializing");
             _pythonServer = PythonServer.GetInstance();
             _pythonServer.BindSolver(this);
         }

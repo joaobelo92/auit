@@ -51,40 +51,39 @@ namespace AUIT
         
         #region MonoBehaviour Implementation
         
-        public AUIT()
+        private void AssignSolver()
         {
-            // Ensure that .NET is completely initialized to make sure
-            // async methods work as expected
-            AsyncIO.ForceDotNet.Force();
-            
-            _asyncSolver = new SimulatedAnnealingSolver();
-            solverSettings = _asyncSolver;
-        }
-        
-        private void InitializeSolver()
-        {
-            Debug.Log("Initializing solver");
-            
-            // make sure that the old solver is destroyed
-            _asyncSolver.Destroy();
+            Debug.Log($"Assigning solver: {backendSolver.backend}");
+
             switch (backendSolver.backend)
             {
                 case Backend.Unity:
                     // Right now there is only one unity solver
                     _asyncSolver = new SimulatedAnnealingSolver();
-                    
                     break;
                 case Backend.Python:
                     _asyncSolver = new ParetoFrontierSolver();
-                    
-                    // AsyncIO.ForceDotNet.Force();
+                    break;
+            }
+            solverSettings = _asyncSolver;
+            _previousSolver = backendSolver.solver;
+        }
+        
+        private void InitializeSolver()
+        {
+            Debug.Log($"Initializing solver: {backendSolver.backend}");
+            
+            switch (backendSolver.backend)
+            {
+                case Backend.Unity:
+                    break;
+                case Backend.Python:
+                    print("initializing python solver");
                     _asyncSolver.Auit = this;
                     _asyncSolver.Initialize();
                     InvokeRepeating(nameof(RunJobs), 0, 0.0001f);
                     break;
             }
-            solverSettings = _asyncSolver;
-            _previousSolver = backendSolver.solver;
 
             initialized = true;
         }
@@ -92,11 +91,12 @@ namespace AUIT
         private void OnValidate()
         {
             if (_previousSolver != backendSolver.solver)
-                InitializeSolver();
+                AssignSolver();
         }
 
         private void Start()
         {
+            AsyncIO.ForceDotNet.Force();
             // Start by gathering all the game objects to optimize
             int size = gameObjectsToOptimize.Count;
             _gameObjects = new (GameObject, LocalObjectiveHandler)[size];
@@ -115,7 +115,10 @@ namespace AUIT
                     gameObjectsArray[i].GetComponent<LocalObjectiveHandler>());
             }
 
+            InitializeSolver();
+
             _isSelectionStrategyNotNull = _selectionStrategy != null;
+            
         }
 
         private void OnDestroy()
@@ -379,7 +382,7 @@ namespace AUIT
     [Serializable]
     public class BackendSolver
     {
-        public Backend backend = Backend.Unity;
+        public Backend backend;
         public string solver;
     }
     

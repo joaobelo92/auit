@@ -14,8 +14,8 @@ namespace AUIT.Solvers
     {
         [SerializeReference]
         public List<Constraint> constraints;
-        public void Initialize() {}
-        public void Destroy() {}
+        public virtual void Initialize() {}
+        public virtual void Destroy() {}
         public abstract UniTask<OptimizationResponse> OptimizeCoroutine(
             List<Layout> initialLayouts,
             List<List<LocalObjective>> objectives
