@@ -23,12 +23,12 @@ namespace AUIT.Extras
         private readonly Thread _serverThread;
         private Thread _clientThread;
 
-        private Dictionary<string, AdaptationManager> _managers;
+        private Dictionary<string, AUIT> _managers;
         
         private PythonServer()
         {
             _solvers = new List<IAsyncSolver>();
-            _managers = new Dictionary<string, AdaptationManager>();
+            _managers = new Dictionary<string, AUIT>();
             _serverThread = new Thread(Networking);
             _serverThread.Start();
             
@@ -89,9 +89,9 @@ namespace AUIT.Extras
                                 });
                             
                                 string managerId = evaluationRequest.manager_id;
-                                AdaptationManager manager = _solvers.First(s => 
-                                        s.AdaptationManager.Id == managerId
-                                    ).AdaptationManager;
+                                AUIT manager = _solvers.First(s => 
+                                        s.Auit.Id == managerId
+                                    ).Auit;
                                 var evaluationResponse = new EvaluationResponse
                                 {
                                     costs = manager.EvaluateLayouts(evaluationRequest)

@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Editor
 {
-    [CustomEditor(typeof(AdaptationManager))]
+    [CustomEditor(typeof(AUIT.AUIT))]
     public class AdaptationManagerInspector : UnityEditor.Editor
     {
         // private SerializedProperty _solver;

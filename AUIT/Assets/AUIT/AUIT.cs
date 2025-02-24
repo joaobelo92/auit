@@ -10,11 +10,11 @@ using AUIT.Solvers;
 using AUIT.AdaptationObjectives.Definitions;
 using AUIT.Extras;
 using Cysharp.Threading.Tasks;
-using UnityEngine;
+using UnityEditor;
 
 namespace AUIT
 {
-    public sealed class AdaptationManager : MonoBehaviour
+    public sealed class AUIT : MonoBehaviour
     {
         public string Id { get; } = Guid.NewGuid().ToString();
 
@@ -22,15 +22,10 @@ namespace AUIT
         private AdaptationTrigger _adaptationTrigger;
         private readonly List<PropertyTransition> _propertyTransitions = new();
         private readonly List<AdaptationListener> _adaptationListeners = new();
-        
-        public enum Solver
-        {
-            SimulatedAnnealing,
-            GeneticAlgorithm
-        }
 
-        [SerializeField]
-        private Solver solverType;
+        [SerializeField] private BackendSolver backendSolver;
+        private string _previousSolver;
+
         private IAsyncSolver _asyncSolver;
 
         [SerializeReference] public IAsyncSolver solverSettings;
@@ -56,9 +51,8 @@ namespace AUIT
         
         #region MonoBehaviour Implementation
         
-        public AdaptationManager()
+        public AUIT()
         {
-            solverType = Solver.SimulatedAnnealing;
             // Ensure that .NET is completely initialized to make sure
             // async methods work as expected
             AsyncIO.ForceDotNet.Force();
@@ -67,37 +61,40 @@ namespace AUIT
             solverSettings = _asyncSolver;
         }
         
-        // callback to when some values might have changed
-        // public void OnValidate()
-        // {
-        //     this.initializeSolver();
-        // }
-        
-        private void initializeSolver()
+        private void InitializeSolver()
         {
+            Debug.Log("Initializing solver");
+            
             // make sure that the old solver is destroyed
             _asyncSolver.Destroy();
-            switch (solverType)
+            switch (backendSolver.backend)
             {
-                case Solver.SimulatedAnnealing:
+                case Backend.Unity:
+                    // Right now there is only one unity solver
                     _asyncSolver = new SimulatedAnnealingSolver();
                     
-                    _asyncSolver.Initialize();
                     break;
-                case Solver.GeneticAlgorithm:
+                case Backend.Python:
                     _asyncSolver = new ParetoFrontierSolver();
                     
-                    AsyncIO.ForceDotNet.Force();
-                    _asyncSolver.AdaptationManager = this;
-                    Debug.Log("Attempting to start solver");
-                    _asyncSolver.Initialize(); // not working correctly
+                    // AsyncIO.ForceDotNet.Force();
+                    _asyncSolver.Auit = this;
+                    _asyncSolver.Initialize();
                     InvokeRepeating(nameof(RunJobs), 0, 0.0001f);
                     break;
             }
-            // TODO: merge solverSettings with _asyncSolver
             solverSettings = _asyncSolver;
+            _previousSolver = backendSolver.solver;
+
+            initialized = true;
         }
-        
+
+        private void OnValidate()
+        {
+            if (_previousSolver != backendSolver.solver)
+                InitializeSolver();
+        }
+
         private void Start()
         {
             // Start by gathering all the game objects to optimize
@@ -118,35 +115,7 @@ namespace AUIT
                     gameObjectsArray[i].GetComponent<LocalObjectiveHandler>());
             }
 
-            // _isSelectionStrategyNotNull = _selectionStrategy != null;
-            //
-            // // Set flag to signal that the manager has been initialized
-            // this.initializeSolver();
-            // // Debug.Log("Starting solver...");
-            // // // TODO: understand why its now just called on the GeneticAlgorithmSolver
-            // // //  and why its running at 10000Hz instead of 100Hz
-            // // InvokeRepeating(nameof(RunJobs), 0, 0.0001f);
-            // initialized = true;
-            
-            // If solver is a genetic algorithm initialize server/client
             _isSelectionStrategyNotNull = _selectionStrategy != null;
-            if (solverType == Solver.SimulatedAnnealing)
-            {
-                _asyncSolver = new SimulatedAnnealingSolver();
-            }
-            if (solverType == Solver.GeneticAlgorithm)
-            {
-                _asyncSolver = new ParetoFrontierSolver();
-                
-                AsyncIO.ForceDotNet.Force();
-                _asyncSolver.AdaptationManager = this;
-                Debug.Log("Attempting to start solver");
-                _asyncSolver.Initialize();
-                InvokeRepeating(nameof(RunJobs), 0, 0.0001f);
-            }
-
-            // Set flag to signal that the manager has been initialized
-            initialized = true;
         }
 
         private void OnDestroy()
@@ -218,7 +187,7 @@ namespace AUIT
                 return null;
             }
 
-            Debug.Log($"Invoking solver: {solverType}");
+            Debug.Log($"Invoking solver: {backendSolver.solver}");
             OptimizationResponse response = await _asyncSolver.
                 OptimizeCoroutine(currentLayouts, objectives);
             
@@ -242,9 +211,9 @@ namespace AUIT
             List<Layout> layouts = new List<Layout>();
             foreach (var element in gameObjectsToOptimize)
             {
-                AdaptationManager adaptationManager = element.GetComponent<AdaptationManager>();
-                globalObjectives.Add(adaptationManager._localObjectiveHandler.Objectives);
-                layouts.Add(adaptationManager._layout);
+                AUIT auit = element.GetComponent<AUIT>();
+                globalObjectives.Add(auit._localObjectiveHandler.Objectives);
+                layouts.Add(auit._layout);
             }
 
             float cost = 0;
@@ -388,6 +357,84 @@ namespace AUIT
         public void UnregisterMultiElementObjective(MultiElementObjective multiElementObjective)
         {
             throw new NotImplementedException();
+        }
+    }
+    
+    public enum Backend
+    {
+        Unity,
+        Python
+    }
+    
+    public enum SolverUnity
+    {
+        SimulatedAnnealing
+    }
+
+    public enum SolverPython
+    {
+        GeneticAlgorithm
+    }
+    
+    [Serializable]
+    public class BackendSolver
+    {
+        public Backend backend = Backend.Unity;
+        public string solver;
+    }
+    
+    [CustomPropertyDrawer(typeof(BackendSolver))]
+    public class BackendSolverDrawer : PropertyDrawer
+    {
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+        {
+            EditorGUI.BeginProperty(position, label, property);
+
+            SerializedProperty backendProp = property.FindPropertyRelative("backend");
+            SerializedProperty solverProp = property.FindPropertyRelative("solver");
+
+            // Define rect areas for the two fields
+            Rect mainEnumRect = new Rect(position.x, position.y, position.width, EditorGUIUtility.singleLineHeight);
+            Rect subEnumRect = new Rect(position.x, position.y + EditorGUIUtility.singleLineHeight + 2, position.width, EditorGUIUtility.singleLineHeight);
+
+            // Draw Main Enum
+            EditorGUI.PropertyField(mainEnumRect, backendProp);
+
+            // Determine the corresponding sub-enum type
+            Type subEnumType = null;
+            switch ((Backend)backendProp.enumValueIndex)
+            {
+                case Backend.Unity:
+                    subEnumType = typeof(SolverUnity);
+                    break;
+                case Backend.Python:
+                    subEnumType = typeof(SolverPython);
+                    break;
+            }
+
+            if (subEnumType != null)
+            {
+                // Get all enum names from the selected sub-enum type
+                string[] subEnumNames = Enum.GetNames(subEnumType);
+                int currentIndex = Array.IndexOf(subEnumNames, solverProp.stringValue);
+
+                if (currentIndex == -1) currentIndex = 0; // Default to first value if invalid
+
+                // Draw Sub Enum Dropdown
+                int selectedIndex = EditorGUI.Popup(subEnumRect, "Solver", currentIndex, subEnumNames);
+                solverProp.stringValue = subEnumNames[selectedIndex];
+            }
+            else
+            {
+                EditorGUI.LabelField(subEnumRect, "No Solver Available");
+            }
+
+            EditorGUI.EndProperty();
+        }
+
+        public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
+        {
+            return EditorGUIUtility.singleLineHeight * 2 + 4; // Adjust height to fit two fields
         }
     }
 }

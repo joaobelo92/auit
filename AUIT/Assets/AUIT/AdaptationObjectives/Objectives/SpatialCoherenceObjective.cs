@@ -8,11 +8,11 @@ using Random = UnityEngine.Random;
 
 namespace AUIT.AdaptationObjectives
 {
-    [RequireComponent(typeof(AdaptationManager))]
+    [RequireComponent(typeof(AUIT))]
     public class SpatialCoherenceObjective : LocalObjective, AdaptationListener
     {
         // Get the AdaptationManager on this object
-        private AdaptationManager adaptationManager;
+        private AUIT auit;
 
         // Store known adaptations
         private List<Vector3> knownOptimizationsCloud;
@@ -174,15 +174,15 @@ namespace AUIT.AdaptationObjectives
         protected override void Awake()
         {
             base.Awake();
-            if (adaptationManager == null)
-                adaptationManager = GetComponent<AdaptationManager>();
+            if (auit == null)
+                auit = GetComponent<AUIT>();
         }
 
         protected override void OnEnable()
         {
             base.OnEnable();
-            if (adaptationManager != null)
-                adaptationManager.RegisterAdaptationListener(this);
+            if (auit != null)
+                auit.RegisterAdaptationListener(this);
         }
 
         protected override void OnDisable()
@@ -190,8 +190,8 @@ namespace AUIT.AdaptationObjectives
             base.OnDisable();
             
 
-            if (adaptationManager != null)
-                adaptationManager.UnregisterAdaptationListener(this);
+            if (auit != null)
+                auit.UnregisterAdaptationListener(this);
         }
     }
 }

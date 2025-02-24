@@ -5,10 +5,10 @@ using UnityEngine;
 
 namespace AUIT.SelectionStrategies
 {
-    [RequireComponent(typeof(AdaptationManager))]
+    [RequireComponent(typeof(AUIT))]
     public abstract class SelectionStrategy : MonoBehaviour
     {
-        private AdaptationManager _adaptationManager;
+        private AUIT auit;
         
          
         #region MonoBehaviour Implementation
@@ -16,21 +16,21 @@ namespace AUIT.SelectionStrategies
         
         protected virtual void Awake()
         {
-            if (_adaptationManager == null)
-                _adaptationManager = GetComponent<AdaptationManager>();
+            if (auit == null)
+                auit = GetComponent<AUIT>();
         }
 
         protected virtual void OnEnable()
         {
-            if (_adaptationManager == null)
-                _adaptationManager = GetComponent<AdaptationManager>();
-            _adaptationManager.RegisterSelectionStrategy(this);
+            if (auit == null)
+                auit = GetComponent<AUIT>();
+            auit.RegisterSelectionStrategy(this);
         }
 
         protected virtual void OnDisable()
         {
-            if (_adaptationManager != null)
-                _adaptationManager.UnregisterSelectionStrategy();
+            if (auit != null)
+                auit.UnregisterSelectionStrategy();
         }
 
         #endregion

@@ -3,34 +3,34 @@ using UnityEngine;
 
 namespace AUIT.AdaptationTriggers
 {
-    [RequireComponent(typeof(AdaptationManager))]
+    [RequireComponent(typeof(AUIT))]
     public abstract class AdaptationTrigger : MonoBehaviour
     {
         [HideInInspector]
-        protected AdaptationManager AdaptationManager;
+        protected AUIT Auit;
 
         protected virtual void Awake()
         {
-            if (AdaptationManager == null)
+            if (Auit == null)
             {
-                AdaptationManager = GetComponent<AdaptationManager>();
+                Auit = GetComponent<AUIT>();
             }
         }
 
         protected virtual void OnEnable()
         {
-            if (AdaptationManager == null)
+            if (Auit == null)
                 return;
 
-            AdaptationManager.RegisterTrigger(this);
+            Auit.RegisterTrigger(this);
         }
 
         protected virtual void OnDisable()
         {
-            if (AdaptationManager == null)
+            if (Auit == null)
                 return;
                 
-            AdaptationManager.UnregisterTrigger(this);
+            Auit.UnregisterTrigger(this);
         }
 
         // Current idea: Manager knows how to invoke solver and keeps track of update rate

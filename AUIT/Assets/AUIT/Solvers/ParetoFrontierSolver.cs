@@ -36,13 +36,13 @@ namespace AUIT.Solvers
             List<List<LocalObjective>> objectives)
         {
             Debug.Log($"sending optimization request");
-            Debug.Log("adaptationManagerRefereneId: " + AdaptationManager.Id);
+            Debug.Log("adaptationManagerRefereneId: " + Auit.Id);
             Debug.Log("initialLayouts: " + initialLayouts);
             // Check number of objectives across layouts
             int nObjectives = objectives.Sum(layout => layout.Count);
             Debug.Log("nObjectives: " + nObjectives);
             var optimizationRequest = new OptimizationRequest {
-                managerId = AdaptationManager.Id, // TODO: decouple from manager object "-1",
+                managerId = Auit.Id, // TODO: decouple from manager object "-1",
                 initialLayout = UIConfiguration.FromLayout(initialLayouts),
                 nObjectives = nObjectives
             };

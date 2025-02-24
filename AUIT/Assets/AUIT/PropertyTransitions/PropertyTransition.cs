@@ -7,29 +7,29 @@ namespace AUIT.PropertyTransitions
     public abstract class PropertyTransition : MonoBehaviour
     {
         [HideInInspector]
-        protected AdaptationManager AdaptationManager;
+        protected AUIT Auit;
         
         // TODO: refactor to work with local handler
         protected virtual void Awake()
         {
-            if (AdaptationManager == null)
+            if (Auit == null)
             {
-                AdaptationManager = GetComponent<AdaptationManager>();
+                Auit = GetComponent<AUIT>();
             }
         }
         
         protected virtual void Start()
         {
-            if (AdaptationManager != null)
+            if (Auit != null)
             {
-                AdaptationManager.RegisterTransition(this);
+                Auit.RegisterTransition(this);
             }
         }
         protected virtual void OnDestroy()
         {
-            if (AdaptationManager != null)
+            if (Auit != null)
             {
-                AdaptationManager.UnregisterTransition(this);
+                Auit.UnregisterTransition(this);
             }
         }
         

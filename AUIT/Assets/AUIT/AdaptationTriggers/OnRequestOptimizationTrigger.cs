@@ -13,9 +13,9 @@ namespace AUIT.AdaptationTriggers
             if (enabled == false)
                 return;
             
-            OptimizationResponse response = await AdaptationManager.OptimizeLayout();
+            OptimizationResponse response = await Auit.OptimizeLayout();
             
-            AdaptationManager.Adapt(response.solutions);
+            Auit.Adapt(response.solutions);
         }
 
         private void Update()

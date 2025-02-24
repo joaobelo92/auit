@@ -17,7 +17,7 @@ namespace AUIT.AdaptationTriggers
         async void Start()
         {
             // wait till AdaptationManager is initialized
-            while (AdaptationManager.initialized != true)
+            while (Auit.initialized != true)
             {
                 // wait for 100ms
                 await UniTask.Delay(100);
@@ -33,9 +33,9 @@ namespace AUIT.AdaptationTriggers
 
             Debug.Log("Interval Optimization Running...");
             
-            OptimizationResponse response = await AdaptationManager.OptimizeLayout();
+            OptimizationResponse response = await Auit.OptimizeLayout();
             
-            AdaptationManager.Adapt(response.solutions);
+            Auit.Adapt(response.solutions);
             await UniTask.Delay(TimeSpan.FromSeconds(interval));
             ApplyStrategy();
         }

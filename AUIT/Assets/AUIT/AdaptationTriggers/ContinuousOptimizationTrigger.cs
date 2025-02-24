@@ -47,7 +47,7 @@ namespace AUIT.AdaptationTriggers
         private bool ShouldApplyAdaptation()
         {
             bool costIsBelowOptiThreshold;
-            previousCost = AdaptationManager.ComputeCost();
+            previousCost = Auit.ComputeCost();
             costIsBelowOptiThreshold = previousCost <= optimizationThreshold;
 
             return enabled && !costIsBelowOptiThreshold;
@@ -55,7 +55,7 @@ namespace AUIT.AdaptationTriggers
 
         public override async void ApplyStrategy()
         {
-            if (AdaptationManager.isActiveAndEnabled == false)
+            if (Auit.isActiveAndEnabled == false)
                 return;
                 
             if (!ShouldApplyAdaptation())
@@ -67,12 +67,12 @@ namespace AUIT.AdaptationTriggers
             //     return;
             // }
 
-            OptimizationResponse response = await AdaptationManager.OptimizeLayout();
+            OptimizationResponse response = await Auit.OptimizeLayout();
 
             bool shouldAdapt = true;
             print($"Threshold not working, need to add cost logic in Optimization Response");
             if (shouldAdapt)
-                AdaptationManager.Adapt(response.solutions);
+                Auit.Adapt(response.solutions);
         }
     }
 }

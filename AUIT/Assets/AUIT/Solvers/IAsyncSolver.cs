@@ -20,6 +20,6 @@ namespace AUIT.Solvers
             List<Layout> initialLayouts,
             List<List<LocalObjective>> objectives
         );
-        public AdaptationManager AdaptationManager { set; get; } 
+        public AUIT Auit { set; get; } 
     }
 }
