@@ -1,15 +1,17 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using AUIT.Extras;
 using AUIT.AdaptationObjectives;
 using AUIT.AdaptationObjectives.Definitions;
+using AUIT.Constraints;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
 namespace AUIT.Solvers
 {
-    [System.Serializable]
+    [Serializable]
     public class SimulatedAnnealingSolver : IAsyncSolver
     {
         [Tooltip("Number of iterations the solver will run for. A higher " +

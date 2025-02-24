@@ -8,6 +8,7 @@ using AUIT.AdaptationObjectives;
 using AUIT.SelectionStrategies;
 using AUIT.Solvers;
 using AUIT.AdaptationObjectives.Definitions;
+using AUIT.Constraints;
 using AUIT.Extras;
 using Cysharp.Threading.Tasks;
 using UnityEditor;
@@ -44,6 +45,9 @@ namespace AUIT
         public List<GameObject> gameObjectsToOptimize;
 
         private (GameObject, LocalObjectiveHandler)[] _gameObjects;
+        
+        [SerializeField]
+        private List<Constraint> constraints;
 
         // flag to signal that the manager has been initialized
         [NonSerialized]

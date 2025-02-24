@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using AUIT.AdaptationObjectives.Definitions;
 using AUIT.Extras;
@@ -9,11 +10,9 @@ using AUIT.Constraints;
 
 namespace AUIT.Solvers
 {
-    [System.Serializable]
+    [Serializable]
     public abstract class IAsyncSolver
     {
-        [SerializeReference]
-        public List<Constraint> constraints;
         public virtual void Initialize() {}
         public virtual void Destroy() {}
         public abstract UniTask<OptimizationResponse> OptimizeCoroutine(

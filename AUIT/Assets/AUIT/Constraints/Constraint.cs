@@ -1,8 +1,29 @@
+using System;
+using AUIT.AdaptationObjectives.Definitions;
+using UnityEngine;
+
 namespace AUIT.Constraints
 {
-    [System.Serializable]
-    public abstract class Constraint
+    public enum ConstraintType
     {
-        public int test = 1;
+        SpatialXAxis,
+        SpatialYAxis,
+        SpatialZAxis,
+    }
+    
+    [Serializable]
+    public class Constraint
+    {
+
+        public ConstraintType type;
+        
+        public float minimum;
+        public float maximum;
+
+        public ContextSource contextSource;
+        [SerializeField]
+        [Tooltip("Only used if Context Source is set to Custom Transform.")]
+        protected Transform transformOverride;
+
     }   
 }
