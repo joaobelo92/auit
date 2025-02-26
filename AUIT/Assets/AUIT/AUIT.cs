@@ -62,8 +62,11 @@ namespace AUIT
             switch (backendSolver.backend)
             {
                 case Backend.Unity:
-                    // Right now there is only one unity solver
-                    _asyncSolver = new SimulatedAnnealingSolver();
+                    SolverUnity solver = (SolverUnity)Enum.Parse(typeof(SolverUnity), backendSolver.solver);
+                    if (solver == SolverUnity.SimulatedAnnealing)
+                        _asyncSolver = new SimulatedAnnealingSolver();
+                    if (solver == SolverUnity.ExhaustiveSearch)
+                        _asyncSolver = new ExhaustiveSearchSolver();
                     break;
                 case Backend.Python:
                     _asyncSolver = new ParetoFrontierSolver();
@@ -80,11 +83,12 @@ namespace AUIT
             switch (backendSolver.backend)
             {
                 case Backend.Unity:
+                    _asyncSolver.Initialize(constraints);
                     break;
                 case Backend.Python:
                     print("initializing python solver");
                     _asyncSolver.Auit = this;
-                    _asyncSolver.Initialize();
+                    _asyncSolver.Initialize(constraints);
                     InvokeRepeating(nameof(RunJobs), 0, 0.0001f);
                     break;
             }
@@ -375,7 +379,8 @@ namespace AUIT
     
     public enum SolverUnity
     {
-        SimulatedAnnealing
+        SimulatedAnnealing,
+        ExhaustiveSearch
     }
 
     public enum SolverPython

@@ -150,25 +150,39 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6bd4eb42210b9d8489de1655cf9238f5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  solverType: 0
+  backendSolver:
+    backend: 0
+    solver: ExhaustiveSearch
   solverSettings:
-    rid: 3032553841285136430
+    rid: 1320836220456796211
   developmentMode: 1
   gameObjectsToOptimize:
   - {fileID: 1916628227}
+  constraints:
+  - type: 0
+    minimum: -1
+    maximum: 1
+    contextSource: 0
+    transformOverride: {fileID: 0}
+  - type: 1
+    minimum: -1
+    maximum: 1
+    contextSource: 0
+    transformOverride: {fileID: 0}
+  - type: 2
+    minimum: -1
+    maximum: 1
+    contextSource: 0
+    transformOverride: {fileID: 0}
   references:
     version: 2
     RefIds:
-    - rid: 3032553841285136430
-      type: {class: SimulatedAnnealingSolver, ns: AUIT.Solvers, asm: Assembly-CSharp}
+    - rid: 1320836220456796211
+      type: {class: ExhaustiveSearchSolver, ns: AUIT.Solvers, asm: Assembly-CSharp}
       data:
-        constraints: []
-        iterations: 1500
-        minimumTemperature: 0.000001
-        initialTemperature: 10000
-        annealingSchedule: 0.98
-        earlyStopping: 0.02
-        iterationsPerFrame: 50
+        interval: 0.05
+        gameObjectInterdependencies: 0
+        yieldRate: 2000
 --- !u!4 &642232616
 Transform:
   m_ObjectHideFlags: 0
@@ -409,13 +423,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1226842592}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: -0.8494326, z: 0, w: 0.5276972}
-  m_LocalPosition: {x: 0.52, y: 0, z: 4.19}
+  m_LocalRotation: {x: -0, y: -0.24699925, z: 0, w: -0.9690157}
+  m_LocalPosition: {x: 0.52, y: 0, z: 0.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: -116.3, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: -331.4, z: 0}
 --- !u!1 &1916628227
 GameObject:
   m_ObjectHideFlags: 0
@@ -536,8 +550,8 @@ Transform:
   m_GameObject: {fileID: 1916628227}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 1}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 0.493, y: 0, z: 0.552}
+  m_LocalScale: {x: 0.1, y: 0.1, z: 0.1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}

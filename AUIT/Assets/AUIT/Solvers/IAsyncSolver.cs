@@ -13,8 +13,9 @@ namespace AUIT.Solvers
     [Serializable]
     public abstract class IAsyncSolver
     {
-        public virtual void Initialize() {}
+        public virtual void Initialize(List<Constraint> constraints=null) {}
         public virtual void Destroy() {}
+        // TODO: initialize objectives and constraints once
         public abstract UniTask<OptimizationResponse> OptimizeCoroutine(
             List<Layout> initialLayouts,
             List<List<LocalObjective>> objectives

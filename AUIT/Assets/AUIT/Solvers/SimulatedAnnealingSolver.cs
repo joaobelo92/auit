@@ -86,7 +86,6 @@ namespace AUIT.Solvers
                 if (currentCost <= earlyStopping)
                 {
                     bestLayout = currentLayout;
-                    cost = currentCost;
                     break;
                 }
 

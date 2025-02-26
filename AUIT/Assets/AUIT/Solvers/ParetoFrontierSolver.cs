@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AUIT.AdaptationObjectives;
 using AUIT.AdaptationObjectives.Definitions;
+using AUIT.Constraints;
 using AUIT.Extras;
 using Cysharp.Threading.Tasks;
 using NetMQ;
@@ -23,7 +24,7 @@ namespace AUIT.Solvers
             _pythonServer.UnbindSolver(this);
         }
 
-        public override void Initialize()
+        public override void Initialize(List<Constraint> constraints=null)
         {
             Debug.Log("Pareto FrontierSolver initializing");
             _pythonServer = PythonServer.GetInstance();
@@ -32,7 +33,8 @@ namespace AUIT.Solvers
 
         public override async UniTask<OptimizationResponse> OptimizeCoroutine(
             List<Layout> initialLayouts, 
-            List<List<LocalObjective>> objectives)
+            List<List<LocalObjective>> objectives
+        )
         {
             Debug.Log($"sending optimization request");
             Debug.Log("adaptationManagerRefereneId: " + Auit.Id);

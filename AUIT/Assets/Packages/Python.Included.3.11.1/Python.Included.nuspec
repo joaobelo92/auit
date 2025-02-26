@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>Python.Included</id>
+    <version>3.11.1</version>
+    <authors>Meinrad Recheis and Python Software Foundation</authors>
+    <license type="file">LICENSE</license>
+    <licenseUrl>https://aka.ms/deprecateLicenseUrl</licenseUrl>
+    <icon>python_included_nuget.png</icon>
+    <projectUrl>https://github.com/henon/Python.Included</projectUrl>
+    <description>Python.Included is an automatic deployment mechanism for .NET packages which depend on the embedded Python distribution. This allows libraries depending on Python and/or Python packages to be deployed via Nuget without having to worry about any local Python installations.</description>
+    <copyright>Copyright 2019-2022 Meinrad Recheis and Python Software Foundation</copyright>
+    <tags>Python, pythonnet, embedded, interop, deployment</tags>
+    <repository type="github" url="https://github.com/henon/Python.Included" />
+    <dependencies>
+      <group targetFramework=".NETStandard2.0">
+        <dependency id="Python.Deployment" version="2.0.0" exclude="Build,Analyzers" />
+        <dependency id="pythonnet" version="3.0.1" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>

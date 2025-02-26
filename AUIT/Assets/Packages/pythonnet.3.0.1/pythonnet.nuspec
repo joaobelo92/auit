@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>pythonnet</id>
+    <version>3.0.1</version>
+    <authors>Python.Runtime</authors>
+    <license type="file">LICENSE</license>
+    <licenseUrl>https://aka.ms/deprecateLicenseUrl</licenseUrl>
+    <icon>python-clear.png</icon>
+    <readme>README.md</readme>
+    <projectUrl>https://pythonnet.github.io/</projectUrl>
+    <iconUrl>https://raw.githubusercontent.com/pythonnet/pythonnet/master/src/console/python-clear.ico</iconUrl>
+    <description>Python and CLR (.NET and Mono) cross-platform language interop</description>
+    <tags>python interop dynamic dlr Mono pinvoke</tags>
+    <repository type="git" url="https://github.com/pythonnet/pythonnet" commit="e28dd80c3a8fb60bd62671b765ff41c98ac5b1e9" />
+    <dependencies>
+      <group targetFramework=".NETStandard2.0">
+        <dependency id="Microsoft.CSharp" version="4.7.0" exclude="Build,Analyzers" />
+        <dependency id="System.Reflection.Emit" version="4.3.0" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>
