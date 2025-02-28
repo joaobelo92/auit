@@ -217,24 +217,29 @@ namespace AUIT
                                $"{gameObject.name} is disabled!");
                 return 0.0f;
             }
-
-            List<List<LocalObjective>> globalObjectives = new List<List<LocalObjective>>();
-            List<Layout> layouts = new List<Layout>();
+            
+            // List<List<LocalObjective>> objectives = new List<List<LocalObjective>>();
+            // List<Layout> layouts = new List<Layout>();
+            
+            // TODO: Decide global objectives
+            // foreach (var element in gameObjectsToOptimize)
+            // {
+            //     AUIT auit = element.GetComponent<AUIT>();
+            //     globalObjectives.Add(auit._localObjectiveHandler.Objectives);
+            //     layouts.Add(auit._layout);
+            // }
+            
+            float cost = 0;
             foreach (var element in gameObjectsToOptimize)
             {
-                AUIT auit = element.GetComponent<AUIT>();
-                globalObjectives.Add(auit._localObjectiveHandler.Objectives);
-                layouts.Add(auit._layout);
+                LocalObjectiveHandler currentHandler = element.GetComponent<LocalObjectiveHandler>();
+                float elementCost = currentHandler.Objectives.Sum(
+                    objective => objective.CostFunction(l));
+                elementCost /= currentHandler.Objectives.Count;
+                cost += elementCost;
             }
-
-            float cost = 0;
-            for (int i = 0; i < gameObjectsToOptimize.Count; i++)
-            {
-                cost += globalObjectives[i].Sum(objective =>
-                            objective.Weight * objective.CostFunction(layouts[i])) /
-                        globalObjectives[i].Count;
-            }
-            cost /= globalObjectives.Count;
+            
+            cost /= gameObjectsToOptimize.Count;
             return cost;
         }
         
