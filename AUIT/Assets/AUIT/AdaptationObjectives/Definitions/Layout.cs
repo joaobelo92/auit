@@ -43,6 +43,11 @@ namespace AUIT.AdaptationObjectives.Definitions
         {
         }
 
+        public Layout(Vector3 position)
+        {
+            _position = position;
+        }
+
         public Layout(string id, Transform transform)
         {
             _id = id;

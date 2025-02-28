@@ -152,9 +152,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   backendSolver:
     backend: 0
-    solver: ExhaustiveSearch
+    solver: SimulatedAnnealing
   solverSettings:
-    rid: 1320836220456796211
+    rid: 8534043747117695021
   developmentMode: 1
   gameObjectsToOptimize:
   - {fileID: 1916628227}
@@ -177,12 +177,15 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 1320836220456796211
-      type: {class: ExhaustiveSearchSolver, ns: AUIT.Solvers, asm: Assembly-CSharp}
+    - rid: 8534043747117695021
+      type: {class: SimulatedAnnealingSolver, ns: AUIT.Solvers, asm: Assembly-CSharp}
       data:
-        interval: 0.05
-        gameObjectInterdependencies: 0
-        yieldRate: 2000
+        iterations: 1500
+        minimumTemperature: 0.000001
+        initialTemperature: 10000
+        annealingSchedule: 0.98
+        earlyStopping: 0.02
+        iterationsPerFrame: 50
 --- !u!4 &642232616
 Transform:
   m_ObjectHideFlags: 0
@@ -192,7 +195,7 @@ Transform:
   m_GameObject: {fileID: 642232613}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.303455, y: -11.27686, z: -14.474407}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
