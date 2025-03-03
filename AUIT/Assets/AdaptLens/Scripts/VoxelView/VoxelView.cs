@@ -20,6 +20,8 @@ public class VoxelView : MonoBehaviour
     [Range(0, 1)]
     public float m_maxVisualizedCost = 1f;
 
+    public bool m_visualizePareto = false;
+
 
     public enum Mode { OnRequest, Interval };
     [Header("Visualization")]
@@ -219,6 +221,7 @@ public class VoxelView : MonoBehaviour
 
     #region Public Methods
 
+
     public void VisualizePareto()
     {
         if (m_updatingVoxels)
@@ -250,7 +253,10 @@ public class VoxelView : MonoBehaviour
             int z = i % m_voxelDims.z;
             int y = (i / m_voxelDims.z) % m_voxelDims.y;
             int x = i / (m_voxelDims.y * m_voxelDims.z);
-            m_voxels[x, y, z].gameObject.SetActive(true);
+            Voxel paretoVoxel = m_voxels[x, y, z];
+            paretoVoxel.gameObject.SetActive(true);
+            float cost = m_auit.ComputeCost(new Layout(paretoVoxel.transform.position));
+            paretoVoxel.SetColor(m_costGradient.Evaluate(cost));
         }
     }
 
@@ -260,6 +266,12 @@ public class VoxelView : MonoBehaviour
         {
             return;
         }
+        if (m_visualizePareto)
+        {
+            VisualizePareto();
+            return;
+        }
+
         Layout layout = new Layout(Vector3.zero);
         for (int x = 0; x < m_voxelDims.x; x++)
         {
@@ -326,10 +338,6 @@ public class VoxelViewEditor : Editor
                 if (GUILayout.Button("Visualize Costs"))
                 {
                     voxelView.VisualizeCosts();
-                }
-                if (GUILayout.Button("Visualize Pareto"))
-                {
-                    voxelView.VisualizePareto();
                 }
                 break; 
             case VoxelView.Mode.Interval:
