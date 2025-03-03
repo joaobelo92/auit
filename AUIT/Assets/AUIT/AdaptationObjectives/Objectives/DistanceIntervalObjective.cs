@@ -10,6 +10,8 @@ namespace AUIT.AdaptationObjectives
         // In this case optimization target must be a transform
         // Add validation in the future
         [SerializeField]
+        private ContextSource<Transform> targetContextSource;
+        [SerializeField]
         private float goalXYDistance = 0.3f;
         [SerializeField]
         private float yInterval = 0.25f;
@@ -20,23 +22,18 @@ namespace AUIT.AdaptationObjectives
 
         public void Reset()
         {
-            ContextSource = ContextSource.PlayerPose;
         }
 
         protected override void Start()
         {
             base.Start();
-            if (ContextSource == ContextSource.Gaze)
-            {
-                ContextSource = ContextSource.PlayerPose;
-            }
         }
 
         private Vector3 GetDistanceVector(Layout optimizationTarget)
         {
             // y values should not be changed here, otherwise we have a sphere instead of a radius from the user
-            Debug.Log(ContextSourceTransformTarget);
-            Vector3 targetPosition = (Vector3)ContextSourceTransformTarget;
+            
+            Vector3 targetPosition = targetContextSource.GetValue().position;
             Vector3 currentPosition = optimizationTarget.Position; 
 
             Vector3 distanceVector = targetPosition - currentPosition;
@@ -48,7 +45,7 @@ namespace AUIT.AdaptationObjectives
             // Get distance from user on x and z axis
             Vector3 distanceVector = GetDistanceVector(optimizationTarget);
             // TODO: check if possible to delegate context
-            Vector3 targetPosition = (Vector3)ContextSourceTransformTarget;
+            Vector3 targetPosition = targetContextSource.GetValue().position;
             Vector3 currentPosition = optimizationTarget.Position;
 
             // distance y axis
@@ -68,7 +65,7 @@ namespace AUIT.AdaptationObjectives
         {
             Vector3 distanceVector = GetDistanceVector(optimizationTarget);
             distanceVector.y = 0;
-            Vector3 targetPosition = (Vector3)ContextSourceTransformTarget;
+            Vector3 targetPosition = targetContextSource.GetValue().position;
             Vector3 currentPosition = optimizationTarget.Position;
 
             float distance = distanceVector.magnitude - goalXYDistance;

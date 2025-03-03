@@ -8,6 +8,9 @@ namespace AUIT.AdaptationObjectives
     public class ConstantViewSizeObjective : LocalObjective
     {
         [SerializeField]
+        private ContextSource<Transform> userContextSource;
+
+        [SerializeField]
         private float scalingFactor = 1.0f;
         [SerializeField]
         private float maxScaleThreshold = 0.5f;
@@ -21,20 +24,14 @@ namespace AUIT.AdaptationObjectives
 
         public void Reset()
         {
-            ContextSource = ContextSource.Gaze;
         }
 
         protected override void Start()
         {
             base.Start();
-            // Ensure that ContextSource is a Transform
-            if (ContextSource == ContextSource.PlayerPose)
-            {
-                ContextSource = ContextSource.Gaze;
-            }
 
             // Ensure that ContextSource is a Transform
-            Transform contextSourceTransform = ContextSourceTransformTarget as Transform;
+            Transform contextSourceTransform = userContextSource.GetValue();
             if (contextSourceTransform == null)
                 return;
 
@@ -47,7 +44,7 @@ namespace AUIT.AdaptationObjectives
         public override float CostFunction(Layout optimizationTarget, Layout initialLayout = null)
         {
             // Ensure that ContextSource is a Transform
-            Transform contextSourceTransform = ContextSourceTransformTarget as Transform;
+            Transform contextSourceTransform = userContextSource.GetValue();
             if (contextSourceTransform == null)
                 return 1.0f;
             
@@ -71,7 +68,7 @@ namespace AUIT.AdaptationObjectives
         public override Layout OptimizationRule(Layout optimizationTarget, Layout initialLayout = null)
         {
             // Ensure that ContextSource is a Transform
-            Transform contextSourceTransform = ContextSourceTransformTarget as Transform;
+            Transform contextSourceTransform = userContextSource.GetValue();
             if (contextSourceTransform == null)
                 return optimizationTarget;
 

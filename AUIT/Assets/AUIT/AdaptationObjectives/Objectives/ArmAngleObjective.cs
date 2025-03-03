@@ -12,20 +12,18 @@ namespace AUIT.AdaptationObjectives.Objectives
     public class ArmAngleObjective : LocalObjective
     {
         [SerializeField]
+        private ContextSource<Transform> userContextSource;
+
+        [SerializeField]
         private float eyeToShoulderDistance = 0.25f;
         
         public void Reset()
         {
-            ContextSource = ContextSource.PlayerPose;
         }
 
         protected override void Start()
         {
             base.Start();
-            if (ContextSource == ContextSource.Gaze)
-            {
-                ContextSource = ContextSource.PlayerPose;
-            }
         }
 
         private float GetNormalizedArmAngle(Vector3 targetPosition, Vector3 shoulderPosition)
@@ -65,7 +63,7 @@ namespace AUIT.AdaptationObjectives.Objectives
         /// </summary>
         public override float CostFunction(Layout optimizationTarget, Layout initialLayout = null)
         {
-            Vector3 currentPosition = (Vector3)ContextSourceTransformTarget;
+            Vector3 currentPosition = userContextSource.GetValue().position;
             Vector3 targetPosition = optimizationTarget.Position;
 
             // Calculate the shoulder position (the shoulder is eyeToShoulderDistance below the eye)

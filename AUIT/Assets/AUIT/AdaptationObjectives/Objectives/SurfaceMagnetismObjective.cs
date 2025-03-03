@@ -5,6 +5,9 @@ namespace AUIT.AdaptationObjectives
 {
     public class SurfaceMagnetismObjective : LocalObjective
     {
+        [SerializeField]
+        private ContextSource<Transform> surfaceContextSource;
+
         [SerializeField, Tooltip("Layer Mask should contain all surfaces")]
         private LayerMask layerMask = Physics.DefaultRaycastLayers;
         // [SerializeField, Tooltip("The goal distance from the surface of the target.")]
@@ -15,7 +18,7 @@ namespace AUIT.AdaptationObjectives
 
         public override float CostFunction(Layout optimizationTarget, Layout initialLayout = null)
         {
-            Vector3 targetPosition = ((Transform)ContextSourceTransformTarget).position;
+            Vector3 targetPosition = surfaceContextSource.GetValue().position;
             Vector3 optimizationTargetPosition = optimizationTarget.Position;
             
             RaycastHit hit;

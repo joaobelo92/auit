@@ -8,6 +8,9 @@ namespace AUIT.AdaptationObjectives
     public class FieldOfViewObjective : LocalObjective
     {
         [SerializeField]
+        private ContextSource<Transform> userContextSource;
+
+        [SerializeField]
         private PeripheralVisionBoundary peripheralVisionBoundary = PeripheralVisionBoundary.Near;
         [SerializeField]
         private float maxAngle = 90f;
@@ -28,7 +31,7 @@ namespace AUIT.AdaptationObjectives
             // Idea: get angle between gaze and object vectors on y and x axis
             // Then we define intervals that are acceptable, e.g. comprising near/mid/far peripheral view
             // Cost function increases the further is is from that interval
-            Transform contextSourceTransform = (Transform)ContextSourceTransformTarget;
+            Transform contextSourceTransform = userContextSource.GetValue();
             Vector3 target = contextSourceTransform.worldToLocalMatrix.MultiplyPoint3x4(optimizationTarget.Position);
 
             float angle = Vector3.Angle(Vector3.forward, target);
@@ -53,7 +56,7 @@ namespace AUIT.AdaptationObjectives
 
         public override Layout OptimizationRule(Layout optimizationTarget, Layout initialLayout)
         {
-            Transform contextSourceTransform = (Transform)ContextSourceTransformTarget;
+            Transform contextSourceTransform = userContextSource.GetValue();
             // Would be efficient to cache rotation when cost function is computed
             Vector3 target = contextSourceTransform.worldToLocalMatrix.MultiplyPoint3x4(optimizationTarget.Position);
 
@@ -79,7 +82,7 @@ namespace AUIT.AdaptationObjectives
 
         public override Layout DirectRule(Layout optimizationTarget)
         {
-            Transform contextSourceTransform = (Transform)ContextSourceTransformTarget;
+            Transform contextSourceTransform = userContextSource.GetValue();
             // Would be efficient to cache rotation when cost function is computed
             Vector3 target = contextSourceTransform.worldToLocalMatrix.MultiplyPoint3x4(optimizationTarget.Position);
             quaternion = Quaternion.FromToRotation(target, Vector3.forward);

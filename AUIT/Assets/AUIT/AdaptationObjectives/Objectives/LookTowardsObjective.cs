@@ -9,6 +9,9 @@ namespace AUIT.AdaptationObjectives
     public class LookTowardsObjective : LocalObjective
     {
         [SerializeField]
+        private ContextSource<Transform> targetContextSource;
+
+        [SerializeField]
         private float angleThreshold = 90f;
 
         private enum Direction
@@ -22,12 +25,11 @@ namespace AUIT.AdaptationObjectives
 
         private void Reset()
         {
-            ContextSource = ContextSource.Gaze;
         }
 
         public override float CostFunction(Layout optimizationTarget, Layout initialLayout = null)
         {
-            Vector3 targetPosition = ((Transform)ContextSourceTransformTarget).position;
+            Vector3 targetPosition = targetContextSource.GetValue().position;
             
             Matrix4x4 TRS = Matrix4x4.TRS(optimizationTarget.Position, optimizationTarget.Rotation, transform.lossyScale);
             Vector3 orientationVector = new Vector3(TRS.m02, TRS.m12, TRS.m22);
@@ -42,8 +44,8 @@ namespace AUIT.AdaptationObjectives
 
         public override Layout OptimizationRule(Layout optimizationTarget, Layout initialLayout)
         {
-            Transform cameraTransform = (Transform)ContextSourceTransformTarget;
-            Vector3 forward = (optimizationTarget.Position - cameraTransform.position).normalized;
+            Vector3 targetPosition = targetContextSource.GetValue().position;
+            Vector3 forward = (optimizationTarget.Position - targetPosition).normalized;
             Quaternion rotationAligned = Quaternion.LookRotation(lookTowards == Direction.LookAway ? forward : -forward, Vector3.up);
 
             Layout result = optimizationTarget.Clone();

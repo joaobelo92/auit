@@ -6,16 +6,21 @@ namespace AUIT.AdaptationObjectives
 {
     public class AnchorToTargetObjective : LocalObjective
     {
+        [SerializeField]
+        private ContextSource<Transform> targetContextSource;
+
         [SerializeField, Tooltip("Position in Local Coordinates")]
         private Vector3 offset;
 
         [SerializeField]
         private float distanceThreshold = 0.3f;
+
+        
         
         // Start is called before the first frame update
         public override float CostFunction(Layout optimizationTarget, Layout initialLayout = null)
         {
-            Transform contextSourceTransform = (Transform)ContextSourceTransformTarget;
+            Transform contextSourceTransform = targetContextSource.GetValue();
             Vector3 positionLocalCoordinates = contextSourceTransform.worldToLocalMatrix.MultiplyPoint3x4(optimizationTarget.Position);
 
             float distance = Vector3.Distance(positionLocalCoordinates, offset);
@@ -26,7 +31,7 @@ namespace AUIT.AdaptationObjectives
 
         public override Layout OptimizationRule(Layout optimizationTarget, Layout initialLayout = null)
         {
-            Transform contextSourceTransform = (Transform)ContextSourceTransformTarget;
+            Transform contextSourceTransform = targetContextSource.GetValue();
             Vector3 target = contextSourceTransform.localToWorldMatrix.MultiplyPoint3x4(offset);
             
             Layout result = optimizationTarget.Clone();

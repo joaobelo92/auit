@@ -23,16 +23,11 @@ namespace AUIT.AdaptationObjectives
 
         public void Reset()
         {
-            ContextSource = ContextSource.PlayerPose;
         }
 
         protected override void Start()
         {
             base.Start();
-            if (ContextSource == ContextSource.Gaze)
-            {
-                ContextSource = ContextSource.PlayerPose;
-            }
         }
 
         private float GetSemanticAgreement(float[] positiveAssociations, float[] distances)

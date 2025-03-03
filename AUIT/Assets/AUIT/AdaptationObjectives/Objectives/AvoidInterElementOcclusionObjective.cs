@@ -8,6 +8,9 @@ namespace AUIT.AdaptationObjectives.Objectives
 {
     public class AvoidInterElementOcclusionObjective : MultiElementObjective
     {
+        [SerializeField]
+        private ContextSource<Transform> userContextSource;
+
         private Camera _occlusionObjectiveCamera;
 
         private MeshFilter _meshFilter;
@@ -18,7 +21,6 @@ namespace AUIT.AdaptationObjectives.Objectives
         
         public void Reset()
         {
-            ContextSource = ContextSource.PlayerPose;
         }
         
         protected override void Start()
@@ -92,7 +94,7 @@ namespace AUIT.AdaptationObjectives.Objectives
             
             // here we will use the user's head position to determine occlusion
             var cameraTransform = _occlusionObjectiveCamera.transform;
-            cameraTransform.position = (Vector3)ContextSourceTransformTarget;
+            cameraTransform.position = userContextSource.GetValue().position;
             cameraTransform.rotation = Quaternion.LookRotation(thisLayout.Position - cameraTransform.position);
 
             List<Vector2> pointsScreenSpace = new ();

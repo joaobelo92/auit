@@ -20,7 +20,6 @@ namespace AUIT.Constraints
         public float minimum;
         public float maximum;
 
-        public ContextSource contextSource;
         [SerializeField]
         [Tooltip("Only used if Context Source is set to Custom Transform.")]
         protected Transform transformOverride;

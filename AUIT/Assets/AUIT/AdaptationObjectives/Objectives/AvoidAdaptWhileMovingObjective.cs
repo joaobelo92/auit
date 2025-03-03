@@ -7,6 +7,9 @@ namespace AUIT.AdaptationObjectives
     public class AvoidAdaptWhileMovingObjective : LocalObjective
     {
         private Vector3? lastPosition;
+
+        [SerializeField]
+        private ContextSource<Transform> movingContextSource;
         
         [SerializeField]
         private float movementTolerance = 0.1f;
@@ -38,7 +41,7 @@ namespace AUIT.AdaptationObjectives
         {
             while (true)
             {
-                Vector3 contextSourcePosition = ((Transform)ContextSourceTransformTarget).position;
+                Vector3 contextSourcePosition = movingContextSource.GetValue().position;
                 lastPosition ??= contextSourcePosition;
                 isMoving = Vector3.Distance(lastPosition.Value, contextSourcePosition) > movementTolerance;
                 lastPosition = contextSourcePosition;

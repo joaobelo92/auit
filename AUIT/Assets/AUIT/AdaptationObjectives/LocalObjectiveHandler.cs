@@ -16,7 +16,7 @@ namespace AUIT.AdaptationObjectives
 
         public string Id { get; } = Guid.NewGuid().ToString();
 
-        private readonly List<Type> _objectiveTypes = new ();
+        //private readonly List<Type> _objectiveTypes = new ();
 
         /// <summary>
         /// List of objectives that this handler will manage
@@ -31,15 +31,17 @@ namespace AUIT.AdaptationObjectives
             if (Objectives.Contains(objective))
                 return;
 
+            /*
             if (_objectiveTypes.Contains(objective.GetType()))
             {
                 Debug.LogWarning($"A objective of type {objective.GetType()} has already been added");
                 Destroy(objective);
                 return;
             }
+            */
 
             Objectives.Add(objective);
-            _objectiveTypes.Add(objective.GetType());
+            //_objectiveTypes.Add(objective.GetType());
             RegisterOptimizationTarget(objective.OptimizationTarget);
         }
 
@@ -49,7 +51,7 @@ namespace AUIT.AdaptationObjectives
                 return;
 
             Objectives.Remove(objective);
-            _objectiveTypes.Remove(objective.GetType());
+            //_objectiveTypes.Remove(objective.GetType());
             UnregisterOptimizationTarget(objective.OptimizationTarget);
         }
 

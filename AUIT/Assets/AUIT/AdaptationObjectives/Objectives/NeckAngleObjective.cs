@@ -14,19 +14,16 @@ namespace AUIT.AdaptationObjectives
     /// </summary>
     public class NeckAngleObjective : LocalObjective
     {
-                
+        [SerializeField]
+        private ContextSource<Transform> userContextSource;
+
         public void Reset()
         {
-            ContextSource = ContextSource.PlayerPose;
         }
 
         protected override void Start()
         {
             base.Start();
-            if (ContextSource == ContextSource.Gaze)
-            {
-                ContextSource = ContextSource.PlayerPose;
-            }
         }
         
         private float GetNormalizedNeckAngle(Vector3 targetPosition, Vector3 currentEyePosition)
@@ -62,7 +59,7 @@ namespace AUIT.AdaptationObjectives
         /// </summary>
         public override float CostFunction(Layout optimizationTarget, Layout initialLayout = null)
         {
-            Vector3 currentEyePosition = (Vector3) ContextSourceTransformTarget;
+            Vector3 currentEyePosition = userContextSource.GetValue().position;
             Vector3 targetPosition = optimizationTarget.Position; // This is technically the camera position.
 
             float normalizedAngle =

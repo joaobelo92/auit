@@ -235,11 +235,13 @@ namespace AUIT
 
         public NDarray IsParetoDominated(NDarray scores)
         {
-            // Initialize array of indices of efficient points
-            NDarray isEfficient = np.arange(scores.shape[0]);
-
             // Get number of points
             int nPoints = scores.shape[0];
+
+            // Initialize array of indices of efficient points
+            NDarray isEfficient = np.arange(nPoints);
+
+            
 
             // Next index in the isEfficient array to search for
             int nextPointIndex = 0;
@@ -270,7 +272,8 @@ namespace AUIT
             int numSamples = ls.Length;
             int numObjectives = NumObjectives;
             NDarray scores = np.zeros((numSamples, numObjectives));
-            
+            Debug.Log($"{numSamples} samples, {numObjectives} objectives");
+
             for (int si = 0; si < numSamples; si++)
             {
                 Layout l = ls[si];
@@ -280,7 +283,7 @@ namespace AUIT
                     LocalObjectiveHandler currentHandler = element.GetComponent<LocalObjectiveHandler>();
                     foreach (var objective in currentHandler.Objectives)
                     {
-                        scores[si, oi] = np.array(objective.CostFunction(l));
+                        scores[si, oi++] = np.array(objective.CostFunction(l));
                     }
                 }
             }

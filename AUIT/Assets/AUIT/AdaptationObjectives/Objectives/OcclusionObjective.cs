@@ -14,6 +14,9 @@ namespace AUIT.AdaptationObjectives.Objectives
 
         [Header("Options")]
         [SerializeField]
+        private ContextSource<Transform> userContextSource;
+
+        [SerializeField]
         private LayerMask occlusionMask = Physics.DefaultRaycastLayers;
         [SerializeField]
         private float stepMovement = 0.02f;
@@ -44,16 +47,11 @@ namespace AUIT.AdaptationObjectives.Objectives
 
         private void Reset()
         {
-            ContextSource = ContextSource.PlayerPose;
         }
 
         protected override void Start()
         {
             base.Start();
-            if (ContextSource == ContextSource.Gaze)
-            {
-                ContextSource = ContextSource.PlayerPose;
-            }
             occlusionMask &= ~(1 << gameObject.layer);
 
             Renderer[] renderers = GetComponentsInChildren<Renderer>();
@@ -87,7 +85,7 @@ namespace AUIT.AdaptationObjectives.Objectives
 
         public override float CostFunction(Layout optimizationTarget, Layout initialLayout = null)
         {
-            Vector3 contextSourcePosition = (Vector3)ContextSourceTransformTarget;
+            Vector3 contextSourcePosition = userContextSource.GetValue().position;
             // Compute the TRS matrix of the optimization target
             Matrix4x4 TRS = Matrix4x4.TRS(optimizationTarget.Position, optimizationTarget.Rotation, transform.lossyScale);
 
@@ -111,7 +109,7 @@ namespace AUIT.AdaptationObjectives.Objectives
         {
             Layout result = optimizationTarget.Clone();
             // this only makes sense if the object is partially occluded
-            Vector3 contextSourcePosition = (Vector3)ContextSourceTransformTarget;
+            Vector3 contextSourcePosition = userContextSource.GetValue().position;
 
             Vector3 positionChange = Vector3.zero;
             if (_prevCost > 0 && Random.value < .5f)
@@ -138,7 +136,7 @@ namespace AUIT.AdaptationObjectives.Objectives
             }
             else if (_prevCost > 0 && Random.value < .8f) // move towards user 
             {
-                Vector3 targetPosition = (Vector3)ContextSourceTransformTarget;
+                Vector3 targetPosition = userContextSource.GetValue().position;
                 Vector3 currentPosition = optimizationTarget.Position;
 
                 Vector3 currentToTarget = (targetPosition - currentPosition).normalized;
@@ -196,7 +194,7 @@ namespace AUIT.AdaptationObjectives.Objectives
             if (showDebugLines == false)
                 return;
 
-            Vector3 contextSourcePosition = (Vector3)ContextSourceTransformTarget;
+            Vector3 contextSourcePosition = userContextSource.GetValue().position;
 
             foreach (KeyValuePair<Vector3, bool> keyValuePair in keyPoints)
             {
