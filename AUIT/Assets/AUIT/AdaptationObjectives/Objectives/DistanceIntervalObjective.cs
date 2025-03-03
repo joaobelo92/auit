@@ -37,7 +37,7 @@ namespace AUIT.AdaptationObjectives
             // y values should not be changed here, otherwise we have a sphere instead of a radius from the user
             Debug.Log(ContextSourceTransformTarget);
             Vector3 targetPosition = (Vector3)ContextSourceTransformTarget;
-            Vector3 currentPosition = optimizationTarget.Position;
+            Vector3 currentPosition = optimizationTarget.Position; 
 
             Vector3 distanceVector = targetPosition - currentPosition;
             return distanceVector;
