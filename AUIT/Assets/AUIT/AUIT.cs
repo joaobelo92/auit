@@ -233,10 +233,14 @@ namespace AUIT
             foreach (var element in gameObjectsToOptimize)
             {
                 LocalObjectiveHandler currentHandler = element.GetComponent<LocalObjectiveHandler>();
-                float elementCost = currentHandler.Objectives.Sum(
-                    objective => objective.CostFunction(l));
-                elementCost /= currentHandler.Objectives.Count;
-                cost += elementCost;
+                float elementCostSum = currentHandler.Objectives.Sum(
+                    objective => objective.Weight * objective.CostFunction(l));
+                float elementWeightSum = currentHandler.Objectives.Sum(objective => objective.Weight);
+                if (elementWeightSum >= 0)
+                {
+                    elementCostSum /= elementWeightSum;
+                }
+                cost += elementCostSum;
             }
             
             cost /= gameObjectsToOptimize.Count;

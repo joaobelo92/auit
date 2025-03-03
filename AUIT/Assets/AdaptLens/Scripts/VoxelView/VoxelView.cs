@@ -15,6 +15,20 @@ public class VoxelView : MonoBehaviour
     public float m_voxelSize;
     [Range(0.01f, 1f)]
     public float m_voxelMargin;
+    public Gradient m_costGradient;
+
+    [Range(0, 1)]
+    public float m_maxVisualizedCost = 1f;
+
+
+    public enum Mode { OnRequest, Interval };
+    [Header("Visualization")]
+    public Mode m_mode = Mode.OnRequest;
+
+    [HideInInspector]
+    public float m_updateInterval = 1f;
+
+    
 
     #endregion
 
@@ -28,6 +42,10 @@ public class VoxelView : MonoBehaviour
     private float m_prevVoxelSize; 
     private float m_prevVoxelMargin;
 
+    private bool m_updatingVoxels;
+
+    private float m_intervalTimer = 0f;
+
     #endregion
 
     #region Private Methods
@@ -35,18 +53,18 @@ public class VoxelView : MonoBehaviour
     // Check if the parameters are valid
     private bool IsParamsValid() {
         if (m_voxelMargin >= m_voxelSize) {
-            Debug.LogError("VoxelView.IsParamsValid(): Voxel margin must be smaller than voxel size.");
+            Debug.Log("VoxelView.IsParamsValid(): Voxel margin must be smaller than voxel size.");
             return false;
         }
         Vector3 bounds = m_bounds.localScale;
         if (bounds.x <= 0 || bounds.y <= 0 || bounds.z <= 0)
         {
-            Debug.LogError("VoxelView.IsParamsValid(): Bounds must be positive.");
+            Debug.Log("VoxelView.IsParamsValid(): Bounds must be positive.");
             return false;
         }
         if (bounds.x < m_voxelSize || bounds.y < m_voxelSize || bounds.z < m_voxelSize)
         {
-            Debug.LogError("VoxelView.IsParamsValid(): Bounds must be larger than voxel size.");
+            Debug.Log("VoxelView.IsParamsValid(): Bounds must be larger than voxel size.");
             return false;
         }
         return true; 
@@ -85,11 +103,11 @@ public class VoxelView : MonoBehaviour
             for (int y = 0; y < m_voxelDims.y; y++) {
                 for (int z = 0; z < m_voxelDims.z; z++) {
                     GameObject voxelObj = Instantiate(m_voxelObj, transform);
+                    voxelObj.SetActive(true);
                     voxelObj.name = $"Voxel_{x}_{y}_{z}";
                     voxelObj.transform.localPosition = new Vector3(x * voxelSize.x, y * voxelSize.y, z * voxelSize.z) + offset;
                     voxelObj.transform.localScale = (m_voxelSize - m_voxelMargin) * Vector3.one;
-                    voxelObj.SetActive(true);
-                    Voxel voxel = voxelObj.AddComponent<Voxel>();
+                    Voxel voxel = voxelObj.GetComponent<Voxel>();
                     m_voxels[x, y, z] = voxel;
                 }
             }
@@ -99,6 +117,7 @@ public class VoxelView : MonoBehaviour
     // Update the voxel grid
     private Voxel[,,] UpdateVoxelGrid(Vector3Int dims)
     {
+
         // Reinitialize voxel grid if dimensions changed
         Voxel[,,] voxels = new Voxel[dims.x, dims.y, dims.z];
 
@@ -133,7 +152,7 @@ public class VoxelView : MonoBehaviour
                     {
                         GameObject voxelObj = Instantiate(m_voxelObj, transform);
                         voxelObj.SetActive(true);
-                        Voxel voxel = voxelObj.AddComponent<Voxel>();
+                        Voxel voxel = voxelObj.GetComponent<Voxel>();
                         voxels[x, y, z] = voxel;
                     }
                     voxels[x, y, z].gameObject.name = $"Voxel_{x}_{y}_{z}";
@@ -168,8 +187,10 @@ public class VoxelView : MonoBehaviour
 
             if (dims != m_voxelDims)
             {
+                m_updatingVoxels = true;
                 m_voxels = UpdateVoxelGrid(dims);
                 m_voxelDims = dims;
+                m_updatingVoxels = false;
             }
 
             Vector3 voxelSize = new Vector3(m_bounds.localScale.x / m_voxelDims.x,
@@ -200,17 +221,30 @@ public class VoxelView : MonoBehaviour
 
     public void VisualizeCosts()
     {
-        Layout voxel = new Layout(Vector3.zero);
+        if (m_updatingVoxels)
+        {
+            return;
+        }
+        Layout layout = new Layout(Vector3.zero);
         for (int x = 0; x < m_voxelDims.x; x++)
         {
             for (int y = 0; y < m_voxelDims.y; y++)
             {
                 for (int z = 0; z < m_voxelDims.z; z++)
                 {
-                    Vector3 position = m_voxels[x, y, z].transform.position;
-                    voxel.Position = position;
-                    float cost = m_auit.ComputeCost(voxel, true);
-                    Debug.Log(cost);
+                    Voxel voxel = m_voxels[x, y, z];
+                    Vector3 position = voxel.transform.position;
+                    layout.Position = position;
+                    float cost = m_auit.ComputeCost(layout);
+                    if (cost > m_maxVisualizedCost)
+                    {
+                        voxel.gameObject.SetActive(false);
+                    }
+                    else
+                    {
+                        voxel.gameObject.SetActive(true);
+                        voxel.SetColor(m_costGradient.Evaluate(cost));
+                    }
                 }
             }
         }
@@ -229,6 +263,16 @@ public class VoxelView : MonoBehaviour
     void Update()
     {
         UpdateVoxels();
+
+        if (m_mode == Mode.Interval)
+        {
+            m_intervalTimer += Time.deltaTime;
+            if (m_intervalTimer >= m_updateInterval)
+            {
+                m_intervalTimer = 0f;
+                VisualizeCosts();
+            }
+        }
     }
 }
 
@@ -239,9 +283,21 @@ public class VoxelViewEditor : Editor
     {
         DrawDefaultInspector();
         VoxelView voxelView = (VoxelView)target;
-        if (GUILayout.Button("Visualize Costs"))
+
+
+        switch (voxelView.m_mode)
         {
-            voxelView.VisualizeCosts();
+            case VoxelView.Mode.OnRequest:
+                if (GUILayout.Button("Visualize Costs"))
+                {
+                    voxelView.VisualizeCosts();
+                }
+                break; 
+            case VoxelView.Mode.Interval:
+                voxelView.m_updateInterval = EditorGUILayout.Slider("Update Interval", voxelView.m_updateInterval, 0f, 10f);
+                break;
+
         }
+        
     }
 }
