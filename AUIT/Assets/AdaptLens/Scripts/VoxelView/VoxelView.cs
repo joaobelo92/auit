@@ -219,6 +219,41 @@ public class VoxelView : MonoBehaviour
 
     #region Public Methods
 
+    public void VisualizePareto()
+    {
+        if (m_updatingVoxels)
+        {
+            return;
+        }
+        int numVoxels = m_voxels.Length;
+        Layout[] layouts = new Layout[numVoxels];
+        int li = 0;
+        for (int x = 0; x < m_voxelDims.x; x++)
+        {
+            for (int y = 0; y < m_voxelDims.y; y++)
+            {
+                for (int z = 0; z < m_voxelDims.z; z++)
+                {
+                    Voxel voxel = m_voxels[x, y, z];
+                    Vector3 position = voxel.transform.position;
+                    layouts[li++] = new Layout(position);
+                }
+            }
+        }
+        int[] nonDominated = m_auit.ComputePareto(layouts);
+        foreach (Voxel voxel in m_voxels)
+        {
+            voxel.gameObject.SetActive(false);
+        }
+        foreach (int i in nonDominated)
+        {
+            int z = i % m_voxelDims.z;
+            int y = (i / m_voxelDims.z) % m_voxelDims.y;
+            int x = i / (m_voxelDims.y * m_voxelDims.z);
+            m_voxels[x, y, z].gameObject.SetActive(true);
+        }
+    }
+
     public void VisualizeCosts()
     {
         if (m_updatingVoxels)
@@ -291,6 +326,10 @@ public class VoxelViewEditor : Editor
                 if (GUILayout.Button("Visualize Costs"))
                 {
                     voxelView.VisualizeCosts();
+                }
+                if (GUILayout.Button("Visualize Pareto"))
+                {
+                    voxelView.VisualizePareto();
                 }
                 break; 
             case VoxelView.Mode.Interval:

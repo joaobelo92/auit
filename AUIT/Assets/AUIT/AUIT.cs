@@ -12,6 +12,9 @@ using AUIT.Constraints;
 using AUIT.Extras;
 using Cysharp.Threading.Tasks;
 using UnityEditor;
+using UnityEngine;
+using Numpy;
+using Newtonsoft.Json.Linq;
 
 namespace AUIT
 {
@@ -204,6 +207,86 @@ namespace AUIT
             
             Debug.Log($"First res: {response.suggested.elements[0].Position}");
             return response;
+        }
+
+        public int NumObjectives
+        {
+            get
+            {
+                if (!isActiveAndEnabled)
+                {
+                    Debug.LogError($"[AdaptationManager.ComputeCost()]: " +
+                                   $"AdaptationManager on " +
+                                   $"{gameObject.name} is disabled!");
+                    return 0;
+                }
+
+                int numObjectives = 0;
+                foreach (var element in gameObjectsToOptimize)
+                {
+                    LocalObjectiveHandler currentHandler = element.GetComponent<LocalObjectiveHandler>();
+                    numObjectives += currentHandler.Objectives.Count;
+                }
+
+                return numObjectives;
+
+            }
+        }
+
+        public NDarray IsParetoDominated(NDarray scores)
+        {
+            // Initialize array of indices of efficient points
+            NDarray isEfficient = np.arange(scores.shape[0]);
+
+            // Get number of points
+            int nPoints = scores.shape[0];
+
+            // Next index in the isEfficient array to search for
+            int nextPointIndex = 0;
+
+            while (nextPointIndex < scores.shape[0])
+            {
+                // Create mask for non-dominated points
+                // Check if any dimension is less than the current point (which would mean it's not dominated)
+                NDarray nondominatedPointMask = np.any(scores < scores[nextPointIndex], 1);
+
+                // Set the current point as non-dominated
+                nondominatedPointMask[nextPointIndex] = np.array(true);
+
+                // Remove dominated points
+                isEfficient = isEfficient[nondominatedPointMask];
+                scores = scores[nondominatedPointMask];
+
+                // Update next point index
+                nextPointIndex = (int)np.sum(nondominatedPointMask[":" + nextPointIndex.ToString()]) + 1;
+            }
+
+            return isEfficient;
+        }
+
+        // Find pareto-efficient layouts
+        public int[] ComputePareto(Layout[] ls)
+        {
+            int numSamples = ls.Length;
+            int numObjectives = NumObjectives;
+            NDarray scores = np.zeros((numSamples, numObjectives));
+            
+            for (int si = 0; si < numSamples; si++)
+            {
+                Layout l = ls[si];
+                int oi = 0;
+                foreach (var element in gameObjectsToOptimize)
+                {
+                    LocalObjectiveHandler currentHandler = element.GetComponent<LocalObjectiveHandler>();
+                    foreach (var objective in currentHandler.Objectives)
+                    {
+                        scores[si, oi] = np.array(objective.CostFunction(l));
+                    }
+                }
+            }
+
+            NDarray isEfficient = IsParetoDominated(scores);
+            return isEfficient.GetData<int>();
         }
 
         public float ComputeCost(Layout l = null, bool verbose = false)

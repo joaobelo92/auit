@@ -199,7 +199,7 @@ MonoBehaviour:
     m_NumColorKeys: 3
     m_NumAlphaKeys: 2
   m_maxVisualizedCost: 1
-  m_mode: 1
+  m_mode: 0
   m_updateInterval: 1
 --- !u!1 &346269841
 GameObject:
@@ -344,7 +344,7 @@ MonoBehaviour:
     backend: 0
     solver: SimulatedAnnealing
   solverSettings:
-    rid: 2980884958935253065
+    rid: 2980884962042183744
   developmentMode: 1
   gameObjectsToOptimize:
   - {fileID: 1916628227}
@@ -367,7 +367,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 2980884958935253065
+    - rid: 2980884962042183744
       type: {class: SimulatedAnnealingSolver, ns: AUIT.Solvers, asm: Assembly-CSharp}
       data:
         iterations: 1500
