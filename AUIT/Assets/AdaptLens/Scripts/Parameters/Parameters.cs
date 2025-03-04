@@ -46,7 +46,7 @@ public class Parameters : MonoBehaviour
 
     public List<ParamReference<float>> m_parameters = new List<ParamReference<float>>();
 
-    public void GetParameters(object obj)
+    public void GetObjectiveParameters(object obj)
     {
         var type = obj.GetType();
         var fields = type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
@@ -76,15 +76,17 @@ public class Parameters : MonoBehaviour
         }
     }
 
-    public void GetParameters()
+    public List<ParamReference<float>> GetParameters()
     {
         m_parameters.Clear();
 
         List<object> objects = m_auit.GetLocalObjectives().Cast<object>().ToList();
         foreach (object obj in objects)
         {
-            GetParameters(obj);
+            GetObjectiveParameters(obj);
         }
+
+        return m_parameters;
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
