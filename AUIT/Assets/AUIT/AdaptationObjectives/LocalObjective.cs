@@ -15,9 +15,10 @@ namespace AUIT.AdaptationObjectives
 
         public OptimizationTarget OptimizationTarget { get; set; } = OptimizationTarget.Position;
 
+        [Parameter("Weight")]
         [SerializeField]
         [Range(0, 1)]
-        private float weight = 0.5f;
+        protected float weight = 0.5f;
         public float Weight { get { return weight; } set { weight = value; } }
 
         public abstract float CostFunction(Layout optimizationTarget, Layout initialLayout = null);

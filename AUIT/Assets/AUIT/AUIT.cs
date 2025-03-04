@@ -233,6 +233,17 @@ namespace AUIT
             }
         }
 
+        public List<LocalObjective> GetLocalObjectives()
+        {
+            List<LocalObjective> objectives = new List<LocalObjective>();
+            foreach (var element in gameObjectsToOptimize)
+            {
+                LocalObjectiveHandler currentHandler = element.GetComponent<LocalObjectiveHandler>();
+                objectives.AddRange(currentHandler.Objectives);
+            }
+            return objectives;
+        }
+
         public NDarray IsParetoDominated(NDarray scores)
         {
             // Get number of points

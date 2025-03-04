@@ -11,8 +11,11 @@ namespace AUIT.AdaptationObjectives
         // Add validation in the future
         [SerializeField]
         private ContextSource<Transform> targetContextSource;
+
+        [Parameter("Goal XY Distance")]
         [SerializeField]
         private float goalXYDistance = 0.3f;
+
         [SerializeField]
         private float yInterval = 0.25f;
         [SerializeField]
