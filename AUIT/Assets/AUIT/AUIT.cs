@@ -165,6 +165,27 @@ namespace AUIT
         {
             _propertyTransitions.Remove(propertyTransition);
         }
+        
+        public (List<List<LocalObjective>> objectives, List<Layout> layouts) gatherOptimizationData()
+        {
+            // The adaptation manager is responsible for knowing the layout 
+            // (e.g. what to optimize). The properties to be optimized should 
+            // be obtained dynamically in the future, but for now we hardcode 
+            // the properties we want to optimize.
+            List<List<LocalObjective>> objectives = new List<List<LocalObjective>>();
+            List<Layout> layouts = new List<Layout>();
+
+            for (int i = 0; i < _gameObjects.Length; i++)
+            {
+                objectives.Add(_gameObjects[i].Item2.Objectives);
+                layouts.Add(new 
+                    Layout(
+                        _gameObjects[i].Item2.Id, 
+                        _gameObjects[i].Item1.transform
+                    ));
+            }
+            return (objectives, layouts);
+        }
 
         public async UniTask<OptimizationResponse> OptimizeLayout()
         {
@@ -175,23 +196,8 @@ namespace AUIT
                                $"{gameObject.name} is disabled!");
                 return null;
             }
-            
-            // The adaptation manager is responsible for knowing the layout 
-            // (e.g. what to optimize). The properties to be optimized should 
-            // be obtained dynamically in the future, but for now we hardcode 
-            // the properties we want to optimize.
-            List<List<LocalObjective>> objectives = new List<List<LocalObjective>>();
-            List<Layout> currentLayouts = new List<Layout>();
 
-            for (int i = 0; i < _gameObjects.Length; i++)
-            {
-                objectives.Add(_gameObjects[i].Item2.Objectives);
-                currentLayouts.Add(new 
-                    Layout(
-                        _gameObjects[i].Item2.Id, 
-                        _gameObjects[i].Item1.transform
-                        ));
-            }
+            (List<List<LocalObjective>> objectives, List<Layout> layouts) = gatherOptimizationData();
             
             if (objectives.Count == 0)
             {
@@ -202,8 +208,8 @@ namespace AUIT
             }
 
             Debug.Log($"Invoking solver: {backendSolver.solver}");
-            OptimizationResponse response = await _asyncSolver.
-                OptimizeCoroutine(currentLayouts, objectives);
+            (OptimizationResponse response, _, _) = await _asyncSolver.
+                OptimizeCoroutine(layouts, objectives);
             
             Debug.Log($"First res: {response.suggested.elements[0].Position}");
             return response;

@@ -11,6 +11,7 @@ using Cysharp.Threading.Tasks;
 using NetMQ;
 using NetMQ.Sockets;
 using Newtonsoft.Json;
+using Numpy;
 using UnityEngine;
 
 namespace AUIT.Solvers
@@ -31,9 +32,10 @@ namespace AUIT.Solvers
             _pythonServer.BindSolver(this);
         }
 
-        public override async UniTask<OptimizationResponse> OptimizeCoroutine(
+        public override async UniTask<(OptimizationResponse, NDarray, NDarray)> OptimizeCoroutine(
             List<Layout> initialLayouts, 
-            List<List<LocalObjective>> objectives
+            List<List<LocalObjective>> objectives,
+            bool saveCosts=false
         )
         {
             Debug.Log($"sending optimization request");
@@ -94,7 +96,7 @@ namespace AUIT.Solvers
 
             Debug.Log(optimizationResponse);
 
-            return optimizationResponse;
+            return (optimizationResponse, null, null);
         }
     }
 }

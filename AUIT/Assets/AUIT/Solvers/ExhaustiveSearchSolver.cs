@@ -40,10 +40,16 @@ namespace AUIT.Solvers
                 Debug.LogError($"Constraint assignment failed: {exception.Message}\\n{exception.StackTrace}");
             }
         }
+
+        public ExhaustiveSearchSolver(float interval=0.05f)
+        {
+            this.interval = interval;
+        }
         
-        public override async UniTask<OptimizationResponse> OptimizeCoroutine(
+        public override async UniTask<(OptimizationResponse, NDarray , NDarray)> OptimizeCoroutine(
             List<Layout> initialLayouts, 
-            List<List<LocalObjective>> objectives)
+            List<List<LocalObjective>> objectives,
+            bool saveCosts=false)
         {
             if (!gameObjectInterdependencies)
             {
@@ -62,6 +68,14 @@ namespace AUIT.Solvers
 
                 NDarray points = np.vstack(grid).T;
                 NDarray costs = np.empty((points.len, initialLayouts.Count));
+                NDarray costsPerObjective = null;
+
+                if (saveCosts)
+                {
+                    if (objectives.Count != 1)
+                        throw new Exception("Can only save costs for single a single element at the moment");
+                    costsPerObjective = np.empty((points.len, objectives.First().Count));
+                }
             
                 // Search time grows exponentially for each additional layout :(
                 // For now, we do it the slow way - need to vectorize objective functions to improve efficiency
@@ -75,8 +89,12 @@ namespace AUIT.Solvers
                         float cost = 0;
                         for (int k = 0; k < objectives[j].Count; k++)
                         {
-                            float objectiveCost = objectives[j][k].Weight * objectives[j][k].CostFunction(placeholderlayout);
-                            cost += objectiveCost;
+                            float objectiveCost = objectives[j][k].CostFunction(placeholderlayout);
+                            if (saveCosts)
+                            {
+                                costsPerObjective[i][k] = np.array(objectiveCost);
+                            }
+                            cost += objectives[j][k].Weight * objectiveCost;
                         }
                         costs[i][j] = np.array(cost);
                     }
@@ -94,12 +112,11 @@ namespace AUIT.Solvers
                 {
                     float[] bestPos = points[minCost[i]].GetData<float>();
                     result[i].Position = new Vector3(bestPos[0], bestPos[1], bestPos[2]);
-                    Debug.Log(points[minCost[i]].repr);
                 }
 
                 
                 UIConfiguration configResult = new UIConfiguration(result.ToArray());
-                return new OptimizationResponse(configResult);
+                return (new OptimizationResponse(configResult), points, costsPerObjective);
                 
             }
             

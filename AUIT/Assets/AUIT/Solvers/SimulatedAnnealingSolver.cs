@@ -6,6 +6,7 @@ using AUIT.AdaptationObjectives;
 using AUIT.AdaptationObjectives.Definitions;
 using AUIT.Constraints;
 using Cysharp.Threading.Tasks;
+using Numpy;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -25,9 +26,10 @@ namespace AUIT.Solvers
         public float earlyStopping = 0.02f;
         public int iterationsPerFrame = 50;
 
-        public override async UniTask<OptimizationResponse> OptimizeCoroutine(
+        public override async UniTask<(OptimizationResponse, NDarray, NDarray)> OptimizeCoroutine(
             List<Layout> initialLayouts, 
-            List<List<LocalObjective>> objectives
+            List<List<LocalObjective>> objectives,
+            bool saveCosts=false
             )
         {
             float cost = float.PositiveInfinity;
@@ -103,7 +105,7 @@ namespace AUIT.Solvers
             }
             
             UIConfiguration best = new UIConfiguration(bestLayout.ToArray());
-            return new OptimizationResponse(best);
+            return (new OptimizationResponse(best), null, null);
             // return (new List<List<Layout>> { bestLayout }, cost);
         }
     }
