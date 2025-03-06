@@ -12,9 +12,7 @@ using AUIT.Constraints;
 using AUIT.Extras;
 using Cysharp.Threading.Tasks;
 using UnityEditor;
-using UnityEngine;
 using Numpy;
-using Newtonsoft.Json.Linq;
 
 namespace AUIT
 {
