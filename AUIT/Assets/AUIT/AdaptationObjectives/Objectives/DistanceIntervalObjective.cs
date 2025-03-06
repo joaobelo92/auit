@@ -12,6 +12,7 @@ namespace AUIT.AdaptationObjectives
         [SerializeField]
         private ContextSource<Transform> targetContextSource;
 
+        [Parameter("Goal XY Distance")]
         [SerializeField]
         private float goalXYDistance = 0.3f;
 
