@@ -7,7 +7,6 @@ public class ParaHomeAvatarPoseInfo
     public float[] lHandJoints;
     public float[] rHandJoints;
     public float[] headT;
-    public float[] hipT;
     public float[] headTip;
 }
 
@@ -17,7 +16,6 @@ public class ParaHomeAvatarPose
     public Vector3[] lHandJoints;
     public Vector3[] rHandJoints;
     public Quaternion headRot;
-    public Quaternion hipRot;
     public Vector3 headTip; 
     public ParaHomeAvatarPose(ParaHomeAvatarPoseInfo poseInfo)
     {
@@ -35,11 +33,7 @@ public class ParaHomeAvatarPose
             rHandJoints[i] = new Vector3(poseInfo.rHandJoints[i * 3 + 1], poseInfo.rHandJoints[i * 3 + 2], poseInfo.rHandJoints[i * 3]);
         }
         Matrix4x4 headT = ParaHomeLoader.ParseMat4x4(poseInfo.headT);
-        headRot = Quaternion.LookRotation(headT.GetColumn(2), headT.GetColumn(1)) * Quaternion.Euler(0, 90, 90);
-
-        Matrix4x4 hipT = ParaHomeLoader.ParseMat4x4(poseInfo.hipT);
-        hipRot = Quaternion.LookRotation(hipT.GetColumn(2), hipT.GetColumn(1)) * Quaternion.Euler(0, 90, 90);
-
+        headRot = Quaternion.LookRotation(headT.GetColumn(2), headT.GetColumn(1)) * Quaternion.Euler(0, 0, 180);
         headTip = new Vector3(poseInfo.headTip[1], poseInfo.headTip[2], poseInfo.headTip[0]);
     }
     

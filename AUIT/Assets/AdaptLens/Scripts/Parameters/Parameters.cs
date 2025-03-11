@@ -1,3 +1,4 @@
+using AUIT.AdaptationObjectives;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -24,9 +25,9 @@ public class Parameters : MonoBehaviour
 
         public ParamReference(object source, FieldInfo field, string name = null)
         {
-            this.name = name;
             this.source = source;
             this.field = field;
+            this.name = name;
         }
     }
 
@@ -44,10 +45,15 @@ public class Parameters : MonoBehaviour
     [Header("References")]
     public AUIT.AUIT m_auit;
 
-    public List<ParamReference<float>> m_parameters = new List<ParamReference<float>>();
-
-    public void GetObjectiveParameters(object obj)
+    public List<(string, List<(string, List<ParamReference<float>>)>)> Params
     {
+        get { return m_parameters; }
+    }
+    private List<(string, List<(string, List<ParamReference<float>>)>)> m_parameters = new List<(string, List<(string, List<ParamReference<float>>)>)>();
+    public (string, List<ParamReference<float>>) GetParameters(object obj)
+    {
+        List<ParamReference<float>> parameters = new List<ParamReference<float>>();
+
         var type = obj.GetType();
         var fields = type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
         foreach (var field in fields)
@@ -55,9 +61,7 @@ public class Parameters : MonoBehaviour
             var attribute = field.GetCustomAttribute<Parameter>();
             if (attribute != null)
             {
-                string gameObject = (obj as MonoBehaviour).gameObject.name;
                 string name = string.IsNullOrEmpty(attribute.name) ? field.Name : attribute.name;
-                name = $"{gameObject} {type.Name} {name}";
 
                 object value = field.GetValue(obj);
                 if (value is float)
@@ -65,28 +69,51 @@ public class Parameters : MonoBehaviour
                     if (field.GetCustomAttribute<RangeAttribute>() != null)
                     {
                         var range = field.GetCustomAttribute<RangeAttribute>();
-                        m_parameters.Add(new FloatParamReference(obj, field, name, range.min, range.max));
+                        parameters.Add(new FloatParamReference(obj, field, name, range.min, range.max));
                     }
                     else
                     {
-                        m_parameters.Add(new FloatParamReference(obj, field, name));
+                        parameters.Add(new FloatParamReference(obj, field, name));
                     }
                 }
             }
         }
+        return (type.Name, parameters);
     }
 
-    public List<ParamReference<float>> GetParameters()
+    public void GetParameters()
     {
         m_parameters.Clear();
 
-        List<object> objects = m_auit.GetLocalObjectives().Cast<object>().ToList();
-        foreach (object obj in objects)
+        List<(string, List<LocalObjective>)> objectives = m_auit.GetLocalObjectives();
+        
+        foreach ((string obj, List<LocalObjective> objs) in objectives)
         {
-            GetObjectiveParameters(obj);
+            List<(string, List<ParamReference<float>>)> objParams = new List<(string, List<ParamReference<float>>)>();
+            foreach (var o in objs)
+            {
+                (string oName, List<ParamReference<float>> oParams) = GetParameters(o);
+                objParams.Add((oName, oParams));
+            }
+            m_parameters.Add((obj, objParams));
         }
 
-        return m_parameters;
+    }
+
+    public List<ParamReference<float>> GetParametersAll()
+    {
+        List<ParamReference<float>> parameters = new List<ParamReference<float>>();
+        foreach ((string objName, List<(string, List<Parameters.ParamReference<float>>)> obj) in m_parameters)
+        {
+            foreach ((string oName, List<Parameters.ParamReference<float>> o) in obj)
+            {
+                foreach (var parameter in o)
+                {
+                    parameters.Add(parameter);
+                }
+            }
+        }
+        return parameters;
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -115,17 +142,26 @@ public class ParametersEditor : Editor
             parameters.GetParameters();
         }
 
-        foreach (var parameter in parameters.m_parameters)
+        foreach ((string objName, List<(string, List<Parameters.ParamReference<float>>)> obj) in parameters.Params)
         {
-            if (parameter is Parameters.FloatParamReference)
+            EditorGUILayout.Space(10);
+            EditorGUILayout.LabelField(objName, EditorStyles.boldLabel);
+            foreach ((string oName, List<Parameters.ParamReference<float>> o) in obj)
             {
-                float min = 0;
-                float max = 1;
-                min = ((Parameters.FloatParamReference)parameter).min;
-                max = ((Parameters.FloatParamReference)parameter).max;
-                parameter.Value = EditorGUILayout.Slider(parameter.name, parameter.Value, min, max);
+                EditorGUILayout.Space(5);
+                EditorGUILayout.LabelField(oName, EditorStyles.miniBoldLabel);
+                foreach (var parameter in o)
+                {
+                    if (parameter is Parameters.FloatParamReference)
+                    {
+                        float min = 0;
+                        float max = 1;
+                        min = ((Parameters.FloatParamReference)parameter).min;
+                        max = ((Parameters.FloatParamReference)parameter).max;
+                        parameter.Value = EditorGUILayout.Slider(parameter.name, parameter.Value, min, max);
+                    }
+                }
             }
-            
         }
     }
 }

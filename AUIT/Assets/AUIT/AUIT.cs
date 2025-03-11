@@ -237,15 +237,27 @@ namespace AUIT
             }
         }
 
-        public List<LocalObjective> GetLocalObjectives()
+        public List<(string, List<LocalObjective>)> GetLocalObjectives()
         {
-            List<LocalObjective> objectives = new List<LocalObjective>();
+            List<(string, List<LocalObjective>)> objectives = new List<(string, List<LocalObjective>)>();
             foreach (var element in gameObjectsToOptimize)
             {
+                List<LocalObjective> objObjectives = new List<LocalObjective>();
                 LocalObjectiveHandler currentHandler = element.GetComponent<LocalObjectiveHandler>();
-                objectives.AddRange(currentHandler.Objectives);
+                objObjectives.AddRange(currentHandler.Objectives);
+                objectives.Add((element.name, objObjectives));
             }
             return objectives;
+        }
+
+        public GameObject[] GetObjectsCopy()
+        {
+            GameObject[] copy = new GameObject[gameObjectsToOptimize.Count];
+            for (int i = 0; i < gameObjectsToOptimize.Count; i++)
+            {
+                copy[i] = Instantiate(gameObjectsToOptimize[i]);
+            }
+            return copy;
         }
 
         public NDarray IsParetoDominated(NDarray scores)

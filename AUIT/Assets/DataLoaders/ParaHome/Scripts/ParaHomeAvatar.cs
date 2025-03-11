@@ -142,7 +142,6 @@ public class ParaHomeAvatar : MonoBehaviour
     public void SetPose(ParaHomeAvatarPose pose)
     {
         transform.position = pose.bodyJoints[0];
-        transform.rotation = pose.hipRot;
         for (int i = 1; i < NUM_BODY_JOINTS; i++)
         {
             m_bodyJoints[i].transform.position = pose.bodyJoints[i];
@@ -156,7 +155,7 @@ public class ParaHomeAvatar : MonoBehaviour
 
         Vector3 headUp = (m_headTip.transform.position - m_bodyJoints[(int)BodyJointOrder.jT1C7].transform.position).normalized;
         m_camera.transform.position = m_bodyJoints[(int)BodyJointOrder.jC1Head].transform.position + headUp * m_headOffset;
-        m_camera.transform.rotation = Quaternion.LookRotation(transform.forward, headUp);
+        m_camera.transform.rotation = pose.headRot;
 
         RenderPose();
     }

@@ -6,24 +6,64 @@ using AUIT.Solvers;
 using UnityEngine;
 using Numpy;
 using UnityEditor;
+using AUIT.Extras;
+using AUIT;
 
 public class PolicyView : MonoBehaviour
 {
     [Header("References")]
     public Parameters m_parameters;
     public AUIT.AUIT auit;
-    
+
     [Header("Settings")]
-    public int m_numSamples = 4;
-    public float m_solver_interval = 0.1f; // todo: use ref
+    //public int m_numSamples = 4;
+    //public float m_solver_interval = 0.1f; // todo: use ref
+    public int m_numSamples = 100;
 
-    private IAsyncSolver solver = new ExhaustiveSearchSolver();
+    //private IAsyncSolver solver = new ExhaustiveSearchSolver();
 
-    [SerializeField]
-    private List<Constraint> constraints;
+    //[SerializeField]
+    //private List<Constraint> constraints;
     
     public async void SamplePolicies()
     {
+        List<Parameters.ParamReference<float>> parameters = m_parameters.GetParametersAll();
+        int numParameters = parameters.Count;
+        NDarray samples = np.random.rand(m_numSamples, numParameters);
+        for (int i = 0; i < numParameters; i++)
+        {
+            Parameters.ParamReference<float> parameter = parameters[i];
+            float min = 0;
+            float max = 1;
+            min = ((Parameters.FloatParamReference)parameter).min;
+            max = ((Parameters.FloatParamReference)parameter).max;
+
+            samples[":",i] = min + (max - min) * samples[":", i];
+        }
+
+        for (int i = 0; i < m_numSamples; i++)
+        {
+            for (int j = 0; j < numParameters; j++)
+            {
+                Parameters.ParamReference<float> parameter = parameters[j];
+                parameter.Value = (float)samples[i, j];
+            }
+            OptimizationResponse response = await auit.OptimizeLayout();
+            GameObject[] optimizedResult = auit.GetObjectsCopy();
+            Layout[] elements = response.suggested.elements;
+            int numElements = elements.Length;
+            for (int e = 0; e < numElements; e++)
+            {
+                Layout element = elements[e];
+                optimizedResult[e].transform.position = element.Position;
+                optimizedResult[e].transform.rotation = element.Rotation;
+                optimizedResult[e].transform.localScale = element.Scale;
+            }
+        }
+        
+
+
+        /*
         List<Parameters.ParamReference<float>> parameters = m_parameters.GetParameters();
         List<Parameters.ParamReference<float>> weights = new List<Parameters.ParamReference<float>>();
         foreach (var p in parameters)
@@ -62,7 +102,7 @@ public class PolicyView : MonoBehaviour
 
         NDarray result = np.matmul(weightCombinations, costs);
         print(result.shape);
-
+        */
 
         // for (int i = 0; i < points.shape[0]; ++i)
         // {
@@ -100,8 +140,8 @@ public class PolicyView : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        solver.Initialize(constraints);
-        ((ExhaustiveSearchSolver)solver).interval = m_solver_interval;
+        //solver.Initialize(constraints);
+        //((ExhaustiveSearchSolver)solver).interval = m_solver_interval;
     }
 
     // Update is called once per frame
