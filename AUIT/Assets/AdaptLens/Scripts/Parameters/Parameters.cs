@@ -102,6 +102,10 @@ public class Parameters : MonoBehaviour
 
     public List<ParamReference<float>> GetParametersAll()
     {
+        if (m_parameters.Count <= 0)
+        {
+            GetParameters();
+        }
         List<ParamReference<float>> parameters = new List<ParamReference<float>>();
         foreach ((string objName, List<(string, List<Parameters.ParamReference<float>>)> obj) in m_parameters)
         {

@@ -103,6 +103,11 @@ public class ParaHomeLoader : MonoBehaviour
         return true;
     }
 
+    public void LoadScenePoses(ParaHomeAvatarPose pose)
+    {
+        m_avatar.SetPose(pose);
+    }
+
     private void LoadScenePoses(int i)
     {
         if (m_poses == null)
@@ -113,7 +118,7 @@ public class ParaHomeLoader : MonoBehaviour
                 return;
             }
         }
-        m_avatar.SetPose(m_poses[m_currentFrame]);
+        LoadScenePoses(m_poses[i]);
     }
 
     public bool LoadSequenceSceneObjects()
@@ -137,24 +142,8 @@ public class ParaHomeLoader : MonoBehaviour
         return true;
     }
 
-    public void LoadSceneObjects(int i)
+    public void LoadSceneObjects(ParaHomeScene scene)
     {
-        if (m_sceneObjects == null)
-        {
-            if (!LoadSequenceSceneObjects())
-            {
-                Debug.LogError("ParaHomeLoader.LoadScene(): Unable to load scene without scene information.");
-                return;
-            }
-        }
-
-        if (i < 0 || i >= m_sceneObjects.Length)
-        {
-            Debug.LogError("ParaHomeLoader.LoadScene(): Invalid frame index: " + i);
-            return;
-        }
-
-        ParaHomeScene scene = m_sceneObjects[i];
         ParaHomeObject[] objects = scene.Objects;
         foreach (ParaHomeObject obj in objects)
         {
@@ -189,6 +178,27 @@ public class ParaHomeLoader : MonoBehaviour
                 }
             }
         }
+    }
+
+    public void LoadSceneObjects(int i)
+    {
+        if (m_sceneObjects == null)
+        {
+            if (!LoadSequenceSceneObjects())
+            {
+                Debug.LogError("ParaHomeLoader.LoadScene(): Unable to load scene without scene information.");
+                return;
+            }
+        }
+
+        if (i < 0 || i >= m_sceneObjects.Length)
+        {
+            Debug.LogError("ParaHomeLoader.LoadScene(): Invalid frame index: " + i);
+            return;
+        }
+
+        ParaHomeScene scene = m_sceneObjects[i];
+        LoadSceneObjects(scene);
     }
 
 
@@ -307,6 +317,29 @@ public class ParaHomeLoader : MonoBehaviour
     {
         LoadSceneObjects(i);
         LoadScenePoses(i);
+    }
+
+    public ParaHomeScene CurrentScene
+    {
+        get { 
+            if (m_sceneObjects == null || m_currentFrame < 0 || m_currentFrame >= m_sceneObjects.Length)
+            {
+                return null;
+            }
+            return m_sceneObjects[m_currentFrame]; 
+        }
+    }
+
+    public ParaHomeAvatarPose CurrentPose
+    {
+        get
+        {
+            if (m_poses == null || m_currentFrame < 0 || m_currentFrame >= m_poses.Length)
+            {
+                return null;
+            }
+            return m_poses[m_currentFrame];
+        }
     }
 
     public bool ScenesLoaded

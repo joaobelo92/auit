@@ -12,6 +12,7 @@ using AUIT;
 public class PolicyView : MonoBehaviour
 {
     [Header("References")]
+    public ParaHomeLoader m_paraHomeLoader;
     public Parameters m_parameters;
     public AUIT.AUIT auit;
 
@@ -24,11 +25,129 @@ public class PolicyView : MonoBehaviour
 
     //[SerializeField]
     //private List<Constraint> constraints;
-    
+
+    private List<ParaHomeContext> m_contexts = new List<ParaHomeContext>();
+    private int m_currentContext = -1;
+    private List<Layout[][]> m_layouts = new List<Layout[][]>();
+
+
+    public int NumContexts
+    {
+        get { return m_contexts.Count; }
+    }
+
+    public int CurrentContext
+    {
+        get { return m_currentContext; }
+        set { m_currentContext = value; }
+    }
+
+    public void AddContext()
+    {
+        if (m_paraHomeLoader == null)
+        {
+            Debug.LogError("PolicyView.AddContext(): ParaHomeLoader is not set");
+            return;
+        }
+        ParaHomeScene scene = m_paraHomeLoader.CurrentScene;
+        ParaHomeAvatarPose pose = m_paraHomeLoader.CurrentPose;
+        if (scene == null || pose == null)
+        {
+            Debug.Log("PolicyView.AddContext(): Scene or Pose is null");
+            return;
+        }
+        m_contexts.Add(new ParaHomeContext(pose, scene));
+    }
+
+    public void LoadContext()
+    {
+        if (m_currentContext < 0 || m_currentContext >= m_contexts.Count)
+        {
+            Debug.Log("PolicyView.LoadContext(): Invalid context index");
+            return;
+        }
+        ParaHomeContext context = m_contexts[m_currentContext];
+        m_paraHomeLoader.LoadSceneObjects(context.scene);
+        m_paraHomeLoader.LoadScenePoses(context.pose);
+        LoadSampledResults();
+    }
+
+    public void ClearContexts()
+    {
+        m_contexts.Clear();
+        ClearSampledResults();
+        m_layouts.Clear();
+    }
+
+    private void ClearSampledResults()
+    {
+        foreach (Transform child in transform)
+        {
+            Destroy(child.gameObject);
+        }
+    }
+
+    private void LoadSampledResults()
+    {
+        ClearSampledResults();
+        if (m_currentContext < 0 || m_currentContext >= m_layouts.Count)
+        {
+            Debug.Log("PolicyView.LoadSampledResults(): Invalid context index");
+            return;
+        }
+
+        Layout[][] layouts = m_layouts[m_currentContext];
+        int numSamples = layouts.Length;
+        for (int si = 0; si < numSamples; si++)
+        {
+            GameObject[] optimizedResult = auit.GetObjectsCopy();
+            foreach (GameObject obj in optimizedResult)
+            {
+                obj.transform.SetParent(transform);
+            }
+            Layout[] elements = layouts[si];
+            int numElements = elements.Length;
+            for (int ei = 0; ei < numElements; ei++)
+            {
+                Layout element = elements[ei];
+                optimizedResult[ei].transform.position = element.Position;
+                optimizedResult[ei].transform.rotation = element.Rotation;
+                optimizedResult[ei].transform.localScale = element.Scale;
+            }
+        }
+    }
+
     public async void SamplePolicies()
     {
+        ClearSampledResults();
+        m_layouts.Clear();
+
+        if (m_numSamples <= 0)
+        {
+            Debug.Log("PolicyView.SamplePolicies(): Invalid number of samples");
+            return;
+        }
+        if (m_contexts.Count == 0)
+        {
+            Debug.Log("PolicyView.SamplePolicies(): No contexts to sample");
+            return;
+        }
+        if (m_parameters == null)
+        {
+            Debug.Log("PolicyView.SamplePolicies(): Parameters is not set");
+            return;
+        }
+
         List<Parameters.ParamReference<float>> parameters = m_parameters.GetParametersAll();
         int numParameters = parameters.Count;
+        if (numParameters == 0)
+        {
+            Debug.Log("PolicyView.SamplePolicies(): No parameters to sample");
+            return;
+        }
+
+
+
         NDarray samples = np.random.rand(m_numSamples, numParameters);
         for (int i = 0; i < numParameters; i++)
         {
@@ -41,26 +160,39 @@ public class PolicyView : MonoBehaviour
             samples[":",i] = min + (max - min) * samples[":", i];
         }
 
-        for (int i = 0; i < m_numSamples; i++)
+        int numContexts = m_contexts.Count;
+        for (int ci = 0; ci < numContexts; ci++)
         {
-            for (int j = 0; j < numParameters; j++)
+            ParaHomeContext context = m_contexts[ci];
+            ParaHomeScene scene = context.scene;
+            ParaHomeAvatarPose pose = context.pose;
+            m_paraHomeLoader.LoadSceneObjects(scene);
+            m_paraHomeLoader.LoadScenePoses(pose);
+
+            Layout[][] layouts = new Layout[m_numSamples][];
+            for (int si = 0; si < m_numSamples; si++)
             {
-                Parameters.ParamReference<float> parameter = parameters[j];
-                parameter.Value = (float)samples[i, j];
+                for (int pi = 0; pi < numParameters; pi++)
+                {
+                    Parameters.ParamReference<float> parameter = parameters[pi];
+                    float value = (float)samples[si, pi];
+                    parameter.Value = value;
+                }
+                OptimizationResponse response = await auit.OptimizeLayout();
+
+                Layout[] elements = response.suggested.elements;
+                int numElements = elements.Length;
+                layouts[si] = new Layout[numElements];
+                for (int ei = 0; ei < numElements; ei++)
+                {
+                    Layout element = elements[ei];
+                    layouts[si][ei] = element;
+                }
             }
-            OptimizationResponse response = await auit.OptimizeLayout();
-            GameObject[] optimizedResult = auit.GetObjectsCopy();
-            Layout[] elements = response.suggested.elements;
-            int numElements = elements.Length;
-            for (int e = 0; e < numElements; e++)
-            {
-                Layout element = elements[e];
-                optimizedResult[e].transform.position = element.Position;
-                optimizedResult[e].transform.rotation = element.Rotation;
-                optimizedResult[e].transform.localScale = element.Scale;
-            }
+            m_layouts.Add(layouts);
         }
         
+        LoadContext();
 
 
         /*
@@ -163,6 +295,27 @@ public class PolicyViewEditor : Editor
         if (GUILayout.Button("Sample Policies"))
         {
             policyView.SamplePolicies();
+        }
+
+        EditorGUILayout.Space();
+        // label
+        EditorGUILayout.LabelField("Contexts", EditorStyles.boldLabel);
+        if (GUILayout.Button("Add Context"))
+        {
+            policyView.AddContext();
+        }
+        if (GUILayout.Button("Clear Contexts"))
+        {
+            policyView.ClearContexts();
+        }
+        if (policyView.NumContexts > 1)
+        {
+            EditorGUI.BeginChangeCheck();
+            policyView.CurrentContext = EditorGUILayout.IntSlider("Context", policyView.CurrentContext, 0, policyView.NumContexts - 1);
+            if (EditorGUI.EndChangeCheck())
+            {
+                policyView.LoadContext();
+            }
         }
     }
 }
