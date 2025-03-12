@@ -8,21 +8,23 @@ using Numpy;
 using UnityEditor;
 using AUIT.Extras;
 using AUIT;
+using System.Linq;
 
 public class PolicyView : MonoBehaviour
 {
-
-    [Header("References")]
     public ParaHomeLoader m_paraHomeLoader;
     public Parameters m_parameters;
     public AUIT.AUIT auit;
     public SingleAttributeControllers m_sacs;
+    public Camera m_camera;
 
+    public int m_numSamples = 100;
 
-    [Header("Settings")]
+    public bool m_enableHovering = false;
+
     //public int m_numSamples = 4;
     //public float m_solver_interval = 0.1f; // todo: use ref
-    public int m_numSamples = 100;
+
 
     //private IAsyncSolver solver = new ExhaustiveSearchSolver();
 
@@ -170,6 +172,11 @@ public class PolicyView : MonoBehaviour
 
     public void SetHover(int hoverIndex)
     {
+        if (m_hoverIndex == hoverIndex)
+        {
+            return;
+        }
+
         m_hoverIndex = hoverIndex;
 
         SetHover();
@@ -331,6 +338,41 @@ public class PolicyView : MonoBehaviour
 
     }
 
+    private void HandleHovering()
+    {
+        if (!Application.isFocused)
+        {
+            return;
+        }
+        if (!m_enableHovering)
+        {
+            return;
+        }
+        Ray ray = m_camera.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
+        // Get Element layer mask
+        int layerMask = 1 << LayerMask.NameToLayer("Element");
+        if (Physics.Raycast(ray, out hit, Mathf.Infinity, layerMask))
+        {
+            Element element = hit.transform.GetComponent<Element>();
+            if (element != null)
+            {
+                for (int ei = 0; ei < m_currentLayouts.Count; ei++)
+                {
+                    Element[] elements = m_currentLayouts[ei];
+                    if (elements.Contains(element))
+                    {
+                        SetHover(ei);
+                        m_sacs.SetHoverSACs(ei);
+                        return;
+                    }
+                }
+            }
+        }
+        SetHover(-1);
+        m_sacs.SetHoverSACs(-1);
+    }
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -341,7 +383,7 @@ public class PolicyView : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        HandleHovering();
     }
     
 }
@@ -351,15 +393,16 @@ public class PolicyViewEditor : Editor
 {
     public override void OnInspectorGUI()
     {
-        DrawDefaultInspector();
-
         PolicyView policyView = (PolicyView)target;
-        if (GUILayout.Button("Sample Policies"))
-        {
-            policyView.SamplePolicies();
-        }
 
+        EditorGUILayout.LabelField("References", EditorStyles.boldLabel);
+        policyView.m_paraHomeLoader = (ParaHomeLoader)EditorGUILayout.ObjectField("ParaHomeLoader", policyView.m_paraHomeLoader, typeof(ParaHomeLoader), true);
+        policyView.m_parameters = (Parameters)EditorGUILayout.ObjectField("Parameters", policyView.m_parameters, typeof(Parameters), true);
+        policyView.auit = (AUIT.AUIT)EditorGUILayout.ObjectField("AUIT", policyView.auit, typeof(AUIT.AUIT), true);
+        policyView.m_sacs = (SingleAttributeControllers)EditorGUILayout.ObjectField("SingleAttributeControllers", policyView.m_sacs, typeof(SingleAttributeControllers), true);
+        policyView.m_camera = (Camera)EditorGUILayout.ObjectField("Camera", policyView.m_camera, typeof(Camera), true);
         EditorGUILayout.Space();
+
         // label
         EditorGUILayout.LabelField("Contexts", EditorStyles.boldLabel);
         if (GUILayout.Button("Add Context"))
@@ -379,5 +422,18 @@ public class PolicyViewEditor : Editor
                 policyView.LoadContext();
             }
         }
+        EditorGUILayout.Space();
+
+        EditorGUILayout.LabelField("Sampling", EditorStyles.boldLabel);
+        policyView.m_numSamples = EditorGUILayout.IntField("Number of Samples", policyView.m_numSamples);
+        if (GUILayout.Button("Sample Policies"))
+        {
+            policyView.SamplePolicies();
+        }
+        EditorGUILayout.Space();
+
+        EditorGUILayout.LabelField("Controls", EditorStyles.boldLabel);
+        policyView.m_enableHovering = EditorGUILayout.Toggle("Enable Hovering", policyView.m_enableHovering);
+
     }
 }

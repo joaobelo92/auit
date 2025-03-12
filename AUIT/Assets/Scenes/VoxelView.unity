@@ -264,7 +264,9 @@ MonoBehaviour:
   m_parameters: {fileID: 2064500391}
   auit: {fileID: 642232615}
   m_sacs: {fileID: 0}
+  m_camera: {fileID: 0}
   m_numSamples: 4
+  m_enableHovering: 0
 --- !u!1 &346269841
 GameObject:
   m_ObjectHideFlags: 0
@@ -3069,7 +3071,7 @@ MonoBehaviour:
     backend: 0
     solver: SimulatedAnnealing
   solverSettings:
-    rid: 2980885167301197873
+    rid: 2980885167742386237
   developmentMode: 1
   gameObjectsToOptimize:
   - {fileID: 1916628227}
@@ -3089,7 +3091,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 2980885167301197873
+    - rid: 2980885167742386237
       type: {class: SimulatedAnnealingSolver, ns: AUIT.Solvers, asm: Assembly-CSharp}
       data:
         iterations: 1500
@@ -3284,7 +3286,9 @@ MonoBehaviour:
   m_parameters: {fileID: 2064500391}
   auit: {fileID: 642232615}
   m_sacs: {fileID: 846422402}
+  m_camera: {fileID: 1226842595}
   m_numSamples: 10
+  m_enableHovering: 0
 --- !u!114 &846422402
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3297,37 +3301,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d62934cec9d333c4dbf8d244d7f48202, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!1 &899084661
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 899084662}
-  m_Layer: 0
-  m_Name: LocalObjective Target on Camera
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &899084662
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 899084661}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: 0.24699925, z: -0, w: -0.9690157}
-  m_LocalPosition: {x: -0.21720485, y: 0, z: -0.68791133}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1226842596}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1219749623
 GameObject:
   m_ObjectHideFlags: 0
@@ -3384,7 +3357,7 @@ GameObject:
   - component: {fileID: 1226842596}
   - component: {fileID: 1226842595}
   - component: {fileID: 1226842594}
-  - component: {fileID: 1226842593}
+  - component: {fileID: 1226842597}
   m_Layer: 0
   m_Name: Camera
   m_TagString: MainCamera
@@ -3392,23 +3365,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1226842593
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1226842592}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bdf8bf41fd9ed46b2bd5da2fee97e796, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  moveSpeed: 5
-  mouseSensitivity: 2
-  zoomSpeed: 20
-  minZoomDistance: 2
-  maxZoomDistance: 10
 --- !u!81 &1226842594
 AudioListener:
   m_ObjectHideFlags: 0
@@ -3480,10 +3436,25 @@ Transform:
   m_LocalPosition: {x: 0.52, y: 0, z: 0.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 899084662}
+  m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: -331.4, z: 0}
+--- !u!114 &1226842597
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1226842592}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2effd5c25b4d9b74a8972e496c5c5ca2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  panSpeed: 20
+  zoomSpeed: 10
+  rotationSpeed: 100
+  orbitPivot: {fileID: 1341102932}
 --- !u!4 &1341102932 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8931754370672921761, guid: bce0e41cde1b03b4f8de3e97ed47ec53, type: 3}
@@ -3713,7 +3684,7 @@ GameObject:
   - component: {fileID: 1916628243}
   - component: {fileID: 1916628244}
   - component: {fileID: 1916628245}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Target
   m_TagString: Untagged
   m_Icon: {fileID: 0}
