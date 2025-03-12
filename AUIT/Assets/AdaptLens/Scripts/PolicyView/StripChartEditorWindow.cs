@@ -11,10 +11,6 @@ public class StripChartEditorWindow : EditorWindow
     private int maxDataPoints = 100;
     private float newDataPoint = 0f;
 
-    // Dictionary to store jitter values for each data point
-    private Dictionary<float, List<float>> jitterMap = new Dictionary<float, List<float>>();
-    private float jitterAmount = 0.4f; // Controls the amount of vertical spread
-
     // Appearance settings
     private Color pointColor = Color.green;
     private float pointSize = 5f;
@@ -23,10 +19,12 @@ public class StripChartEditorWindow : EditorWindow
     private float manualMinValue = 0f;
     private float manualMaxValue = 1f;
 
-    [MenuItem("Window/Value Strip Chart")]
+    private int hoveredIndex;
+
+    [MenuItem("AdaptLens/Policy Viewer")]
     public static void ShowWindow()
     {
-        GetWindow<StripChartEditorWindow>("Value Strip Chart");
+        GetWindow<StripChartEditorWindow>("Policy Viewer");
     }
 
     private void OnGUI()
@@ -40,11 +38,9 @@ public class StripChartEditorWindow : EditorWindow
         EditorGUILayout.Space();
         DrawLegend();
 
-        // Auto-repaint to update the chart every 100ms
-        if (EditorApplication.timeSinceStartup % 0.1 < 0.016)
-        {
-            Repaint();
-        }
+        HandleMouseHover();
+
+        //Repaint(); 
     }
 
     private void DrawControls()
@@ -76,7 +72,6 @@ public class StripChartEditorWindow : EditorWindow
         if (GUILayout.Button("Clear Data"))
         {
             dataPoints.Clear();
-            jitterMap.Clear();
             minValue = float.MaxValue;
             maxValue = float.MinValue;
         }
@@ -87,7 +82,6 @@ public class StripChartEditorWindow : EditorWindow
         maxDataPoints = EditorGUILayout.IntSlider("Max Data Points", maxDataPoints, 10, 1000);
         pointColor = EditorGUILayout.ColorField("Point Color", pointColor);
         pointSize = EditorGUILayout.Slider("Point Size", pointSize, 1f, 10f);
-        jitterAmount = EditorGUILayout.Slider("Jitter Amount", jitterAmount, 0.1f, 1f);
         backgroundColor = EditorGUILayout.ColorField("Background Color", backgroundColor);
 
         // Scale settings
@@ -135,6 +129,8 @@ public class StripChartEditorWindow : EditorWindow
             // Center points vertically
             float y = chartRect.y + chartRect.height / 2;
 
+            Debug.Log($"{x}, {y}");
+                
             // Draw point
             Handles.DrawSolidDisc(new Vector3(x, y, 0), Vector3.forward, pointSize);
         }
@@ -176,9 +172,6 @@ public class StripChartEditorWindow : EditorWindow
         GUILayout.Label($"Max Value: {maxValue.ToString("F2")}");
         GUILayout.Label($"Most Recent Value: {(dataPoints.Count > 0 ? dataPoints[dataPoints.Count - 1].ToString("F2") : "N/A")}");
 
-        // Count of unique values
-        GUILayout.Label($"Unique Values: {jitterMap.Count}");
-
         EditorGUILayout.EndVertical();
     }
 
@@ -189,57 +182,22 @@ public class StripChartEditorWindow : EditorWindow
         // Update min and max values
         if (value < minValue) minValue = value;
         if (value > maxValue) maxValue = value;
-
-        // Add jitter for this value
-        if (!jitterMap.ContainsKey(value))
-        {
-            jitterMap[value] = new List<float>();
-        }
-
-        // Calculate jitter - if there are multiple identical values, spread them out
-        float jitter = (jitterMap[value].Count % 2 == 0 ? 1 : -1) *
-                     (jitterMap[value].Count / 2 + 1) * jitterAmount /
-                     Mathf.Max(5, jitterMap[value].Count);
-
-        // Clamp jitter to reasonable range
-        jitter = Mathf.Clamp(jitter, -jitterAmount, jitterAmount);
-        
-
-        jitterMap[value].Add(jitter);
-
-        // Limit the number of data points
-        if (dataPoints.Count > maxDataPoints)
-        {
-            float removedValue = dataPoints[0];
-            dataPoints.RemoveAt(0);
-
-            // Remove a jitter entry for this value
-            if (jitterMap.ContainsKey(removedValue) && jitterMap[removedValue].Count > 0)
-            {
-                jitterMap[removedValue].RemoveAt(0);
-                if (jitterMap[removedValue].Count == 0)
-                {
-                    jitterMap.Remove(removedValue);
-                }
-            }
-
-            // Recalculate min and max if necessary
-            if (Mathf.Approximately(removedValue, minValue) || Mathf.Approximately(removedValue, maxValue))
-            {
-                RecalculateMinMax();
-            }
-        }
     }
 
-    private void RecalculateMinMax()
+    private void HandleMouseHover()
     {
-        minValue = float.MaxValue;
-        maxValue = float.MinValue;
+        Vector2 mousePos = Event.current.mousePosition;
+        Debug.Log($"mousePos: {mousePos}");
+        hoveredIndex = -1;
 
-        foreach (float point in dataPoints)
+        for (int i = 0; i < dataPoints.Count; i++)
         {
-            if (point < minValue) minValue = point;
-            if (point > maxValue) maxValue = point;
+            Vector2 position = new Vector2(dataPoints[i], 0);
+            if (Vector2.Distance(mousePos, position) < pointSize * 1.5f);
+            {
+                hoveredIndex = i;
+                break;
+            }
         }
     }
 }
@@ -294,20 +252,7 @@ public class StripChartEditorWindow : EditorWindow
         Handles.EndGUI();
     }
 
-    private void HandleMouseHover()
-    {
-        Vector2 mousePos = Event.current.mousePosition;
-        hoveredIndex = -1;
-
-        for (int i = 0; i < points.Count; i++)
-        {
-            if (Vector2.Distance(mousePos, points[i]) < pointRadius * 1.5f)
-            {
-                hoveredIndex = i;
-                break;
-            }
-        }
-    }
+    
 }
 
 */
