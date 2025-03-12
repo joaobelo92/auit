@@ -146,8 +146,6 @@ public class PolicyView : MonoBehaviour
             return;
         }
 
-
-
         NDarray samples = np.random.rand(m_numSamples, numParameters);
         for (int i = 0; i < numParameters; i++)
         {
