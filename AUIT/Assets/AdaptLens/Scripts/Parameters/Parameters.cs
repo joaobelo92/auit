@@ -120,6 +120,26 @@ public class Parameters : MonoBehaviour
         return parameters;
     }
 
+    public List<(string, List<(string, List<string>)>)> GetParametersInfo()
+    {
+        List<(string, List<(string, List<string>)>)> parameters = new List<(string, List<(string, List<string>)>)>();
+        foreach ((string objName, List<(string, List<Parameters.ParamReference<float>>)> obj) in m_parameters)
+        {
+            List<(string, List<string>)> objParams = new List<(string, List<string>)>();
+            foreach ((string oName, List<Parameters.ParamReference<float>> o) in obj)
+            {
+                List<string> paramNames = new List<string>();
+                foreach (var parameter in o)
+                {
+                    paramNames.Add(parameter.name);
+                }
+                objParams.Add((oName, paramNames));
+            }
+            parameters.Add((objName, objParams));
+        }
+        return parameters;
+    }
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {

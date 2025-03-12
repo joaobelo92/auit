@@ -11,10 +11,13 @@ using AUIT;
 
 public class PolicyView : MonoBehaviour
 {
+
     [Header("References")]
     public ParaHomeLoader m_paraHomeLoader;
     public Parameters m_parameters;
     public AUIT.AUIT auit;
+    public SingleAttributeControllers m_sacs;
+
 
     [Header("Settings")]
     //public int m_numSamples = 4;
@@ -29,6 +32,8 @@ public class PolicyView : MonoBehaviour
     private List<ParaHomeContext> m_contexts = new List<ParaHomeContext>();
     private int m_currentContext = -1;
     private List<Layout[][]> m_layouts = new List<Layout[][]>();
+    private List<Element[]> m_currentLayouts = new List<Element[]>();
+    private int m_hoverIndex = -1;
 
 
     public int NumContexts
@@ -81,6 +86,7 @@ public class PolicyView : MonoBehaviour
 
     private void ClearSampledResults()
     {
+        m_currentLayouts.Clear();
         foreach (Transform child in transform)
         {
             Destroy(child.gameObject);
@@ -107,14 +113,66 @@ public class PolicyView : MonoBehaviour
             }
             Layout[] elements = layouts[si];
             int numElements = elements.Length;
+            Element[] optimizedElements = new Element[numElements];
             for (int ei = 0; ei < numElements; ei++)
             {
                 Layout element = elements[ei];
                 optimizedResult[ei].transform.position = element.Position;
                 optimizedResult[ei].transform.rotation = element.Rotation;
                 optimizedResult[ei].transform.localScale = element.Scale;
+                optimizedElements[ei] = optimizedResult[ei].GetComponent<Element>();
+                optimizedElements[ei].Init();
+            }
+            m_currentLayouts.Add(optimizedElements);
+        }
+
+        SetHover();
+    }
+
+    private void SetHover()
+    {
+        if (m_currentLayouts.Count == 0)
+        {
+            return;
+        }
+
+        int numElements = m_currentLayouts.Count;
+        if (m_hoverIndex == -1)
+        {
+            foreach (Element[] elements in m_currentLayouts)
+            {
+                foreach (Element element in elements)
+                {
+                    element.SetOriginal();
+                }
             }
         }
+
+        else if (m_hoverIndex >= 0 && m_hoverIndex < numElements)
+        {
+            for (int i = 0; i < numElements; i++)
+            {
+                Element[] elements = m_currentLayouts[i];
+                foreach (Element element in elements)
+                {
+                    if (i == m_hoverIndex)
+                    {
+                        element.SetHighlight();
+                    }
+                    else
+                    {
+                        element.SetHide();
+                    }
+                }
+            }
+        }
+    }
+
+    public void SetHover(int hoverIndex)
+    {
+        m_hoverIndex = hoverIndex;
+
+        SetHover();
     }
 
     public async void SamplePolicies()
@@ -191,6 +249,12 @@ public class PolicyView : MonoBehaviour
         }
         
         LoadContext();
+
+        m_sacs.Init(m_parameters.GetParametersInfo());
+        m_sacs.SetValues(samples);
+        m_sacs.onHover += SetHover;
+
+        // Single attribute controllers
 
 
         /*

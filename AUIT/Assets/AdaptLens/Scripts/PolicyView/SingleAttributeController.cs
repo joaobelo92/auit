@@ -1,11 +1,14 @@
-using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEditor.TerrainTools;
 using UnityEngine;
 
 public class SingleAttributeController
 {
-    private string m_label;
+    public delegate void OnHover(int hoverIndex);
+    public event OnHover onHover;
+
+    private string m_parameter;
 
     private float m_height = 50;
     private Color m_color = new Color(0.2f, 0.2f, 0.2f);
@@ -23,8 +26,19 @@ public class SingleAttributeController
     private float m_maxValue = 1;
     private float m_minMaxBuffer = 0.1f;
 
-    private bool m_isHovering; 
-    private Color m_hoverColor = new Color(49/255f, 130/255f, 189/255f, 0.8f);
+    private int m_hoverIndex = -1;
+    private Color m_hoverColor = new Color(49 / 255f, 130 / 255f, 189 / 255f, 0.8f);
+
+    private bool m_filtering;
+    private float m_filteringStart;
+    private float m_filteringEnd; 
+    private Rect m_filter;
+    private Color m_filterColor = new Color(49 / 255f, 130 / 255f, 189 / 255f, 0.5f);
+
+    public string Name
+    {
+        get { return m_parameter; }
+    }
 
     private void DrawGridLines(Rect cr, float min, float max)
     {
@@ -40,8 +54,8 @@ public class SingleAttributeController
             Vector2 labelSize = GUI.skin.label.CalcSize(new GUIContent(label));
 
             // Draw vertical grid line
-            float offset = 0; 
-            if (i == 0) 
+            float offset = 0;
+            if (i == 0)
             {
                 offset = labelSize.x / 2;
             }
@@ -58,6 +72,11 @@ public class SingleAttributeController
         }
     }
 
+    public void ClearValues()
+    {
+        m_values.Clear();
+    }
+
     public void AddValue(float value)
     {
         m_values.Add(value);
@@ -67,55 +86,137 @@ public class SingleAttributeController
         if (value > m_maxValue) m_maxValue = value;
     }
 
-    private Vector2 PointGraphPosition(float value, float min, float max, Rect cr)
+    private Vector2 ValueGraphPosition(float value, float min, float max, Rect cr)
     {
         float x = cr.x + (value - min) / (max - min) * cr.width;
         float y = cr.y + cr.height / 2;
         return new Vector2(x, y);
     }
 
+    private float GraphPositionValue(Vector2 point, float min, float max, Rect cr)
+    {
+        float x = point.x - cr.x;
+        float ratio = x / cr.width;
+        return m_minValue + (m_maxValue - m_minValue) * ratio;
+    }
 
     private void DrawPoints(Rect cr, float min, float max)
     {
-        
-        m_points.Clear();
-        foreach (float value in m_values)
-        {
-            Vector2 point = PointGraphPosition(value, min, max, cr);
 
+        m_points.Clear();
+
+        for (int i = 0; i < m_values.Count; i++)
+        {
             Handles.color = m_pointColor;
+            float value = m_values[i];
+            Vector2 point = ValueGraphPosition(value, min, max, cr);
+            Handles.DrawSolidDisc(point, Vector3.forward, m_pointSize);
+            m_points.Add(point);
+        }
+    }
+
+    private void DrawHover(Rect cr, float min, float max)
+    {
+        Handles.color = m_hoverColor;
+        if (m_hoverIndex >= 0)
+        {
+            Vector2 point = m_points[m_hoverIndex];
             Handles.DrawSolidDisc(point, Vector3.forward, m_pointSize);
         }
     }
 
-    // TODO
-    /*
-    private void HandleMouseHover(Rect cr)
+    private void HandleMouseHover(Rect cr, float min, float max)
     {
         Event e = Event.current;
         Vector2 mousePos = e.mousePosition;
-        if (cr.Contains(mousePos))
+        if (!cr.Contains(mousePos))
         {
-            m_isHovering = true;
-            Vector2 vector2 = new Vector2(mousePos.x, cr.y + cr.height / 2);
-            float x = mousePos.x - cr.x;
-            float ratio = x / cr.width;
-            float value = m_minValue + (m_maxValue - m_minValue) * ratio;
-            Vector2 point = PointGraphPosition(value, m_minValue, m_maxValue, cr);
-            Handles.color = m_hoverColor;
-            Handles.DrawSolidDisc(point, Vector3.forward, m_pointSize);
+            return; 
         }
-        else
+
+        int hoverIndex = -1;
+        float valueRadius = Mathf.Abs(GraphPositionValue(Vector2.zero, min, max, cr) - GraphPositionValue(new Vector2(m_pointSize, 0), min, max, cr));
+        float mouseValue = GraphPositionValue(mousePos, m_minValue, m_maxValue, cr);
+        for (int i = 0; i < m_values.Count; i++)
         {
-            m_isHovering = false;
+            float value = m_values[i];
+            if (Mathf.Abs(value - mouseValue) < valueRadius)
+            {
+                hoverIndex = i;
+                break;
+            }
+        }
+
+        if (m_hoverIndex != hoverIndex)
+        {
+            m_hoverIndex = hoverIndex;
+            
+            if (onHover != null)
+            {
+                Debug.Log($"SAC setting {m_hoverIndex}");
+                onHover(m_hoverIndex);
+            }
         }
     }
-    */
+
+    public void SetHover(int hoverIndex)
+    {
+        m_hoverIndex = hoverIndex;
+    }
+
+    private void HandleFiltering(Rect cr, float min, float max)
+    {
+        Event e = Event.current;
+        Vector2 mousePos = e.mousePosition;
+
+        int controlId = GUIUtility.GetControlID(FocusType.Passive);
+
+        if (cr.Contains(mousePos) && e.type == EventType.MouseDown && e.button == 0)
+        {
+            m_filtering = true;
+            m_filteringStart = mousePos.x;
+
+            GUIUtility.hotControl = controlId;
+
+            e.Use();
+        }
+
+        if (e.type == EventType.MouseUp && GUIUtility.hotControl == controlId)
+        {
+            m_filtering = false;
+
+            GUIUtility.hotControl = 0;
+
+            e.Use();
+        }
+
+
+        if (m_filtering)
+        {
+            //Handles.DrawSolidDisc(mousePos, Vector3.forward, m_pointSize);
+            m_filteringEnd = Mathf.Clamp(mousePos.x, cr.x, cr.x + cr.width);
+        }
+
+    }
+
+    private void DrawFilter(Rect cr, float min, float max)
+    {
+        if (m_filtering)
+        {
+            m_filter = new Rect(
+                Mathf.Min(m_filteringStart, m_filteringEnd),
+                cr.y,
+                Mathf.Abs(m_filteringStart - m_filteringEnd),
+                cr.height
+            );
+            EditorGUI.DrawRect(m_filter, m_filterColor);
+        }
+    }
 
     public void Draw()
     {
         // Background
-        GUILayout.Label(m_label, EditorStyles.boldLabel);
+        GUILayout.Label(m_parameter);
         Rect cr = EditorGUILayout.GetControlRect(false, m_height);
         EditorGUI.DrawRect(cr, m_color);
 
@@ -129,13 +230,19 @@ public class SingleAttributeController
 
         DrawGridLines(cr, min, max);
 
+        HandleMouseHover(cr, min, max);
+        HandleFiltering(cr, min, max);
+
         DrawPoints(cr, min, max);
+        DrawHover(cr, min, max);
+        DrawFilter(cr, min, max);
 
         EditorGUILayout.Space(20);
     }
 
-    public SingleAttributeController(string label)
+    public SingleAttributeController(string parameter)
     {
-        m_label = label;
+        m_parameter = parameter;
     }
+
 }

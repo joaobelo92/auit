@@ -263,6 +263,7 @@ MonoBehaviour:
   m_paraHomeLoader: {fileID: 0}
   m_parameters: {fileID: 2064500391}
   auit: {fileID: 642232615}
+  m_sacs: {fileID: 0}
   m_numSamples: 4
 --- !u!1 &346269841
 GameObject:
@@ -3068,7 +3069,7 @@ MonoBehaviour:
     backend: 0
     solver: SimulatedAnnealing
   solverSettings:
-    rid: 2980885157368037433
+    rid: 2980885167301197873
   developmentMode: 1
   gameObjectsToOptimize:
   - {fileID: 1916628227}
@@ -3088,7 +3089,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 2980885157368037433
+    - rid: 2980885167301197873
       type: {class: SimulatedAnnealingSolver, ns: AUIT.Solvers, asm: Assembly-CSharp}
       data:
         iterations: 1500
@@ -3251,7 +3252,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &846422400
 Transform:
   m_ObjectHideFlags: 0
@@ -3282,7 +3283,8 @@ MonoBehaviour:
   m_paraHomeLoader: {fileID: 1639674288}
   m_parameters: {fileID: 2064500391}
   auit: {fileID: 642232615}
-  m_numSamples: 100
+  m_sacs: {fileID: 846422402}
+  m_numSamples: 10
 --- !u!114 &846422402
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3295,8 +3297,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d62934cec9d333c4dbf8d244d7f48202, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_chartHeight: 50
-  m_chartColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
 --- !u!1 &899084661
 GameObject:
   m_ObjectHideFlags: 0
@@ -3712,6 +3712,7 @@ GameObject:
   - component: {fileID: 1916628242}
   - component: {fileID: 1916628243}
   - component: {fileID: 1916628244}
+  - component: {fileID: 1916628245}
   m_Layer: 0
   m_Name: Target
   m_TagString: Untagged
@@ -3775,7 +3776,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 52080832438338245b82d920d7c48e1e, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -3931,6 +3932,18 @@ MonoBehaviour:
     transitionBezier:
       point1: {x: 0.25, y: 0.1}
       point2: {x: 0.25, y: 1}
+--- !u!114 &1916628245
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1916628227}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4991997583cd3ee43b6545b861888885, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &2064500390
 GameObject:
   m_ObjectHideFlags: 0
