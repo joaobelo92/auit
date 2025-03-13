@@ -3069,9 +3069,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   backendSolver:
     backend: 0
-    solver: SimulatedAnnealing
+    solver: ExhaustiveSearch
   solverSettings:
-    rid: 2980885167742386237
+    rid: 2980885181632086065
   developmentMode: 1
   gameObjectsToOptimize:
   - {fileID: 1916628227}
@@ -3091,15 +3091,12 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 2980885167742386237
-      type: {class: SimulatedAnnealingSolver, ns: AUIT.Solvers, asm: Assembly-CSharp}
+    - rid: 2980885181632086065
+      type: {class: ExhaustiveSearchSolver, ns: AUIT.Solvers, asm: Assembly-CSharp}
       data:
-        iterations: 1500
-        minimumTemperature: 0.000001
-        initialTemperature: 10000
-        annealingSchedule: 0.98
-        earlyStopping: 0.02
-        iterationsPerFrame: 50
+        interval: 0.05
+        gameObjectInterdependencies: 0
+        yieldRate: 2000
 --- !u!4 &642232616
 Transform:
   m_ObjectHideFlags: 0
