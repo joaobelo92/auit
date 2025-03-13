@@ -27,6 +27,7 @@ public class OrbitCameraController : MonoBehaviour
         ControlCamera = this.GetComponent<Camera>();
     }
 
+
     void Update()
     {
         if (!Application.isFocused)

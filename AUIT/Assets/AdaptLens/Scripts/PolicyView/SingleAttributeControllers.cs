@@ -31,6 +31,7 @@ public class SingleAttributeControllers : MonoBehaviour
                 {
                     SingleAttributeController sac = new SingleAttributeController(parameter);
                     sac.onHover += SetHoverSACs;
+                    sac.onHover += SetHoverPolicyViewer;
                     sacs.Add(sac);
                 }
                 objectiveSACs.Add((objectiveName, sacs));
@@ -59,13 +60,16 @@ public class SingleAttributeControllers : MonoBehaviour
         }
     }
 
-    public void SetHoverSACs(int hoverIndex)
+    private void SetHoverPolicyViewer(int hoverIndex)
     {
         if (onHover != null)
         {
             onHover(hoverIndex);
         }
+    }
 
+    public void SetHoverSACs(int hoverIndex)
+    {
         foreach ((string objNames, List<(string, List<SingleAttributeController>)> obj) in m_sacs)
         {
             foreach ((string objectiveName, List<SingleAttributeController> objectiveSACs) in obj)

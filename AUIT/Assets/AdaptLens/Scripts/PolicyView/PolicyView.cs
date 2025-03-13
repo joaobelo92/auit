@@ -338,6 +338,7 @@ public class PolicyView : MonoBehaviour
 
     }
 
+
     private void HandleHovering()
     {
         if (!Application.isFocused)
