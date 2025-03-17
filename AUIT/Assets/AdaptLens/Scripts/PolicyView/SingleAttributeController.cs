@@ -100,6 +100,13 @@ public class SingleAttributeController
         return m_minValue + (m_maxValue - m_minValue) * ratio;
     }
 
+    private float GraphPositionValue(float pointX, float min, float max, Rect cr)
+    {
+        float x = pointX - cr.x;
+        float ratio = x / cr.width;
+        return m_minValue + (m_maxValue - m_minValue) * ratio;
+    }
+
     private void DrawPoints(Rect cr, float min, float max)
     {
 
@@ -135,17 +142,29 @@ public class SingleAttributeController
         }
 
         int hoverIndex = -1;
+        for (int i = 0; i < m_values.Count; i++)
+        {
+            float value = m_values[i];
+            Vector2 valuePoint = ValueGraphPosition(value, min, max,cr);
+            if (Vector2.Distance(mousePos, valuePoint) < m_pointSize)
+            {
+                hoverIndex = i;
+                break;
+            }
+        }
+
+        /*
         float valueRadius = Mathf.Abs(GraphPositionValue(Vector2.zero, min, max, cr) - GraphPositionValue(new Vector2(m_pointSize, 0), min, max, cr));
         float mouseValue = GraphPositionValue(mousePos, m_minValue, m_maxValue, cr);
         for (int i = 0; i < m_values.Count; i++)
         {
-            float value = m_values[i];
             if (Mathf.Abs(value - mouseValue) < valueRadius)
             {
                 hoverIndex = i;
                 break;
             }
         }
+        */
 
         if (m_hoverIndex != hoverIndex)
         {
@@ -153,7 +172,6 @@ public class SingleAttributeController
             
             if (onHover != null)
             {
-                Debug.Log($"SAC setting {m_hoverIndex}");
                 onHover(m_hoverIndex);
             }
         }
@@ -162,6 +180,16 @@ public class SingleAttributeController
     public void SetHover(int hoverIndex)
     {
         m_hoverIndex = hoverIndex;
+    }
+
+    private void ApplyFiltering(Rect cr, float min, float max)
+    {
+        float filterStartValue = GraphPositionValue(m_filteringStart, min, max, cr);
+        float filterEndValue = GraphPositionValue(m_filteringEnd, min, max, cr);
+        float filterMin = Mathf.Min(filterStartValue, filterEndValue);
+        float filterMax = Mathf.Max(filterStartValue, filterEndValue);
+
+        Debug.Log($"Applying Filtering {filterMin} {filterMax}");
     }
 
     private void HandleFiltering(Rect cr, float min, float max)
@@ -187,13 +215,14 @@ public class SingleAttributeController
 
             GUIUtility.hotControl = 0;
 
+            ApplyFiltering(cr, min, max);
+
             e.Use();
         }
 
 
         if (m_filtering)
         {
-            //Handles.DrawSolidDisc(mousePos, Vector3.forward, m_pointSize);
             m_filteringEnd = Mathf.Clamp(mousePos.x, cr.x, cr.x + cr.width);
         }
 

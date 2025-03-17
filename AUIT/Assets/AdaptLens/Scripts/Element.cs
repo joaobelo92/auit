@@ -20,19 +20,16 @@ public class Element : MonoBehaviour
 
     public void SetHighlight()
     {
-        Debug.Log("Set Highlight");
         m_mat.color = m_highlightColor;
     }
 
     public void SetHide()
     {
-        Debug.Log("Set Hide");
         m_mat.color = m_hideColor;
     }
 
     public void SetOriginal()
     {
-        Debug.Log("Set Original");
         m_mat.color = m_originalColor;
     }
 
