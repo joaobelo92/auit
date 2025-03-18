@@ -1,3 +1,4 @@
+using Newtonsoft.Json.Linq;
 using Numpy;
 using System.Collections.Generic;
 using UnityEditor;
@@ -45,7 +46,7 @@ public class SingleAttributeControllers : MonoBehaviour
         }
     }
 
-    public void SetValues(NDarray values, bool rescale = false, float minValue = 0, float maxValue = 1)
+    public void SetValues(NDarray values)
     {
         foreach ((string objNames, List<(string, List<SingleAttributeController>)> obj) in m_sacs)
         {
@@ -57,11 +58,25 @@ public class SingleAttributeControllers : MonoBehaviour
                     for (int i = 0; i < values.shape[0]; i++)
                     {
                         sac.AddValue((float)values[i, sac.Id]);
+                    } 
+                    sac.CalculateMinMax();
+                }
+            }
+        }
+    }
+
+    public void SetSACMinMax(int pi, float min, float max)
+    {
+        foreach ((string objNames, List<(string, List<SingleAttributeController>)> obj) in m_sacs)
+        {
+            foreach ((string objectiveName, List<SingleAttributeController> objectiveSACs) in obj)
+            {
+                foreach (SingleAttributeController sac in objectiveSACs)
+                {
+                    if (sac.Id == pi)
+                    {
+                        sac.SetMinMax(min, max);
                     }
-                    if (rescale)
-                        sac.CalculateMinMax();
-                    else 
-                        sac.SetMinMax(minValue, maxValue);
                 }
             }
         }

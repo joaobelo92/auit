@@ -103,6 +103,9 @@ public class SingleAttributeController
 
     public void CalculateMinMax()
     {
+        if (m_values.Count == 0)
+            return; 
+
         float min = Mathf.Infinity;
         float max = Mathf.NegativeInfinity;
 
@@ -223,7 +226,6 @@ public class SingleAttributeController
 
     private void ApplyFiltering(Rect cr, float min, float max)
     {
-        Debug.Log($"ApplyFiltering() min: {min}, max: {max}, start: {GraphPositionValue(m_filteringStart, min, max, cr)}, end {GraphPositionValue(m_filteringEnd, min, max, cr)}");
         float filterStartValue = GraphPositionValue(m_filteringStart, min, max, cr);
         float filterEndValue = GraphPositionValue(m_filteringEnd, min, max, cr);
         float filterMin = Mathf.Min(filterStartValue, filterEndValue);

@@ -197,8 +197,16 @@ public class PolicyView : MonoBehaviour
         var filteredMask = ~sampleMask;
 
         var samples = m_samples[sampleMask, ":"];
-        m_filteredSamples = m_samples[filteredMask, ":"];
-        m_samples = samples; 
+        var filteredSamples = m_samples[filteredMask, ":"]; 
+        if (m_filteredSamples == null)
+        {
+            m_filteredSamples = filteredSamples;
+        } else
+        {
+            m_filteredSamples = np.concatenate(new NDarray[] { m_filteredSamples, filteredSamples });
+        }
+            m_samples = samples;
+        Debug.Log($"ApplyFiltering(): {min}, {max}, {m_samples.shape}, {m_filteredSamples.shape}");
         
         int[] sampleIndices = np.nonzero(sampleMask)[0].GetData<int>();
         int[] filteredIndices = np.nonzero(filteredMask)[0].GetData<int>();
@@ -214,28 +222,92 @@ public class PolicyView : MonoBehaviour
             }
             sampleLayouts.Add(contextSampleLayouts);
         }
+
         List<Layout[][]> filteredLayouts = new List<Layout[][]>();
-        foreach (Layout[][] layout in m_layouts)
+        for (int ci = 0; ci < m_layouts.Count; ci++)
         {
-            Layout[][] contextfilteredLayouts = new Layout[filteredIndices.Length][];
-            int si = 0;
-            foreach (int filteredIndex in filteredIndices)
+            int numFiltered = filteredIndices.Length;
+            if (m_filteredLayouts.Count > ci)
             {
-                contextfilteredLayouts[si++] = layout[filteredIndex];
+                numFiltered += m_filteredLayouts[ci].Length;
+            }
+            Layout[][] contextfilteredLayouts = new Layout[numFiltered][];
+            int si = 0;
+            if (m_filteredLayouts.Count > ci)
+            {
+                for (si = 0; si < m_filteredLayouts[ci].Length; si++)
+                {
+                    contextfilteredLayouts[si] = m_filteredLayouts[ci][si];
+                }
+            }
+            foreach (int filteredIndx in filteredIndices)
+            {
+                contextfilteredLayouts[si++] = m_layouts[ci][filteredIndx];
             }
             filteredLayouts.Add(contextfilteredLayouts);
         }
-        m_layouts = sampleLayouts;
         m_filteredLayouts = filteredLayouts;
+        m_layouts = sampleLayouts;
+
 
         LoadContext();
-        m_sacs.SetValues(m_samples, minValue: min, maxValue: max);
+        m_sacs.SetValues(m_samples);
+        m_sacs.SetSACMinMax(pi, min, max);
+    }
+
+    public void ResetFiltering()
+    {
+        if (m_filteredSamples != null)
+        {
+            m_samples = np.concatenate(new NDarray[] { m_samples, m_filteredSamples }, axis: 0);
+        }
+        m_filteredSamples = null;
+
+        for (int ci = 0; ci < m_layouts.Count; ci++)
+        {
+            if (m_filteredLayouts.Count > ci)
+            {
+                Layout[][] layouts = m_layouts[ci];
+                Layout[][] filteredLayouts = m_filteredLayouts[ci];   
+                int numLayouts = layouts.Length + filteredLayouts.Length;
+                Layout[][] combined = new Layout[numLayouts][];
+                int si = 0;
+                for (int i = 0; i < layouts.Length; i++)
+                {
+                    combined[si++] = layouts[i];
+                }
+                for (int i = 0; i < filteredLayouts.Length; i++)
+                {
+                    combined[si++] = filteredLayouts[i];
+                }
+                m_layouts[ci] = combined;
+            }
+        }
+        m_filteredLayouts.Clear();
+        /*
+        Debug.Log($"ResetFiltering(): {m_filteredLayouts.Count}, {m_layouts.Count}");
+        if (m_filteredLayouts != null)
+        {
+            foreach (Layout[][] layout in m_filteredLayouts)
+            {
+                m_layouts.Add(layout);
+            }
+        }
+        m_filteredLayouts.Clear();
+        Debug.Log($"ResetFiltering(): {m_layouts.Count}");
+        */
+
+        LoadContext();
+        m_sacs.SetValues(m_samples);
     }
 
     public async void SamplePolicies()
     {
         ClearSampledResults();
         m_layouts.Clear();
+        m_filteredSamples = null;
+        m_filteredLayouts.Clear();
+
 
         if (m_numSamples <= 0)
         {
@@ -308,7 +380,10 @@ public class PolicyView : MonoBehaviour
         LoadContext();
 
         m_sacs.Init(m_parameters.GetParametersInfo());
-        m_sacs.SetValues(m_samples, true);
+        
+        
+        m_sacs.SetValues(m_samples);
+
         m_sacs.onHover += SetHover;
         m_sacs.onApplyFiltering += ApplyFiltering;
 
@@ -481,6 +556,10 @@ public class PolicyViewEditor : Editor
         if (GUILayout.Button("Sample Policies"))
         {
             policyView.SamplePolicies();
+        }
+        if (GUILayout.Button("Reset Filtering"))
+        {
+            policyView.ResetFiltering();
         }
         EditorGUILayout.Space();
 
