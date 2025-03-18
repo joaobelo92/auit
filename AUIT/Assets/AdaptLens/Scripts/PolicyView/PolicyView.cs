@@ -12,6 +12,7 @@ using System.Linq;
 using UnityEngine.UIElements;
 using System.Runtime.Remoting.Contexts;
 using Cysharp.Threading.Tasks.Triggers;
+using System.Collections;
 
 public class PolicyView : MonoBehaviour
 {
@@ -46,6 +47,9 @@ public class PolicyView : MonoBehaviour
     private NDarray m_filteredSamples; 
     private List<Layout[][]> m_filteredLayouts = new List<Layout[][]>();
     private List<Element[]> m_filteredElements = new List<Element[]>();
+
+    private int m_selected = -1;
+    private List<Texture2D> m_selectedViews = new List<Texture2D>();
 
     private int m_numParameters;
 
@@ -89,6 +93,7 @@ public class PolicyView : MonoBehaviour
         m_paraHomeLoader.LoadSceneObjects(context.scene);
         m_paraHomeLoader.LoadScenePoses(context.pose);
         LoadSampledResults();
+        SetSelected();
     }
 
     public void ClearContexts()
@@ -140,7 +145,7 @@ public class PolicyView : MonoBehaviour
             m_currentLayouts.Add(optimizedElements);
         }
 
-        SetHover();
+        //SetHover();
     }
 
     private void SetHover()
@@ -326,18 +331,60 @@ public class PolicyView : MonoBehaviour
         return snapshot;
     }
 
-    public void SetSelected(int si)
+    public IEnumerator GetLayoutView(int targetLayout, System.Action<Texture2D> callback)
     {
+        for (int li = 0; li < m_currentLayouts.Count; li++)
+        {
+            Debug.Log($"Setting {li} to {li == targetLayout}");
+            foreach (Element element in m_currentLayouts[li])
+            {
+                
+                element.gameObject.SetActive(li == targetLayout);
+            }
+        }
+
+        yield return new WaitForEndOfFrame();
+
+        Texture2D view = CaptureView();
+
+        for (int li = 0; li < m_currentLayouts.Count; li++)
+        {
+            foreach (Element element in m_currentLayouts[li])
+            {
+                element.gameObject.SetActive(true);
+            }
+            
+        }
+
+        callback(view);
+    }
+
+    private void SetSelected()
+    {
+        if (m_selected < 0)
+        {
+            return; 
+        }
+
         string[] selectedParams = m_parameters.GetParametersInfoFlat().ToArray();
 
         string info = "Selected:\n";
         for (int pi = 0; pi < selectedParams.Length; pi++)
         {
-            info += $"{selectedParams[pi]}: {(float)m_samples[si, pi]}\n";
+            info += $"{selectedParams[pi]}: {(float)m_samples[m_selected, pi]}\n";
         }
 
-        Texture2D currentView = CaptureView();
-        m_gallery.SetSelected(currentView, info);
+        StartCoroutine(GetLayoutView(m_selected, (view) =>
+        {
+            m_gallery.SetSelected(view, info);
+        }));
+    }
+
+    public void SetSelected(int si)
+    {
+        m_selected = si;
+        SetSelected();
+
     }
 
     public async void SamplePolicies()
