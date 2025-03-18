@@ -6,9 +6,13 @@ using UnityEngine;
 public class SingleAttributeController
 {
     public delegate void OnHover(int hoverIndex);
-    public event OnHover onHover;
+    public OnHover onHover;
+
+    public delegate void OnApplyFiltering(int id, float min, float max);
+    public OnApplyFiltering onApplyFiltering;
 
     private string m_parameter;
+    private int m_id;
 
     private float m_height = 50;
     private Color m_color = new Color(0.2f, 0.2f, 0.2f);
@@ -38,6 +42,11 @@ public class SingleAttributeController
     public string Name
     {
         get { return m_parameter; }
+    }
+
+    public int Id
+    {
+        get { return m_id; }
     }
 
     private void DrawGridLines(Rect cr, float min, float max)
@@ -84,6 +93,35 @@ public class SingleAttributeController
         // Update min and max values
         if (value < m_minValue) m_minValue = value;
         if (value > m_maxValue) m_maxValue = value;
+    }
+
+    public void SetMinMax(float min, float max)
+    {
+        m_minValue = min;
+        m_maxValue = max;
+    }
+
+    public void CalculateMinMax()
+    {
+        float min = Mathf.Infinity;
+        float max = Mathf.NegativeInfinity;
+
+        foreach (var value in m_values)
+        {
+            if (value < min)
+                min = value;
+            if (value > max)
+                max = value;
+        }
+
+        if (Mathf.Approximately(min, max))
+        {
+            min -= m_minMaxBuffer / 2;
+            max += m_minMaxBuffer / 2;
+        }
+
+        m_minValue = min;
+        m_maxValue = max;
     }
 
     private Vector2 ValueGraphPosition(float value, float min, float max, Rect cr)
@@ -136,6 +174,7 @@ public class SingleAttributeController
     {
         Event e = Event.current;
         Vector2 mousePos = e.mousePosition;
+        
         if (!cr.Contains(mousePos))
         {
             return; 
@@ -184,14 +223,20 @@ public class SingleAttributeController
 
     private void ApplyFiltering(Rect cr, float min, float max)
     {
+        Debug.Log($"ApplyFiltering() min: {min}, max: {max}, start: {GraphPositionValue(m_filteringStart, min, max, cr)}, end {GraphPositionValue(m_filteringEnd, min, max, cr)}");
         float filterStartValue = GraphPositionValue(m_filteringStart, min, max, cr);
         float filterEndValue = GraphPositionValue(m_filteringEnd, min, max, cr);
         float filterMin = Mathf.Min(filterStartValue, filterEndValue);
         float filterMax = Mathf.Max(filterStartValue, filterEndValue);
 
         Debug.Log($"Applying Filtering {filterMin} {filterMax}");
+        if (onApplyFiltering != null)
+        {
+            onApplyFiltering(m_id, filterMin, filterMax);
+        }
     }
 
+    int numFilter = 0; 
     private void HandleFiltering(Rect cr, float min, float max)
     {
         Event e = Event.current;
@@ -202,7 +247,9 @@ public class SingleAttributeController
         if (cr.Contains(mousePos) && e.type == EventType.MouseDown && e.button == 0)
         {
             m_filtering = true;
+
             m_filteringStart = mousePos.x;
+            m_filteringEnd = Mathf.Clamp(mousePos.x, cr.x, cr.x + cr.width);
 
             GUIUtility.hotControl = controlId;
 
@@ -213,17 +260,19 @@ public class SingleAttributeController
         {
             m_filtering = false;
 
-            GUIUtility.hotControl = 0;
-
             ApplyFiltering(cr, min, max);
+
+            GUIUtility.hotControl = 0;
 
             e.Use();
         }
 
 
-        if (m_filtering)
+        if (m_filtering && e.type == EventType.MouseDrag && GUIUtility.hotControl == controlId)
         {
             m_filteringEnd = Mathf.Clamp(mousePos.x, cr.x, cr.x + cr.width);
+            
+            e.Use();
         }
 
     }
@@ -251,11 +300,8 @@ public class SingleAttributeController
 
         float min = m_minValue;
         float max = m_maxValue;
-        if (Mathf.Approximately(min, max))
-        {
-            min -= m_minMaxBuffer / 2;
-            max += m_minMaxBuffer / 2;
-        }
+        //min -= m_minMaxBuffer / 2;
+        //max += m_minMaxBuffer / 2;
 
         DrawGridLines(cr, min, max);
 
@@ -269,9 +315,10 @@ public class SingleAttributeController
         EditorGUILayout.Space(20);
     }
 
-    public SingleAttributeController(string parameter)
+    public SingleAttributeController(string parameter, int id)
     {
         m_parameter = parameter;
+        m_id = id; 
     }
 
 }

@@ -1,6 +1,7 @@
 using Numpy;
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEditor.Overlays;
 using UnityEngine;
 
 
@@ -9,6 +10,8 @@ public class SingleAttributeControllers : MonoBehaviour
     public delegate void OnHover(int hoverIndex);
     public OnHover onHover;
 
+    public delegate void OnApplyFiltering(int pi, float min, float max);
+    public OnApplyFiltering onApplyFiltering;
 
     private List<(string, List<(string, List<SingleAttributeController>)>)> m_sacs = new List<(string, List<(string, List<SingleAttributeController>)>)>();
 
@@ -21,6 +24,7 @@ public class SingleAttributeControllers : MonoBehaviour
     {
         m_sacs.Clear();
 
+        int pi = 0;
         foreach ((string objNames, List<(string, List<string>)> obj) in parameters)
         {
             List<(string, List<SingleAttributeController>)> objectiveSACs = new List<(string, List<SingleAttributeController>)>();
@@ -29,9 +33,10 @@ public class SingleAttributeControllers : MonoBehaviour
                 List<SingleAttributeController> sacs = new List<SingleAttributeController>();
                 foreach (string parameter in objectiveParameters)
                 {
-                    SingleAttributeController sac = new SingleAttributeController(parameter);
+                    SingleAttributeController sac = new SingleAttributeController(parameter, pi++);
                     sac.onHover += SetHoverSACs;
                     sac.onHover += SetHoverPolicyViewer;
+                    sac.onApplyFiltering += ApplyFiltering;
                     sacs.Add(sac);
                 }
                 objectiveSACs.Add((objectiveName, sacs));
@@ -40,9 +45,8 @@ public class SingleAttributeControllers : MonoBehaviour
         }
     }
 
-    public void SetValues(NDarray values)
+    public void SetValues(NDarray values, bool rescale = false, float minValue = 0, float maxValue = 1)
     {
-        int pi = 0;
         foreach ((string objNames, List<(string, List<SingleAttributeController>)> obj) in m_sacs)
         {
             foreach ((string objectiveName, List<SingleAttributeController> objectiveSACs) in obj)
@@ -52,9 +56,12 @@ public class SingleAttributeControllers : MonoBehaviour
                     sac.ClearValues();
                     for (int i = 0; i < values.shape[0]; i++)
                     {
-                        sac.AddValue((float)values[i, pi]);
+                        sac.AddValue((float)values[i, sac.Id]);
                     }
-                    pi++;
+                    if (rescale)
+                        sac.CalculateMinMax();
+                    else 
+                        sac.SetMinMax(minValue, maxValue);
                 }
             }
         }
@@ -79,6 +86,14 @@ public class SingleAttributeControllers : MonoBehaviour
                     sac.SetHover(hoverIndex);
                 }
             }
+        }
+    }
+
+    public void ApplyFiltering(int pi, float min, float max)
+    {
+        if (onApplyFiltering != null)
+        {
+            onApplyFiltering(pi, min, max);
         }
     }
 }

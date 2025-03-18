@@ -9,6 +9,7 @@ using UnityEditor;
 using AUIT.Extras;
 using AUIT;
 using System.Linq;
+using UnityEngine.UIElements;
 
 public class PolicyView : MonoBehaviour
 {
@@ -31,11 +32,18 @@ public class PolicyView : MonoBehaviour
     //[SerializeField]
     //private List<Constraint> constraints;
 
+    private NDarray m_samples;
     private List<ParaHomeContext> m_contexts = new List<ParaHomeContext>();
     private int m_currentContext = -1;
     private List<Layout[][]> m_layouts = new List<Layout[][]>();
     private List<Element[]> m_currentLayouts = new List<Element[]>();
     private int m_hoverIndex = -1;
+
+    private NDarray m_filteredSamples; 
+    private List<Layout[][]> m_filteredLayouts = new List<Layout[][]>();
+    private List<Element[]> m_filteredElements = new List<Element[]>();
+
+    private int m_numParameters;
 
 
     public int NumContexts
@@ -182,6 +190,48 @@ public class PolicyView : MonoBehaviour
         SetHover();
     }
 
+    public void ApplyFiltering(int pi, float min, float max)
+    {
+        var parameterValues = m_samples[$":,{pi}"];
+        var sampleMask = (parameterValues >= min) & (parameterValues <= max);
+        var filteredMask = ~sampleMask;
+
+        var samples = m_samples[sampleMask, ":"];
+        m_filteredSamples = m_samples[filteredMask, ":"];
+        m_samples = samples; 
+        
+        int[] sampleIndices = np.nonzero(sampleMask)[0].GetData<int>();
+        int[] filteredIndices = np.nonzero(filteredMask)[0].GetData<int>();
+
+        List<Layout[][]> sampleLayouts = new List<Layout[][]>();
+        foreach (Layout[][] layout in m_layouts)
+        {
+            Layout[][] contextSampleLayouts = new Layout[sampleIndices.Length][];
+            int si = 0;
+            foreach (int sampleIndex in sampleIndices)
+            {
+                contextSampleLayouts[si++] = layout[sampleIndex];
+            }
+            sampleLayouts.Add(contextSampleLayouts);
+        }
+        List<Layout[][]> filteredLayouts = new List<Layout[][]>();
+        foreach (Layout[][] layout in m_layouts)
+        {
+            Layout[][] contextfilteredLayouts = new Layout[filteredIndices.Length][];
+            int si = 0;
+            foreach (int filteredIndex in filteredIndices)
+            {
+                contextfilteredLayouts[si++] = layout[filteredIndex];
+            }
+            filteredLayouts.Add(contextfilteredLayouts);
+        }
+        m_layouts = sampleLayouts;
+        m_filteredLayouts = filteredLayouts;
+
+        LoadContext();
+        m_sacs.SetValues(m_samples, minValue: min, maxValue: max);
+    }
+
     public async void SamplePolicies()
     {
         ClearSampledResults();
@@ -204,15 +254,15 @@ public class PolicyView : MonoBehaviour
         }
 
         List<Parameters.ParamReference<float>> parameters = m_parameters.GetParametersAll();
-        int numParameters = parameters.Count;
-        if (numParameters == 0)
+        m_numParameters = parameters.Count;
+        if (m_numParameters == 0)
         {
             Debug.Log("PolicyView.SamplePolicies(): No parameters to sample");
             return;
         }
 
-        NDarray samples = np.random.rand(m_numSamples, numParameters);
-        for (int i = 0; i < numParameters; i++)
+        m_samples = np.random.rand(m_numSamples, m_numParameters);
+        for (int i = 0; i < m_numParameters; i++)
         {
             Parameters.ParamReference<float> parameter = parameters[i];
             float min = 0;
@@ -220,7 +270,7 @@ public class PolicyView : MonoBehaviour
             min = ((Parameters.FloatParamReference)parameter).min;
             max = ((Parameters.FloatParamReference)parameter).max;
 
-            samples[":",i] = min + (max - min) * samples[":", i];
+            m_samples[":",i] = min + (max - min) * m_samples[":", i];
         }
 
         int numContexts = m_contexts.Count;
@@ -235,10 +285,10 @@ public class PolicyView : MonoBehaviour
             Layout[][] layouts = new Layout[m_numSamples][];
             for (int si = 0; si < m_numSamples; si++)
             {
-                for (int pi = 0; pi < numParameters; pi++)
+                for (int pi = 0; pi < m_numParameters; pi++)
                 {
                     Parameters.ParamReference<float> parameter = parameters[pi];
-                    float value = (float)samples[si, pi];
+                    float value = (float)m_samples[si, pi];
                     parameter.Value = value;
                 }
                 OptimizationResponse response = await auit.OptimizeLayout();
@@ -258,8 +308,9 @@ public class PolicyView : MonoBehaviour
         LoadContext();
 
         m_sacs.Init(m_parameters.GetParametersInfo());
-        m_sacs.SetValues(samples);
+        m_sacs.SetValues(m_samples, true);
         m_sacs.onHover += SetHover;
+        m_sacs.onApplyFiltering += ApplyFiltering;
 
         // Single attribute controllers
 
