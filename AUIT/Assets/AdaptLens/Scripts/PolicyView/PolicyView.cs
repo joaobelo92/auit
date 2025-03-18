@@ -194,12 +194,13 @@ public class PolicyView : MonoBehaviour
 
     public void ApplyFiltering(int pi, float min, float max)
     {
-        var parameterValues = m_samples[$":,{pi}"];
+        var parameterValues = m_samples[":", pi];
         var sampleMask = (parameterValues >= min) & (parameterValues <= max);
         var filteredMask = ~sampleMask;
         // Identify sample versus filtered out indices 
-        int[] sampleIndices = np.nonzero(sampleMask)[0].GetData<int>();
-        int[] filteredIndices = np.nonzero(filteredMask)[0].GetData<int>();
+        Debug.Log(np.nonzero(sampleMask)[0].dtype);
+        int[] sampleIndices = np.nonzero(sampleMask)[0].astype(np.int32).GetData<int>();
+        int[] filteredIndices = np.nonzero(filteredMask)[0].astype(np.int32).GetData<int>();
 
         // Identify samples versus filtered out values
         var samples = m_samples[sampleMask, ":"];
