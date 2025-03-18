@@ -10,6 +10,8 @@ using AUIT.Extras;
 using AUIT;
 using System.Linq;
 using UnityEngine.UIElements;
+using System.Runtime.Remoting.Contexts;
+using Cysharp.Threading.Tasks.Triggers;
 
 public class PolicyView : MonoBehaviour
 {
@@ -17,7 +19,9 @@ public class PolicyView : MonoBehaviour
     public Parameters m_parameters;
     public AUIT.AUIT auit;
     public SingleAttributeControllers m_sacs;
-    public Camera m_camera;
+    public GalleryView m_gallery;
+    public Camera m_userCamera;
+    public Camera m_supportCamera;
 
     public int m_numSamples = 100;
 
@@ -301,6 +305,27 @@ public class PolicyView : MonoBehaviour
         m_sacs.SetValues(m_samples);
     }
 
+    private Texture2D CaptureView()
+    {
+        m_supportCamera.gameObject.SetActive(true);
+        m_supportCamera.transform.SetPositionAndRotation(m_userCamera.transform.position, m_userCamera.transform.rotation);
+
+        RenderTexture currentRT = RenderTexture.active;
+
+        RenderTexture.active = m_supportCamera.targetTexture;
+
+        m_supportCamera.Render();
+        Texture2D snapshot = new Texture2D(m_supportCamera.targetTexture.width, m_supportCamera.targetTexture.height);
+        snapshot.ReadPixels(new Rect(0, 0, m_supportCamera.targetTexture.width, m_supportCamera.targetTexture.height), 0, 0);
+        snapshot.Apply();
+
+        RenderTexture.active = currentRT;
+
+        m_supportCamera.gameObject.SetActive(false);
+
+        return snapshot;
+    }
+
     public void SetSelected(int si)
     {
         string[] selectedParams = m_parameters.GetParametersInfoFlat().ToArray();
@@ -310,7 +335,9 @@ public class PolicyView : MonoBehaviour
         {
             info += $"{selectedParams[pi]}: {(float)m_samples[si, pi]}\n";
         }
-        Debug.Log(info);
+
+        Texture2D currentView = CaptureView();
+        m_gallery.SetSelected(currentView, info);
     }
 
     public async void SamplePolicies()
@@ -488,7 +515,7 @@ public class PolicyView : MonoBehaviour
         {
             return;
         }
-        Ray ray = m_camera.ScreenPointToRay(Input.mousePosition);
+        Ray ray = m_userCamera.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
         // Get Element layer mask
         int layerMask = 1 << LayerMask.NameToLayer("Element");
@@ -525,7 +552,6 @@ public class PolicyView : MonoBehaviour
     {
         HandleHovering();
     }
-    
 }
 
 [CustomEditor(typeof(PolicyView))]
@@ -539,8 +565,10 @@ public class PolicyViewEditor : Editor
         policyView.m_paraHomeLoader = (ParaHomeLoader)EditorGUILayout.ObjectField("ParaHomeLoader", policyView.m_paraHomeLoader, typeof(ParaHomeLoader), true);
         policyView.m_parameters = (Parameters)EditorGUILayout.ObjectField("Parameters", policyView.m_parameters, typeof(Parameters), true);
         policyView.auit = (AUIT.AUIT)EditorGUILayout.ObjectField("AUIT", policyView.auit, typeof(AUIT.AUIT), true);
-        policyView.m_sacs = (SingleAttributeControllers)EditorGUILayout.ObjectField("SingleAttributeControllers", policyView.m_sacs, typeof(SingleAttributeControllers), true);
-        policyView.m_camera = (Camera)EditorGUILayout.ObjectField("Camera", policyView.m_camera, typeof(Camera), true);
+        policyView.m_sacs = (SingleAttributeControllers)EditorGUILayout.ObjectField("Single Attribute Controllers", policyView.m_sacs, typeof(SingleAttributeControllers), true);
+        policyView.m_gallery = (GalleryView)EditorGUILayout.ObjectField("Gallery View", policyView.m_gallery, typeof(GalleryView), true);
+        policyView.m_userCamera = (Camera)EditorGUILayout.ObjectField("User Camera", policyView.m_userCamera, typeof(Camera), true);
+        policyView.m_supportCamera = (Camera)EditorGUILayout.ObjectField("support Camera", policyView.m_supportCamera, typeof(Camera), true);
         EditorGUILayout.Space();
 
         // label
