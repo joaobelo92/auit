@@ -16,6 +16,12 @@ public class GalleryView : MonoBehaviour
     {
         get { return m_selectedInfo; }
     } 
+
+    public void ResetSelected()
+    {
+        m_selectedView = null;
+        m_selectedInfo = string.Empty;
+    }
    
     public void SetSelected(Texture2D view, string info)
     {

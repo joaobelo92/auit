@@ -1,18 +1,12 @@
 using System.Collections.Generic;
-using AUIT.AdaptationObjectives;
 using AUIT.AdaptationObjectives.Definitions;
-using AUIT.Constraints;
-using AUIT.Solvers;
 using UnityEngine;
 using Numpy;
 using UnityEditor;
 using AUIT.Extras;
-using AUIT;
 using System.Linq;
-using UnityEngine.UIElements;
-using System.Runtime.Remoting.Contexts;
-using Cysharp.Threading.Tasks.Triggers;
 using System.Collections;
+using System;
 
 public class PolicyView : MonoBehaviour
 {
@@ -49,7 +43,6 @@ public class PolicyView : MonoBehaviour
     private List<Element[]> m_filteredElements = new List<Element[]>();
 
     private int m_selected = -1;
-    private List<Texture2D> m_selectedViews = new List<Texture2D>();
 
     private int m_numParameters;
 
@@ -204,7 +197,11 @@ public class PolicyView : MonoBehaviour
         var parameterValues = m_samples[$":,{pi}"];
         var sampleMask = (parameterValues >= min) & (parameterValues <= max);
         var filteredMask = ~sampleMask;
+        // Identify sample versus filtered out indices 
+        int[] sampleIndices = np.nonzero(sampleMask)[0].GetData<int>();
+        int[] filteredIndices = np.nonzero(filteredMask)[0].GetData<int>();
 
+        // Identify samples versus filtered out values
         var samples = m_samples[sampleMask, ":"];
         var filteredSamples = m_samples[filteredMask, ":"]; 
         if (m_filteredSamples == null)
@@ -216,10 +213,8 @@ public class PolicyView : MonoBehaviour
         }
             m_samples = samples;
         Debug.Log($"ApplyFiltering(): {min}, {max}, {m_samples.shape}, {m_filteredSamples.shape}");
-        
-        int[] sampleIndices = np.nonzero(sampleMask)[0].GetData<int>();
-        int[] filteredIndices = np.nonzero(filteredMask)[0].GetData<int>();
 
+        // Identify sample versus filtered out layouts
         List<Layout[][]> sampleLayouts = new List<Layout[][]>();
         foreach (Layout[][] layout in m_layouts)
         {
@@ -231,7 +226,6 @@ public class PolicyView : MonoBehaviour
             }
             sampleLayouts.Add(contextSampleLayouts);
         }
-
         List<Layout[][]> filteredLayouts = new List<Layout[][]>();
         for (int ci = 0; ci < m_layouts.Count; ci++)
         {
@@ -258,6 +252,22 @@ public class PolicyView : MonoBehaviour
         m_filteredLayouts = filteredLayouts;
         m_layouts = sampleLayouts;
 
+        // Update selected
+        int selected = -1;
+        string allRemaining = "";
+        for (int si = 0; si < sampleIndices.Length; si++)
+        {
+            allRemaining += si + ":" + sampleIndices[si] + ", ";
+            if (sampleIndices[si] == m_selected)
+            {
+                selected = si;
+                break;
+            }
+        }
+        Debug.Log("Current: " + m_selected);
+        Debug.Log("All remaining: " + allRemaining);
+        Debug.Log($"Updating selected to {selected}");
+        m_selected = selected;
 
         LoadContext();
         m_sacs.SetValues(m_samples);
@@ -293,18 +303,7 @@ public class PolicyView : MonoBehaviour
             }
         }
         m_filteredLayouts.Clear();
-        /*
-        Debug.Log($"ResetFiltering(): {m_filteredLayouts.Count}, {m_layouts.Count}");
-        if (m_filteredLayouts != null)
-        {
-            foreach (Layout[][] layout in m_filteredLayouts)
-            {
-                m_layouts.Add(layout);
-            }
-        }
-        m_filteredLayouts.Clear();
-        Debug.Log($"ResetFiltering(): {m_layouts.Count}");
-        */
+
 
         LoadContext();
         m_sacs.SetValues(m_samples);
@@ -335,7 +334,6 @@ public class PolicyView : MonoBehaviour
     {
         for (int li = 0; li < m_currentLayouts.Count; li++)
         {
-            Debug.Log($"Setting {li} to {li == targetLayout}");
             foreach (Element element in m_currentLayouts[li])
             {
                 
@@ -363,6 +361,7 @@ public class PolicyView : MonoBehaviour
     {
         if (m_selected < 0)
         {
+            m_gallery.ResetSelected();
             return; 
         }
 
@@ -382,6 +381,7 @@ public class PolicyView : MonoBehaviour
 
     public void SetSelected(int si)
     {
+        Debug.Log($"SetSelected(): {si}");
         m_selected = si;
         SetSelected();
 
@@ -393,7 +393,7 @@ public class PolicyView : MonoBehaviour
         m_layouts.Clear();
         m_filteredSamples = null;
         m_filteredLayouts.Clear();
-
+        m_selected = -1;
 
         if (m_numSamples <= 0)
         {
