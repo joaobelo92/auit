@@ -301,6 +301,18 @@ public class PolicyView : MonoBehaviour
         m_sacs.SetValues(m_samples);
     }
 
+    public void SetSelected(int si)
+    {
+        string[] selectedParams = m_parameters.GetParametersInfoFlat().ToArray();
+
+        string info = "Selected:\n";
+        for (int pi = 0; pi < selectedParams.Length; pi++)
+        {
+            info += $"{selectedParams[pi]}: {(float)m_samples[si, pi]}\n";
+        }
+        Debug.Log(info);
+    }
+
     public async void SamplePolicies()
     {
         ClearSampledResults();
@@ -385,6 +397,7 @@ public class PolicyView : MonoBehaviour
         m_sacs.SetValues(m_samples);
 
         m_sacs.onHover += SetHover;
+        m_sacs.onSelect += SetSelected;
         m_sacs.onApplyFiltering += ApplyFiltering;
 
         // Single attribute controllers

@@ -2,6 +2,7 @@ using AUIT.AdaptationObjectives;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography;
 using UnityEditor;
 using UnityEngine;
 
@@ -138,6 +139,24 @@ public class Parameters : MonoBehaviour
             parameters.Add((objName, objParams));
         }
         return parameters;
+    }
+
+    public List<string> GetParametersInfoFlat()
+    {
+        List<string> info = new List<string>();
+        foreach ((string objName, List<(string, List<Parameters.ParamReference<float>>)> obj) in m_parameters)
+        {
+            List<(string, List<string>)> objParams = new List<(string, List<string>)>();
+            foreach ((string oName, List<Parameters.ParamReference<float>> o) in obj)
+            {
+                List<string> paramNames = new List<string>();
+                foreach (var parameter in o)
+                {
+                    info.Add($"{objName} {oName} {parameter.name}");
+                }
+            }
+        }
+        return info; 
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created

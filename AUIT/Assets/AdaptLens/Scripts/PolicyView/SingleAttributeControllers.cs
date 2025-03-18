@@ -11,6 +11,9 @@ public class SingleAttributeControllers : MonoBehaviour
     public delegate void OnHover(int hoverIndex);
     public OnHover onHover;
 
+    public delegate void OnSelect(int selectIndex);
+    public OnSelect onSelect;
+
     public delegate void OnApplyFiltering(int pi, float min, float max);
     public OnApplyFiltering onApplyFiltering;
 
@@ -37,6 +40,7 @@ public class SingleAttributeControllers : MonoBehaviour
                     SingleAttributeController sac = new SingleAttributeController(parameter, pi++);
                     sac.onHover += SetHoverSACs;
                     sac.onHover += SetHoverPolicyViewer;
+                    sac.onSelect += SetSelected;
                     sac.onApplyFiltering += ApplyFiltering;
                     sacs.Add(sac);
                 }
@@ -101,6 +105,14 @@ public class SingleAttributeControllers : MonoBehaviour
                     sac.SetHover(hoverIndex);
                 }
             }
+        }
+    }
+
+    private void SetSelected(int selectedIndex)
+    {
+        if (onSelect != null)
+        {
+            onSelect(selectedIndex);
         }
     }
 

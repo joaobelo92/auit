@@ -8,6 +8,9 @@ public class SingleAttributeController
     public delegate void OnHover(int hoverIndex);
     public OnHover onHover;
 
+    public delegate void OnSelect(int selectIndex);
+    public OnSelect onSelect;
+
     public delegate void OnApplyFiltering(int id, float min, float max);
     public OnApplyFiltering onApplyFiltering;
 
@@ -175,6 +178,12 @@ public class SingleAttributeController
 
     private void HandleMouseHover(Rect cr, float min, float max)
     {
+        // Disable while filtering
+        if (m_filtering)
+        {
+            return;
+        }
+
         Event e = Event.current;
         Vector2 mousePos = e.mousePosition;
         
@@ -238,9 +247,14 @@ public class SingleAttributeController
         }
     }
 
-    int numFilter = 0; 
     private void HandleFiltering(Rect cr, float min, float max)
     {
+        // Disable while hovering
+        if (m_hoverIndex >= 0)
+        {
+            return;
+        }
+
         Event e = Event.current;
         Vector2 mousePos = e.mousePosition;
 
@@ -279,6 +293,26 @@ public class SingleAttributeController
 
     }
 
+    private void HandleSelection()
+    {
+        if (m_hoverIndex < 0)
+        {
+            return;
+        }
+
+        Event e = Event.current;
+        if (e.type == EventType.MouseDown && e.button == 0)
+        {
+            if (onSelect != null)
+            {
+                onSelect(m_hoverIndex);
+            }
+
+            e.Use();
+        }
+
+    }
+
     private void DrawFilter(Rect cr, float min, float max)
     {
         if (m_filtering)
@@ -309,6 +343,7 @@ public class SingleAttributeController
 
         HandleMouseHover(cr, min, max);
         HandleFiltering(cr, min, max);
+        HandleSelection();
 
         DrawPoints(cr, min, max);
         DrawHover(cr, min, max);
