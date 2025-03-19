@@ -44,6 +44,9 @@ public class PolicyView : MonoBehaviour
 
     private int m_selected = -1;
 
+    private List<int> m_saved = new List<int>();
+    private List<int> m_filteredSaved = new List<int>();
+
     private int m_numParameters;
 
 
@@ -87,6 +90,7 @@ public class PolicyView : MonoBehaviour
         m_paraHomeLoader.LoadScenePoses(context.pose);
         LoadSampledResults();
         SetSelected();
+        UpdateGallerySaved();
     }
 
     public void ClearContexts()
@@ -143,10 +147,7 @@ public class PolicyView : MonoBehaviour
 
     private void SetHover()
     {
-        if (m_currentLayouts.Count == 0)
-        {
-            return;
-        }
+        m_sacs.SetHoverSACs(m_hoverIndex);
 
         int numElements = m_currentLayouts.Count;
         if (m_hoverIndex == -1)
@@ -159,7 +160,6 @@ public class PolicyView : MonoBehaviour
                 }
             }
         }
-
         else if (m_hoverIndex >= 0 && m_hoverIndex < numElements)
         {
             for (int i = 0; i < numElements; i++)
@@ -198,22 +198,25 @@ public class PolicyView : MonoBehaviour
         var sampleMask = (parameterValues >= min) & (parameterValues <= max);
         var filteredMask = ~sampleMask;
         // Identify sample versus filtered out indices 
-        Debug.Log(np.nonzero(sampleMask)[0].dtype);
         int[] sampleIndices = np.nonzero(sampleMask)[0].astype(np.int32).GetData<int>();
         int[] filteredIndices = np.nonzero(filteredMask)[0].astype(np.int32).GetData<int>();
 
         // Identify samples versus filtered out values
         var samples = m_samples[sampleMask, ":"];
-        var filteredSamples = m_samples[filteredMask, ":"]; 
+        var filteredSamples = m_samples[filteredMask, ":"];
+
+        int numFilteredCurrent = 0;
+        int numFilteredNew = filteredIndices.Length;
         if (m_filteredSamples == null)
         {
             m_filteredSamples = filteredSamples;
         } else
         {
+            numFilteredCurrent = m_filteredSamples.shape[0];
             m_filteredSamples = np.concatenate(new NDarray[] { m_filteredSamples, filteredSamples });
         }
-            m_samples = samples;
-        Debug.Log($"ApplyFiltering(): {min}, {max}, {m_samples.shape}, {m_filteredSamples.shape}");
+        int numFiltered = numFilteredCurrent + numFilteredNew;
+        m_samples = samples;
 
         // Identify sample versus filtered out layouts
         List<Layout[][]> sampleLayouts = new List<Layout[][]>();
@@ -230,11 +233,6 @@ public class PolicyView : MonoBehaviour
         List<Layout[][]> filteredLayouts = new List<Layout[][]>();
         for (int ci = 0; ci < m_layouts.Count; ci++)
         {
-            int numFiltered = filteredIndices.Length;
-            if (m_filteredLayouts.Count > ci)
-            {
-                numFiltered += m_filteredLayouts[ci].Length;
-            }
             Layout[][] contextfilteredLayouts = new Layout[numFiltered][];
             int si = 0;
             if (m_filteredLayouts.Count > ci)
@@ -254,21 +252,21 @@ public class PolicyView : MonoBehaviour
         m_layouts = sampleLayouts;
 
         // Update selected
-        int selected = -1;
-        string allRemaining = "";
-        for (int si = 0; si < sampleIndices.Length; si++)
+        m_selected = Array.IndexOf(sampleIndices, m_selected);
+
+        // Update saved
+        List<int> saved = new List<int>();
+        foreach (int savedIndex in m_saved)
         {
-            allRemaining += si + ":" + sampleIndices[si] + ", ";
-            if (sampleIndices[si] == m_selected)
+            if (Array.IndexOf(sampleIndices, savedIndex) >= 0)
             {
-                selected = si;
-                break;
+                saved.Add(Array.IndexOf(sampleIndices, savedIndex));
+            } else
+            {
+                m_filteredSaved.Add(Array.IndexOf(filteredIndices, savedIndex) + numFilteredCurrent);
             }
         }
-        Debug.Log("Current: " + m_selected);
-        Debug.Log("All remaining: " + allRemaining);
-        Debug.Log($"Updating selected to {selected}");
-        m_selected = selected;
+        m_saved = saved;
 
         LoadContext();
         m_sacs.SetValues(m_samples);
@@ -277,6 +275,7 @@ public class PolicyView : MonoBehaviour
 
     public void ResetFiltering()
     {
+        int numSamples = m_samples.shape[0];
         if (m_filteredSamples != null)
         {
             m_samples = np.concatenate(new NDarray[] { m_samples, m_filteredSamples }, axis: 0);
@@ -304,6 +303,12 @@ public class PolicyView : MonoBehaviour
             }
         }
         m_filteredLayouts.Clear();
+
+        foreach (int savedIndex in m_filteredSaved)
+        {
+            m_saved.Add(savedIndex + numSamples);
+        }
+        m_filteredSaved.Clear();
 
 
         LoadContext();
@@ -358,14 +363,42 @@ public class PolicyView : MonoBehaviour
         callback(view);
     }
 
+    public IEnumerator GetLayoutViews(System.Action<List<Texture2D>> callback)
+    {
+        List<Texture2D> views = new List<Texture2D>();
+
+        yield return new WaitForEndOfFrame();
+
+        foreach (int saved in m_saved)
+        {
+            bool captured = false;
+            Texture2D capturedView = null; 
+
+            yield return StartCoroutine(GetLayoutView(saved, (texture) =>
+            {
+                captured = true;
+                capturedView = texture;
+            }));
+
+            yield return new WaitUntil(() => captured);
+
+            views.Add(capturedView);
+        }
+
+        callback(views);
+    }
+
     private void SetSelected()
     {
+        // Update SACs 
+        m_sacs.SetSelectedSACS(m_selected);
+
+        // Update Gallery view
         if (m_selected < 0)
         {
             m_gallery.ResetSelected();
             return; 
         }
-
         string[] selectedParams = m_parameters.GetParametersInfoFlat().ToArray();
 
         string info = "Selected:\n";
@@ -380,9 +413,37 @@ public class PolicyView : MonoBehaviour
         }));
     }
 
+    private void ResetSelected()
+    {
+        m_selected = -1;
+        SetSelected();
+    }
+
+    private void SaveSelected()
+    {
+        if (m_selected >= 0 && !m_saved.Contains(m_selected))
+        {
+            m_saved.Add(m_selected);
+        }
+        UpdateGallerySaved();
+    }
+
+    private void ClearSaved()
+    {
+        m_saved.Clear();
+        UpdateGallerySaved();
+    }
+
+    private void UpdateGallerySaved()
+    {
+        StartCoroutine(GetLayoutViews((views) =>
+        {
+            m_gallery.SetSaved(views);
+        }));
+    }
+
     public void SetSelected(int si)
     {
-        Debug.Log($"SetSelected(): {si}");
         m_selected = si;
         SetSelected();
 
@@ -585,7 +646,6 @@ public class PolicyView : MonoBehaviour
             }
         }
         SetHover(-1);
-        m_sacs.SetHoverSACs(-1);
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -593,6 +653,11 @@ public class PolicyView : MonoBehaviour
     {
         //solver.Initialize(constraints);
         //((ExhaustiveSearchSolver)solver).interval = m_solver_interval;
+
+        m_gallery.onSaveSelected += SaveSelected;
+        m_gallery.onClearSelected += ResetSelected;
+        m_gallery.onClearSaved += ClearSaved;
+        
     }
 
     // Update is called once per frame

@@ -38,9 +38,8 @@ public class SingleAttributeControllers : MonoBehaviour
                 foreach (string parameter in objectiveParameters)
                 {
                     SingleAttributeController sac = new SingleAttributeController(parameter, pi++);
-                    sac.onHover += SetHoverSACs;
                     sac.onHover += SetHoverPolicyViewer;
-                    sac.onSelect += SetSelected;
+                    sac.onSelect += SetSelectedPolicyViewer;
                     sac.onApplyFiltering += ApplyFiltering;
                     sacs.Add(sac);
                 }
@@ -108,11 +107,25 @@ public class SingleAttributeControllers : MonoBehaviour
         }
     }
 
-    private void SetSelected(int selectedIndex)
+    private void SetSelectedPolicyViewer(int selectedIndex)
     {
         if (onSelect != null)
         {
             onSelect(selectedIndex);
+        }
+    }
+
+    public void SetSelectedSACS(int selectedIndex)
+    {
+        foreach ((string objNames, List<(string, List<SingleAttributeController>)> obj) in m_sacs)
+        {
+            foreach ((string objectiveName, List<SingleAttributeController> objectiveSACs) in obj)
+            {
+                foreach (SingleAttributeController sac in objectiveSACs)
+                {
+                    sac.SetSelected(selectedIndex);
+                }
+            }
         }
     }
 

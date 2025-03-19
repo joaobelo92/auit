@@ -20,10 +20,10 @@ public class SingleAttributeController
     private float m_height = 50;
     private Color m_color = new Color(0.2f, 0.2f, 0.2f);
 
-    private Color m_gridColor = new Color(0.5f, 0.5f, 0.5f, 0.2f);
+    private Color m_gridColor = new Color(0.4f, 0.4f, 0.4f, 0.2f);
     private int m_numGridlines = 4;
 
-    private Color m_pointColor = new Color(0.8f, 0.8f, 0.8f, 0.5f);
+    private Color m_pointColor = new Color(0.6f, 0.6f, 0.6f, 0.4f);
     private float m_pointSize = 5;
 
     private List<float> m_values = new List<float>();
@@ -34,13 +34,16 @@ public class SingleAttributeController
     private float m_minMaxBuffer = 0.1f;
 
     private int m_hoverIndex = -1;
-    private Color m_hoverColor = new Color(49 / 255f, 130 / 255f, 189 / 255f, 0.8f);
+    private Color m_hoverColor = new Color(0.8f, 0.8f, 0.8f, 1.0f);
 
     private bool m_filtering;
     private float m_filteringStart;
     private float m_filteringEnd; 
     private Rect m_filter;
     private Color m_filterColor = new Color(49 / 255f, 130 / 255f, 189 / 255f, 0.5f);
+
+    private int m_selectedIndex = -1;
+    private Color m_selectedColor = new Color(49 / 255f, 130 / 255f, 189 / 255f, 1.0f);
 
     public string Name
     {
@@ -176,6 +179,16 @@ public class SingleAttributeController
         }
     }
 
+    private void DrawSelected(Rect cr, float min, float max)
+    {
+        Handles.color = m_selectedColor;
+        if (m_selectedIndex >= 0)
+        {
+            Vector2 point = m_points[m_selectedIndex];
+            Handles.DrawSolidDisc(point, Vector3.forward, m_pointSize);
+        }
+    }
+
     private void HandleMouseHover(Rect cr, float min, float max)
     {
         // Disable while filtering
@@ -239,8 +252,6 @@ public class SingleAttributeController
         float filterEndValue = GraphPositionValue(m_filteringEnd, min, max, cr);
         float filterMin = Mathf.Min(filterStartValue, filterEndValue);
         float filterMax = Mathf.Max(filterStartValue, filterEndValue);
-
-        Debug.Log($"Applying Filtering {filterMin} {filterMax}");
         if (onApplyFiltering != null)
         {
             onApplyFiltering(m_id, filterMin, filterMax);
@@ -313,6 +324,11 @@ public class SingleAttributeController
 
     }
 
+    public void SetSelected(int selectedIndex)
+    {
+        m_selectedIndex = selectedIndex;
+    }
+
     private void DrawFilter(Rect cr, float min, float max)
     {
         if (m_filtering)
@@ -347,6 +363,7 @@ public class SingleAttributeController
 
         DrawPoints(cr, min, max);
         DrawHover(cr, min, max);
+        DrawSelected(cr, min, max);
         DrawFilter(cr, min, max);
 
         EditorGUILayout.Space(20);

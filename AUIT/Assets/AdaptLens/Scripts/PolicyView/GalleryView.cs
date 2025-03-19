@@ -1,10 +1,20 @@
-using System.Runtime.Remoting.Contexts;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
 public class GalleryView : MonoBehaviour
 {
+    public delegate void OnSaveSelected(); 
+    public OnSaveSelected onSaveSelected;
+
+    public delegate void OnClearSelected();
+    public OnClearSelected onClearSelected;
+
+    public delegate void OnClearSaved();
+    public OnClearSaved onClearSaved;
+
     public static int SELECTED_WIDTH = 256, SELECTED_HEIGHT = 144;
+    public static int SAVED_WIDTH = 192, SAVED_HEIGHT = 108;
 
     private Texture2D m_selectedView; 
     public Texture2D SelectedView {  
@@ -15,7 +25,13 @@ public class GalleryView : MonoBehaviour
     public string SelectedInfo
     {
         get { return m_selectedInfo; }
-    } 
+    }
+
+    private List<Texture2D> m_savedViews = new List<Texture2D>();
+    public List<Texture2D> SavedViews
+    {
+        get { return m_savedViews; }
+    }
 
     public void ResetSelected()
     {
@@ -28,12 +44,44 @@ public class GalleryView : MonoBehaviour
         m_selectedView = view;
         m_selectedInfo = info;
     }
+
+
+    public void ClearSelected()
+    {
+        if (onClearSelected != null)
+        {
+            onClearSelected();
+        }
+    }
+
+
+    public void SaveSelected()
+    {
+        if (onSaveSelected != null)
+        {
+            onSaveSelected();
+        }
+    }
+
+    public void SetSaved(List<Texture2D> savedViews)
+    {
+        m_savedViews = savedViews;
+    }
+
+    public void ClearSaved()
+    {
+        if (onClearSaved != null)
+        {
+            onClearSaved();
+        }
+    }
 }
 
 [CustomEditor(typeof(GalleryView))]
 public class GalleryViewEditor : Editor
 {
     private Vector2 selectedInfoScrollPosition;
+    private Vector2 savedScrollPosition;
 
     public override void OnInspectorGUI()
     {
@@ -63,6 +111,52 @@ public class GalleryViewEditor : Editor
         EditorGUILayout.EndVertical();
         EditorGUILayout.EndHorizontal();
 
-        EditorGUILayout.Space();
+        if (galleryView.SelectedView != null)
+        {
+            if (GUILayout.Button("Save Selected"))
+            {
+                galleryView.SaveSelected();
+            }
+            if (GUILayout.Button("Clear Selected"))
+            {
+                galleryView.ClearSelected();
+            }
+        }
+        EditorGUILayout.Space(20);
+
+
+        EditorGUILayout.LabelField("Saved", EditorStyles.boldLabel);
+        if (GUILayout.Button("Clear Saved"))
+        {
+            galleryView.ClearSaved();
+        }
+        int numSaved = galleryView.SavedViews.Count;
+        EditorGUILayout.BeginVertical(GUILayout.Height(2 * GalleryView.SAVED_HEIGHT), GUILayout.ExpandWidth(true));
+        savedScrollPosition = EditorGUILayout.BeginScrollView(savedScrollPosition,
+           GUILayout.ExpandHeight(true), GUILayout.ExpandWidth(true));
+
+        float savedViewWidth = EditorGUIUtility.currentViewWidth;
+        int numSavedPerRow = (int)((savedViewWidth - 50) / (GalleryView.SAVED_WIDTH + 10));
+        if (numSavedPerRow <= 0)
+        {
+            numSavedPerRow = 1;
+        }
+        for (int i = 0; i < numSaved; i += numSavedPerRow)
+        {
+            EditorGUILayout.BeginHorizontal();
+            for (int j = 0; j < numSavedPerRow && i + j < numSaved; j++)
+            {
+                GUILayout.Box(galleryView.SavedViews[i + j], GUILayout.Width(GalleryView.SAVED_WIDTH), GUILayout.Height(GalleryView.SAVED_HEIGHT));
+                GUILayout.Space(10);
+            }
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.Space();
+        }
+
+        EditorGUILayout.EndScrollView();
+        EditorGUILayout.EndVertical();
+
+
     }
 }
+
