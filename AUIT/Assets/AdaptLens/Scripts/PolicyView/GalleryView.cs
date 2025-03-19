@@ -13,6 +13,9 @@ public class GalleryView : MonoBehaviour
     public delegate void OnClearSaved();
     public OnClearSaved onClearSaved;
 
+    public delegate void OnHoverSelected(bool hover);
+    public OnHoverSelected onHoverSelected;
+
     public static int SELECTED_WIDTH = 256, SELECTED_HEIGHT = 144;
     public static int SAVED_WIDTH = 192, SAVED_HEIGHT = 108;
 
@@ -75,6 +78,15 @@ public class GalleryView : MonoBehaviour
             onClearSaved();
         }
     }
+
+    public void HoverSelected(bool hover)
+    {
+        if (onHoverSelected != null)
+        {
+            onHoverSelected(hover);
+        }
+    }
+
 }
 
 [CustomEditor(typeof(GalleryView))]
@@ -82,6 +94,7 @@ public class GalleryViewEditor : Editor
 {
     private Vector2 selectedInfoScrollPosition;
     private Vector2 savedScrollPosition;
+    private bool hoverSelected;
 
     public override void OnInspectorGUI()
     {
@@ -95,6 +108,16 @@ public class GalleryViewEditor : Editor
         if (galleryView.SelectedView != null)
         {
             GUILayout.Box(galleryView.SelectedView, GUILayout.Width(GalleryView.SELECTED_WIDTH), GUILayout.Height(GalleryView.SELECTED_HEIGHT));
+            
+            // Hover over selected
+            Rect crSelected = GUILayoutUtility.GetLastRect();
+            Event e = Event.current; 
+            bool hoverSelectedCurrent = crSelected.Contains(Event.current.mousePosition);
+            if (hoverSelectedCurrent != hoverSelected)
+            {
+                hoverSelected = hoverSelectedCurrent;
+                galleryView.HoverSelected(hoverSelected);
+            }
         } else
         {
             GUILayout.Box("", GUILayout.Width(GalleryView.SELECTED_WIDTH), GUILayout.Height(GalleryView.SELECTED_HEIGHT));
