@@ -16,6 +16,12 @@ public class GalleryView : MonoBehaviour
     public delegate void OnHoverSelected(bool hover);
     public OnHoverSelected onHoverSelected;
 
+    public delegate void OnHoverSaved(int savedIndex);
+    public OnHoverSaved onHoverSaved;
+
+    public delegate void OnSelectedSaved(int savedIndex);
+    public OnSelectedSaved onSelectedSaved;
+
     public static int SELECTED_WIDTH = 256, SELECTED_HEIGHT = 144;
     public static int SAVED_WIDTH = 192, SAVED_HEIGHT = 108;
 
@@ -87,6 +93,22 @@ public class GalleryView : MonoBehaviour
         }
     }
 
+    public void SetHoverSaved(int savedIndex)
+    {
+        if (onHoverSaved != null)
+        {
+            onHoverSaved(savedIndex);
+        }
+    }
+
+    public void SetSelectedSaved(int savedIndex)
+    {
+        if (onSelectedSaved != null)
+        {
+            onSelectedSaved(savedIndex);
+        }
+    }
+
 }
 
 [CustomEditor(typeof(GalleryView))]
@@ -95,6 +117,7 @@ public class GalleryViewEditor : Editor
     private Vector2 selectedInfoScrollPosition;
     private Vector2 savedScrollPosition;
     private bool hoverSelected;
+    private int hoverSaved;
 
     public override void OnInspectorGUI()
     {
@@ -111,7 +134,6 @@ public class GalleryViewEditor : Editor
             
             // Hover over selected
             Rect crSelected = GUILayoutUtility.GetLastRect();
-            Event e = Event.current; 
             bool hoverSelectedCurrent = crSelected.Contains(Event.current.mousePosition);
             if (hoverSelectedCurrent != hoverSelected)
             {
@@ -164,17 +186,37 @@ public class GalleryViewEditor : Editor
         {
             numSavedPerRow = 1;
         }
+
+        int hoverSavedCurrent = -1;
         for (int i = 0; i < numSaved; i += numSavedPerRow)
         {
             EditorGUILayout.BeginHorizontal();
             for (int j = 0; j < numSavedPerRow && i + j < numSaved; j++)
             {
                 GUILayout.Box(galleryView.SavedViews[i + j], GUILayout.Width(GalleryView.SAVED_WIDTH), GUILayout.Height(GalleryView.SAVED_HEIGHT));
+                // Hover over saved
+                Rect crSaved = GUILayoutUtility.GetLastRect();
+                
+                if (crSaved.Contains(Event.current.mousePosition))
+                {
+                    hoverSavedCurrent = i + j;
+                }
+
                 GUILayout.Space(10);
             }
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.Space();
         }
+        if (hoverSaved != hoverSavedCurrent)
+        {
+            hoverSaved = hoverSavedCurrent;
+            galleryView.SetHoverSaved(hoverSaved);
+            if (Event.current.type == EventType.MouseDown)
+            {
+                galleryView.SetSelectedSaved(hoverSaved);
+            }
+        }
+
 
         EditorGUILayout.EndScrollView();
         EditorGUILayout.EndVertical();

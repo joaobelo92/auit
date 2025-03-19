@@ -205,6 +205,17 @@ public class PolicyView : MonoBehaviour
         SetHover();
     }
 
+    public void SetHoverSaved(int savedIndex)
+    {
+        int hoverIndex = -1; 
+        if (savedIndex >= 0)
+        {
+            hoverIndex = m_saved[savedIndex];
+        }
+        SetHover(hoverIndex);
+
+    }
+
     public void ApplyFiltering(int pi, float min, float max)
     {
         var parameterValues = m_samples[":", pi];
@@ -461,6 +472,16 @@ public class PolicyView : MonoBehaviour
         SetSelected();
     }
 
+    public void SetSelectedSaved(int savedIndex)
+    {
+        int selectedIndex = -1;
+        if (savedIndex >= 0)
+        {
+            selectedIndex = m_saved[savedIndex];
+        }
+        SetSelected(selectedIndex);
+    }
+
     public async void SamplePolicies()
     {
         ClearSampledResults();
@@ -670,6 +691,8 @@ public class PolicyView : MonoBehaviour
         m_gallery.onClearSelected += ResetSelected;
         m_gallery.onClearSaved += ClearSaved;
         m_gallery.onHoverSelected += SetHoverSelected;
+        m_gallery.onHoverSaved += SetHoverSaved;
+        m_gallery.onSelectedSaved += SetSelectedSaved;
     }
 
     // Update is called once per frame
