@@ -3059,7 +3059,7 @@ MonoBehaviour:
     backend: 0
     solver: SimulatedAnnealing
   solverSettings:
-    rid: 2980885362306711605
+    rid: 2980885362306711610
   developmentMode: 1
   gameObjectsToOptimize:
   - {fileID: 1916628227}
@@ -3079,7 +3079,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 2980885362306711605
+    - rid: 2980885362306711610
       type: {class: SimulatedAnnealingSolver, ns: AUIT.Solvers, asm: Assembly-CSharp}
       data:
         iterations: 1500
@@ -3629,10 +3629,12 @@ MonoBehaviour:
   m_environment: {fileID: 1639674289}
   m_objMaterial: {fileID: 2100000, guid: e8d8cadac9d74914090d3023d7ab2170, type: 2}
   m_boundingBoxPrefab: {fileID: 3250877175206356455, guid: b37a7f8954c6e064fb6330e67d510232, type: 3}
+  loadOption: 1
   m_rootDir: ParaHome
   m_scanDir: data/scan
   m_seqDir: data/seq
-  m_seq: s2
+  m_seq: s1
+  m_savedDir: data/saved
   m_offsetPos: {x: 0.1, y: 0, z: -0.1}
   m_offsetRot: {x: 0, y: 14, z: 0}
 --- !u!4 &1639674289

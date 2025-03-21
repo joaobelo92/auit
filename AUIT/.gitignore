@@ -78,6 +78,8 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/ParaHome/data/scan/*
 /[Aa]ssets/[Ss]treamingAssets/ParaHome/data/seq.meta
 /[Aa]ssets/[Ss]treamingAssets/ParaHome/data/seq/*
+/[Aa]ssets/[Ss]treamingAssets/ParaHome/data/saved/*
+[Aa]ssets/[Ss]treamingAssets/ParaHome/data/saved.meta
 
 # OBJ Importer 
 /[Aa]ssets/OBJImport.meta

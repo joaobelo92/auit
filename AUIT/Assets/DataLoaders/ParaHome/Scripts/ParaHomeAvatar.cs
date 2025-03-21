@@ -180,8 +180,8 @@ public class ParaHomeAvatar : MonoBehaviour
         Vector3 headUp = (m_headTip.transform.position - m_bodyJoints[(int)BodyJointOrder.jT1C7].transform.position).normalized;
 
         position = m_bodyJoints[(int)BodyJointOrder.jC1Head].transform.position;
-        position += offsetPos;
-        position = offsetRot * position;
+        // position += offsetPos;
+        // position = offsetRot * position;
         m_camera.transform.position = position;
 
         Quaternion rotation = pose.headRot;

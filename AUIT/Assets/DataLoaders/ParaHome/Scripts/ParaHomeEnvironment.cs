@@ -62,6 +62,12 @@ public class ParaHomeObject
 
 public class ParaHomeScene
 {
+    private Dictionary<string, Dictionary<string, float[]>> environmentInfo;
+    public Dictionary<string, Dictionary<string, float[]>> EnvironmentInfo
+    {
+        get { return environmentInfo; }
+    }
+
     private ParaHomeObject[] objects;
     public ParaHomeObject[] Objects
     {
@@ -70,6 +76,8 @@ public class ParaHomeScene
 
     public ParaHomeScene(Dictionary<string, Dictionary<string, float[]>> environmentInfo)
     {
+        this.environmentInfo = environmentInfo;
+
         int numObjects = environmentInfo.Count;
         this.objects = new ParaHomeObject[numObjects];
         int oi = 0;
@@ -79,4 +87,10 @@ public class ParaHomeScene
         }
     }
 
+}
+
+public class ParaHomeSceneInfo
+{
+    public ParaHomeAvatarPoseInfo poseInfo;
+    public Dictionary<string, Dictionary<string, float[]>> environmentInfo;
 }

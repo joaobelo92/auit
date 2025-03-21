@@ -126,12 +126,6 @@ public class ParaHomeLoader : MonoBehaviour
         return true;
     }
 
-    public void LoadScenePoses(ParaHomeAvatarPose pose)
-    {
-        Quaternion offsetRot = Quaternion.Euler(m_offsetRot);
-        m_avatar.SetPose(pose, m_offsetPos, offsetRot);
-    }
-
     private void LoadScenePoses(int i)
     {
         if (m_poses == null)
@@ -145,7 +139,7 @@ public class ParaHomeLoader : MonoBehaviour
         LoadScenePoses(m_poses[i]);
     }
 
-    public bool LoadSequenceSceneObjects()
+    private bool LoadSequenceSceneObjects()
     {
         string seqDir = Path.Combine(Application.streamingAssetsPath, m_rootDir, m_seqDir, m_seq);
         string objTransformPath = Path.Combine(seqDir, "objTransforms.json");
@@ -166,51 +160,8 @@ public class ParaHomeLoader : MonoBehaviour
         return true;
     }
 
-    public void LoadSceneObjects(ParaHomeScene scene)
-    {
-        ParaHomeObject[] objects = scene.Objects;
-        foreach (ParaHomeObject obj in objects)
-        {
-            Transform objTransform = m_environment.Find(obj.Name);
-            if (objTransform != null)
-            {
-                ParaHomeObjectPart objBase = obj.Base;
-                objTransform.gameObject.SetActive(true);
-                objTransform.position = objBase.Position;
-                objTransform.rotation = objBase.Rotation;
-
-                Transform part1Transform = objTransform.Find("part1");
-                if (part1Transform != null)
-                {
-                    ParaHomeObjectPart part1 = obj.Part1;
-                    if (part1 != null)
-                    {
-                        part1Transform.position = part1.Position;
-                        part1Transform.rotation = part1.Rotation;
-                    }
-                }
-
-                Transform part2Transform = objTransform.Find("part2");
-                if (part2Transform != null)
-                {
-                    ParaHomeObjectPart part2 = obj.Part2;
-                    if (part2 != null)
-                    {
-                        part2Transform.position = part2.Position;
-                        part2Transform.rotation = part2.Rotation;
-                    }
-                }
-
-                // Apply transformation to the object 
-                objTransform.position += m_offsetPos;
-                Quaternion offsetRot = Quaternion.Euler(m_offsetRot);
-                objTransform.position = offsetRot * objTransform.position;
-                objTransform.rotation = offsetRot * objTransform.rotation;
-            }
-        }
-    }
-
-    public void LoadSceneObjects(int i)
+    
+    private void LoadSceneObjects(int i)
     {
         if (m_sceneObjects == null)
         {
@@ -243,6 +194,30 @@ public class ParaHomeLoader : MonoBehaviour
             yield return new WaitForSeconds(Time.deltaTime);
         }
         m_sequenceCoroutine = null;
+    }
+
+    // Save bounding box information to a json file
+    private void SaveBoundingBoxes()
+    {
+        List<BoundingBox> boundingBoxes = new List<BoundingBox>();
+        foreach (Transform obj in m_environment)
+        {
+            string name = obj.name;
+            Transform bounds = obj.Find("bounds");
+            if (bounds != null)
+            {
+                BoundingBox boundingBox = new BoundingBox();
+                boundingBox.name = name;
+                boundingBox.position = new float[] { bounds.localPosition[0], bounds.localPosition[1], bounds.localPosition[2] };
+                boundingBox.rotation = new float[] { bounds.localRotation[0], bounds.localRotation[1], bounds.localRotation[2], bounds.localRotation[3] };
+                boundingBox.scale = new float[] { bounds.localScale[0], bounds.localScale[1], bounds.localScale[2] };
+                boundingBoxes.Add(boundingBox);
+            }
+        }
+
+        string json = JsonConvert.SerializeObject(boundingBoxes, Formatting.Indented);
+        string path = Path.Combine(Application.streamingAssetsPath, m_rootDir, m_scanDir, "bounds.json");
+        File.WriteAllText(path, json);
     }
 
     #endregion
@@ -351,6 +326,57 @@ public class ParaHomeLoader : MonoBehaviour
         return true;
     }
 
+    public void LoadSceneObjects(ParaHomeScene scene)
+    {
+        ParaHomeObject[] objects = scene.Objects;
+        foreach (ParaHomeObject obj in objects)
+        {
+            Transform objTransform = m_environment.Find(obj.Name);
+            if (objTransform != null)
+            {
+                ParaHomeObjectPart objBase = obj.Base;
+                objTransform.gameObject.SetActive(true);
+                objTransform.position = objBase.Position;
+                objTransform.rotation = objBase.Rotation;
+
+                Transform part1Transform = objTransform.Find("part1");
+                if (part1Transform != null)
+                {
+                    ParaHomeObjectPart part1 = obj.Part1;
+                    if (part1 != null)
+                    {
+                        part1Transform.position = part1.Position;
+                        part1Transform.rotation = part1.Rotation;
+                    }
+                }
+
+                Transform part2Transform = objTransform.Find("part2");
+                if (part2Transform != null)
+                {
+                    ParaHomeObjectPart part2 = obj.Part2;
+                    if (part2 != null)
+                    {
+                        part2Transform.position = part2.Position;
+                        part2Transform.rotation = part2.Rotation;
+                    }
+                }
+
+                // Apply transformation to the object 
+                objTransform.position += m_offsetPos;
+                Quaternion offsetRot = Quaternion.Euler(m_offsetRot);
+                objTransform.position = offsetRot * objTransform.position;
+                objTransform.rotation = offsetRot * objTransform.rotation;
+            }
+        }
+    }
+
+    public void LoadScenePoses(ParaHomeAvatarPose pose)
+    {
+        Quaternion offsetRot = Quaternion.Euler(m_offsetRot);
+        m_avatar.SetPose(pose, m_offsetPos, offsetRot);
+    }
+
+
     public void LoadScenes()
     {
         LoadSequencePoses();
@@ -433,28 +459,69 @@ public class ParaHomeLoader : MonoBehaviour
         }
     }
 
-    // Save bounding box information to a json file
-    public void SaveBoundingBoxes()
+    public void SaveScene()
     {
-        List<BoundingBox> boundingBoxes = new List<BoundingBox>();
-        foreach (Transform obj in m_environment)
+        if (m_poses == null)
         {
-            string name = obj.name;
-            Transform bounds = obj.Find("bounds");
-            if (bounds != null)
+            if (!LoadSequencePoses())
             {
-                BoundingBox boundingBox = new BoundingBox();
-                boundingBox.name = name;
-                boundingBox.position = new float[] { bounds.localPosition[0], bounds.localPosition[1], bounds.localPosition[2] };
-                boundingBox.rotation = new float[] { bounds.localRotation[0], bounds.localRotation[1], bounds.localRotation[2], bounds.localRotation[3] };
-                boundingBox.scale = new float[] { bounds.localScale[0], bounds.localScale[1], bounds.localScale[2] };
-                boundingBoxes.Add(boundingBox);
+                Debug.LogError("ParaHomeLoader.SaveScene(): Unable to load scene without pose information.");
+                return;
             }
         }
+        if (m_sceneObjects == null)
+        {
+            if (!LoadSequenceSceneObjects())
+            {
+                Debug.LogError("ParaHomeLoader.LoadScene(): Unable to load scene without scene information.");
+                return;
+            }
+        }
+        if (m_currentFrame >= m_poses.Length || m_currentFrame >= m_sceneObjects.Length || m_currentFrame < 0)
+        {
+            Debug.LogError("ParaHomeLoader.SaveScene(): Invalid frame index: " + m_currentFrame);
+            return;
+        }
+        ParaHomeAvatarPose pose = m_poses[m_currentFrame];
+        ParaHomeScene scene = m_sceneObjects[m_currentFrame];
+        ParaHomeAvatarPoseInfo poseInfo = pose.PoseInfo;
+        Dictionary<string, Dictionary<string, float[]>> environmentInfo = scene.EnvironmentInfo;
+        ParaHomeSceneInfo sceneInfo = new ParaHomeSceneInfo();
+        sceneInfo.poseInfo = poseInfo;
+        sceneInfo.environmentInfo = environmentInfo;
+        string sceneJson = JsonConvert.SerializeObject(sceneInfo, Formatting.Indented);
+        string savedDir = Path.Combine(Application.streamingAssetsPath, m_rootDir, m_savedDir);
+        // check if directory exists, create otherwise
+        if (!Directory.Exists(savedDir))
+        {
+            Directory.CreateDirectory(savedDir);
+        }
+        // count number of files in the directory
+        int numFiles = Directory.GetFiles(savedDir, $"*.json").Length;
+        string path = Path.Combine(savedDir, $"scene_{numFiles + 1}.json");
+        Debug.Log($"Saving scene to {path}");
+        File.WriteAllText(path, sceneJson);
+    }
 
-        string json = JsonConvert.SerializeObject(boundingBoxes, Formatting.Indented);
-        string path = Path.Combine(Application.streamingAssetsPath, m_rootDir, m_scanDir, "bounds.json");
-        File.WriteAllText(path, json);
+    public void LoadSavedScenes()
+    {
+        string savedDir = Path.Combine(Application.streamingAssetsPath, m_rootDir, m_savedDir);
+        if (!Directory.Exists(savedDir))
+        {
+            Debug.LogError("Saved directory not found: " + savedDir);
+            return;
+        }
+        string[] sceneFiles = Directory.GetFiles(savedDir, $"*.json");
+        m_poses = new ParaHomeAvatarPose[sceneFiles.Length];
+        m_sceneObjects = new ParaHomeScene[sceneFiles.Length];
+        for (int i = 0; i < sceneFiles.Length; i++)
+        {
+            string sceneJson = File.ReadAllText(sceneFiles[i]);
+            ParaHomeSceneInfo sceneInfo = JsonConvert.DeserializeObject<ParaHomeSceneInfo>(sceneJson);
+            m_poses[i] = new ParaHomeAvatarPose(sceneInfo.poseInfo);
+            m_sceneObjects[i] = new ParaHomeScene(sceneInfo.environmentInfo);
+        }
+
     }
 
     #endregion
@@ -469,7 +536,6 @@ public class ParaHomeLoaderEditor : Editor
 
     public void LoadSequenceGUI()
     {
-        paraHomeLoader.m_rootDir = EditorGUILayout.TextField("Root Directory", paraHomeLoader.m_rootDir);
         paraHomeLoader.m_scanDir = EditorGUILayout.TextField("Scan Directory", paraHomeLoader.m_scanDir);
         paraHomeLoader.m_seqDir = EditorGUILayout.TextField("Sequence Directory", paraHomeLoader.m_seqDir);
         paraHomeLoader.m_seq = EditorGUILayout.TextField("Sequence", paraHomeLoader.m_seq);
@@ -504,6 +570,10 @@ public class ParaHomeLoaderEditor : Editor
                 paraHomeLoader.ClearScenes();
                 paraHomeLoader.m_avatar.Reset();
             }
+            if (GUILayout.Button("Save Scene"))
+            {
+                paraHomeLoader.SaveScene();
+            }
         }
         else
         {
@@ -517,6 +587,28 @@ public class ParaHomeLoaderEditor : Editor
     public void LoadSavedGUI()
     {
         paraHomeLoader.m_savedDir = EditorGUILayout.TextField("Saved Directory", paraHomeLoader.m_savedDir);
+        if (paraHomeLoader.ScenesLoaded)
+        {
+            EditorGUI.BeginChangeCheck();
+            paraHomeLoader.CurrentFrame = EditorGUILayout.IntSlider("Frame", paraHomeLoader.CurrentFrame, 0, paraHomeLoader.NumFrames - 1);
+            if (EditorGUI.EndChangeCheck())
+            {
+                paraHomeLoader.LoadScene(paraHomeLoader.CurrentFrame);
+            }
+
+            if (GUILayout.Button("Clear Scenes"))
+            {
+                paraHomeLoader.ClearScenes();
+                paraHomeLoader.m_avatar.Reset();
+            }
+        }
+        else
+        {
+            if (GUILayout.Button("Load Scenes"))
+            {
+                paraHomeLoader.LoadSavedScenes();
+            }
+        }
     }
 
 
@@ -551,7 +643,7 @@ public class ParaHomeLoaderEditor : Editor
         // Include dropdown here 
         EditorGUILayout.LabelField("Settings", EditorStyles.boldLabel);
         paraHomeLoader.loadOption = (ParaHomeLoader.LoadOptions)EditorGUILayout.EnumPopup("Load Setting", paraHomeLoader.loadOption);
-
+        paraHomeLoader.m_rootDir = EditorGUILayout.TextField("Root Directory", paraHomeLoader.m_rootDir);
 
 
         switch (paraHomeLoader.loadOption) {

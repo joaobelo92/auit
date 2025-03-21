@@ -12,6 +12,12 @@ public class ParaHomeAvatarPoseInfo
 
 public class ParaHomeAvatarPose
 {
+    private ParaHomeAvatarPoseInfo poseInfo;
+    public ParaHomeAvatarPoseInfo PoseInfo
+    {
+        get { return poseInfo; }
+    }
+
     public Vector3[] bodyJoints;
     public Vector3[] lHandJoints;
     public Vector3[] rHandJoints;
@@ -19,6 +25,8 @@ public class ParaHomeAvatarPose
     public Vector3 headTip; 
     public ParaHomeAvatarPose(ParaHomeAvatarPoseInfo poseInfo)
     {
+        this.poseInfo = poseInfo;
+
         bodyJoints = new Vector3[ParaHomeAvatar.NUM_BODY_JOINTS];
         lHandJoints = new Vector3[ParaHomeAvatar.NUM_HAND_JOINTS];
         rHandJoints = new Vector3[ParaHomeAvatar.NUM_HAND_JOINTS];
