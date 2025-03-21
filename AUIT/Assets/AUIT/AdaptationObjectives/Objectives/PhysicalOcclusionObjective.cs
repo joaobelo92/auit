@@ -42,10 +42,13 @@ namespace AUIT.AdaptationObjectives
 
             foreach (Collider overlap in overlapping)
             {
-                moveDirection += (overlap.transform.position - optimizationTarget.Position).normalized;
+                Debug.Log(overlap.transform.parent.name);
+                moveDirection += (optimizationTarget.Position - overlap.transform.position).normalized;
             }
 
-            optimizationTarget.Position += 0.05f * HelperMath.SampleNormalDistribution(1f, 0.5f) * moveDirection;
+            result.Position += 0.05f * HelperMath.SampleNormalDistribution(1f, 0.5f) * moveDirection;
+
+            Debug.Log(IsOccluded(result));
 
             return result; 
         }
