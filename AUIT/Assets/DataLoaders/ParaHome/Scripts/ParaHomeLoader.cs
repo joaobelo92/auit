@@ -33,17 +33,26 @@ public class ParaHomeLoader : MonoBehaviour
 
     #region Public Fields
 
-    [Header("References")]
+    // References
     public ParaHomeAvatar m_avatar;
     public Transform m_environment;
     public Material m_objMaterial;
     public GameObject m_boundingBoxPrefab;
 
-    [Header("Settings")]
+    // Settings
+    public enum LoadOptions
+    {
+        Sequence,
+        Saved
+    }
+    public LoadOptions loadOption = LoadOptions.Saved;
     public string m_rootDir = "ParaHome";
     public string m_scanDir = "data/scan";
     public string m_seqDir = "data/seq";
     public string m_seq = "s1";
+    public string m_savedDir = "data/saved";
+
+
     public Vector3 m_offsetPos = Vector3.zero;
     public Vector3 m_offsetRot = Vector3.zero;
 
@@ -458,26 +467,12 @@ public class ParaHomeLoaderEditor : Editor
 {
     ParaHomeLoader paraHomeLoader;
 
-    public override void OnInspectorGUI()
+    public void LoadSequenceGUI()
     {
-        base.OnInspectorGUI();
-
-        paraHomeLoader = (ParaHomeLoader)target;
-
-        EditorGUILayout.LabelField("Environment", EditorStyles.boldLabel);
-        if (GUILayout.Button("Load Environment"))
-        {
-            paraHomeLoader.LoadEnvironment();
-            EditorUtility.SetDirty(paraHomeLoader);
-        }
-        if (GUILayout.Button("Clear Environment"))
-        {
-            paraHomeLoader.ClearEnvironment();
-            paraHomeLoader.m_avatar.Reset();
-            EditorUtility.SetDirty(paraHomeLoader);
-        }
-
-        EditorGUILayout.LabelField("Sequence", EditorStyles.boldLabel);
+        paraHomeLoader.m_rootDir = EditorGUILayout.TextField("Root Directory", paraHomeLoader.m_rootDir);
+        paraHomeLoader.m_scanDir = EditorGUILayout.TextField("Scan Directory", paraHomeLoader.m_scanDir);
+        paraHomeLoader.m_seqDir = EditorGUILayout.TextField("Sequence Directory", paraHomeLoader.m_seqDir);
+        paraHomeLoader.m_seq = EditorGUILayout.TextField("Sequence", paraHomeLoader.m_seq);
 
         if (paraHomeLoader.ScenesLoaded)
         {
@@ -517,6 +512,57 @@ public class ParaHomeLoaderEditor : Editor
                 paraHomeLoader.LoadScenes();
             }
         }
+    }
+
+    public void LoadSavedGUI()
+    {
+        paraHomeLoader.m_savedDir = EditorGUILayout.TextField("Saved Directory", paraHomeLoader.m_savedDir);
+    }
+
+
+    public override void OnInspectorGUI()
+    {
+
+        paraHomeLoader = (ParaHomeLoader)target;
+
+        EditorGUILayout.LabelField("References", EditorStyles.boldLabel);
+        paraHomeLoader.m_avatar = (ParaHomeAvatar)EditorGUILayout.ObjectField("Avatar", paraHomeLoader.m_avatar, typeof(ParaHomeAvatar), true);
+        paraHomeLoader.m_environment = (Transform)EditorGUILayout.ObjectField("Environment", paraHomeLoader.m_environment, typeof(Transform), true);
+        paraHomeLoader.m_objMaterial = (Material)EditorGUILayout.ObjectField("Object Material", paraHomeLoader.m_objMaterial, typeof(Material), true);
+        paraHomeLoader.m_boundingBoxPrefab = (GameObject)EditorGUILayout.ObjectField("Bounding Box Prefab", paraHomeLoader.m_boundingBoxPrefab, typeof(GameObject), true);
+
+        EditorGUILayout.Space(10);
+
+        EditorGUILayout.LabelField("Environment", EditorStyles.boldLabel);
+        if (GUILayout.Button("Load Environment"))
+        {
+            paraHomeLoader.LoadEnvironment();
+            EditorUtility.SetDirty(paraHomeLoader);
+        }
+        if (GUILayout.Button("Clear Environment"))
+        {
+            paraHomeLoader.ClearEnvironment();
+            paraHomeLoader.m_avatar.Reset();
+            EditorUtility.SetDirty(paraHomeLoader);
+        }
+
+        EditorGUILayout.Space(10);
+
+        // Include dropdown here 
+        EditorGUILayout.LabelField("Settings", EditorStyles.boldLabel);
+        paraHomeLoader.loadOption = (ParaHomeLoader.LoadOptions)EditorGUILayout.EnumPopup("Load Setting", paraHomeLoader.loadOption);
+
+
+
+        switch (paraHomeLoader.loadOption) {
+            case ParaHomeLoader.LoadOptions.Sequence:
+                LoadSequenceGUI();
+                break;
+            case ParaHomeLoader.LoadOptions.Saved:
+                LoadSavedGUI();
+                break;
+        }
+    
     }
 }
 
