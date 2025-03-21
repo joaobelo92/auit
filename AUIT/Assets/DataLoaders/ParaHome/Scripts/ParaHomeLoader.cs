@@ -5,6 +5,15 @@ using Newtonsoft.Json;
 using System.Collections;
 using Dummiesman;
 using UnityEditor;
+using System;
+
+public class BoundingBox
+{
+    public string name;
+    public float[] position;
+    public float[] rotation;
+    public float[] scale;
+}
 
 public class ParaHomeLoader : MonoBehaviour
 {
@@ -28,12 +37,17 @@ public class ParaHomeLoader : MonoBehaviour
     public ParaHomeAvatar m_avatar;
     public Transform m_environment;
     public Material m_objMaterial;
+    public GameObject m_boundingBoxPrefab;
 
     [Header("Settings")]
     public string m_rootDir = "ParaHome";
     public string m_scanDir = "data/scan";
     public string m_seqDir = "data/seq";
     public string m_seq = "s1";
+    public Vector3 m_offsetPos = Vector3.zero;
+    public Vector3 m_offsetRot = Vector3.zero;
+
+
 
     #endregion
 
@@ -105,7 +119,8 @@ public class ParaHomeLoader : MonoBehaviour
 
     public void LoadScenePoses(ParaHomeAvatarPose pose)
     {
-        m_avatar.SetPose(pose);
+        Quaternion offsetRot = Quaternion.Euler(m_offsetRot);
+        m_avatar.SetPose(pose, m_offsetPos, offsetRot);
     }
 
     private void LoadScenePoses(int i)
@@ -176,6 +191,12 @@ public class ParaHomeLoader : MonoBehaviour
                         part2Transform.rotation = part2.Rotation;
                     }
                 }
+
+                // Apply transformation to the object 
+                objTransform.position += m_offsetPos;
+                Quaternion offsetRot = Quaternion.Euler(m_offsetRot);
+                objTransform.position = offsetRot * objTransform.position;
+                objTransform.rotation = offsetRot * objTransform.rotation;
             }
         }
     }
@@ -297,6 +318,27 @@ public class ParaHomeLoader : MonoBehaviour
             scanObj.transform.SetParent(m_environment);
         }
 
+        // Load the bounding boxes
+        string boundsPath = Path.Combine(scansDir, "bounds.json");
+        string boundsJson = File.ReadAllText(boundsPath);
+        List<BoundingBox> bounds = JsonConvert.DeserializeObject<List<BoundingBox>>(boundsJson);
+        foreach (BoundingBox boundingBox in bounds)
+        {
+            Transform obj = m_environment.Find(boundingBox.name);
+            if (obj != null)
+            {
+                Vector3 position = new Vector3(boundingBox.position[0], boundingBox.position[1], boundingBox.position[2]);
+                Quaternion rotation = new Quaternion(boundingBox.rotation[0], boundingBox.rotation[1], boundingBox.rotation[2], boundingBox.rotation[3]);
+                Vector3 scale = new Vector3(boundingBox.scale[0], boundingBox.scale[1], boundingBox.scale[2]);
+                GameObject boundsObj = Instantiate(m_boundingBoxPrefab);
+                boundsObj.name = "bounds";
+                boundsObj.transform.SetParent(obj);
+                boundsObj.transform.localPosition = position;
+                boundsObj.transform.localRotation = rotation;
+                boundsObj.transform.localScale = scale;
+            }
+        }
+
         return true;
     }
 
@@ -382,7 +424,32 @@ public class ParaHomeLoader : MonoBehaviour
         }
     }
 
+    // Save bounding box information to a json file
+    public void SaveBoundingBoxes()
+    {
+        List<BoundingBox> boundingBoxes = new List<BoundingBox>();
+        foreach (Transform obj in m_environment)
+        {
+            string name = obj.name;
+            Transform bounds = obj.Find("bounds");
+            if (bounds != null)
+            {
+                BoundingBox boundingBox = new BoundingBox();
+                boundingBox.name = name;
+                boundingBox.position = new float[] { bounds.localPosition[0], bounds.localPosition[1], bounds.localPosition[2] };
+                boundingBox.rotation = new float[] { bounds.localRotation[0], bounds.localRotation[1], bounds.localRotation[2], bounds.localRotation[3] };
+                boundingBox.scale = new float[] { bounds.localScale[0], bounds.localScale[1], bounds.localScale[2] };
+                boundingBoxes.Add(boundingBox);
+            }
+        }
+
+        string json = JsonConvert.SerializeObject(boundingBoxes, Formatting.Indented);
+        string path = Path.Combine(Application.streamingAssetsPath, m_rootDir, m_scanDir, "bounds.json");
+        File.WriteAllText(path, json);
+    }
+
     #endregion
+
 
 }
 

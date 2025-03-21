@@ -139,23 +139,54 @@ public class ParaHomeAvatar : MonoBehaviour
         headTipLR.SetPosition(1, m_bodyJoints[(int)BodyJointOrder.jC1Head].transform.position);
     }
 
-    public void SetPose(ParaHomeAvatarPose pose)
+    public void SetPose(ParaHomeAvatarPose pose, Vector3 offsetPos, Quaternion offsetRot)
     {
-        transform.position = pose.bodyJoints[0];
+        Vector3 position; 
+
+        // Root joint 
+        position = pose.bodyJoints[0];
+        position += offsetPos;
+        position = offsetRot * position;
+        transform.position = position;
+
+        // Body joints
         for (int i = 1; i < NUM_BODY_JOINTS; i++)
         {
-            m_bodyJoints[i].transform.position = pose.bodyJoints[i];
+            position = pose.bodyJoints[i];
+            position += offsetPos;
+            position = offsetRot * position;
+            m_bodyJoints[i].transform.position = position;
         }
+
+        // Hand joints
         for (int i = 0; i < NUM_HAND_JOINTS; i++)
         {
-            m_lHandJoints[i].transform.position = pose.lHandJoints[i];
-            m_rHandJoints[i].transform.position = pose.rHandJoints[i];
+            position = pose.lHandJoints[i];
+            position += offsetPos;
+            position = offsetRot * position;
+            m_lHandJoints[i].transform.position = position;
+
+            position = pose.rHandJoints[i];
+            position += offsetPos;
+            position = offsetRot * position;
+            m_rHandJoints[i].transform.position = position;
         }
-        m_headTip.transform.position = pose.headTip;
+
+        position = pose.headTip;
+        position += offsetPos;
+        position = offsetRot * position;
+        m_headTip.transform.position = position;
 
         Vector3 headUp = (m_headTip.transform.position - m_bodyJoints[(int)BodyJointOrder.jT1C7].transform.position).normalized;
-        m_camera.transform.position = m_bodyJoints[(int)BodyJointOrder.jC1Head].transform.position + headUp * m_headOffset;
-        m_camera.transform.rotation = pose.headRot;
+
+        position = m_bodyJoints[(int)BodyJointOrder.jC1Head].transform.position;
+        position += offsetPos;
+        position = offsetRot * position;
+        m_camera.transform.position = position;
+
+        Quaternion rotation = pose.headRot;
+        rotation = offsetRot * rotation;
+        m_camera.transform.rotation = rotation;
 
         RenderPose();
     }
