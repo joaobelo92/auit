@@ -445,13 +445,14 @@ GameObject:
   m_Component:
   - component: {fileID: 318291447}
   - component: {fileID: 318291448}
+  - component: {fileID: 318291449}
   m_Layer: 0
   m_Name: Voxel View
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &318291447
 Transform:
   m_ObjectHideFlags: 0
@@ -482,6 +483,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_auit: {fileID: 642232615}
   m_bounds: {fileID: 346269842}
+  m_distribution: {fileID: 318291449}
   m_element: {fileID: 1410621370}
   m_voxelSize: 0.5
   m_voxelMargin: 0.2
@@ -519,6 +521,19 @@ MonoBehaviour:
   m_visualizePareto: 0
   m_mode: 0
   m_updateInterval: 0.1
+--- !u!114 &318291449
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 318291446}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bf819d449d85a4048a8f27263ac3bbdd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_numBins: 10
 --- !u!1 &346269841
 GameObject:
   m_ObjectHideFlags: 0
@@ -537,7 +552,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &346269842
 Transform:
   m_ObjectHideFlags: 0
@@ -3475,7 +3490,7 @@ MonoBehaviour:
     backend: 0
     solver: SimulatedAnnealing
   solverSettings:
-    rid: 2980885434652426301
+    rid: 2980885436858368054
   developmentMode: 1
   gameObjectsToOptimize:
   - {fileID: 1410621370}
@@ -3495,7 +3510,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 2980885434652426301
+    - rid: 2980885436858368054
       type: {class: SimulatedAnnealingSolver, ns: AUIT.Solvers, asm: Assembly-CSharp}
       data:
         iterations: 1500

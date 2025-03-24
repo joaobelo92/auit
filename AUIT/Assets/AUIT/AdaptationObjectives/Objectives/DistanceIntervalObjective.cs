@@ -22,15 +22,6 @@ namespace AUIT.AdaptationObjectives
         [SerializeField]
         private float maxDistance = 2f;
 
-        public void Reset()
-        {
-        }
-
-        protected override void Start()
-        {
-            base.Start();
-        }
-
         private Vector3 GetDistanceVector(Layout optimizationTarget)
         {
             // y values should not be changed here, otherwise we have a sphere instead of a radius from the user
@@ -110,10 +101,5 @@ namespace AUIT.AdaptationObjectives
             return result;
         }
 
-        private void OnEnable()
-        {
-            
-
-        }
     }
 }

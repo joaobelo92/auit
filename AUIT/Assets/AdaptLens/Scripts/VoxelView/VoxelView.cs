@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEditor;
 using AUIT.AdaptationObjectives.Definitions;
+using System.Collections.Generic;
 
 public class VoxelView : MonoBehaviour
 {
@@ -9,6 +10,7 @@ public class VoxelView : MonoBehaviour
     [Header("References")]
     public AUIT.AUIT m_auit;
     public Transform m_bounds;
+    public VoxelViewDistribution m_distribution;
 
     [Header("Settings")]
     public GameObject m_element;
@@ -281,6 +283,7 @@ public class VoxelView : MonoBehaviour
         }
 
         Layout layout = new Layout(Vector3.zero);
+        List<float> costs = new List<float>();
         for (int x = 0; x < m_voxelDims.x; x++)
         {
             for (int y = 0; y < m_voxelDims.y; y++)
@@ -291,6 +294,7 @@ public class VoxelView : MonoBehaviour
                     Vector3 position = voxel.transform.position;
                     layout.Position = position;
                     float cost = m_auit.ComputerElementCost(m_element, layout);
+                    costs.Add(cost);
                     if (cost > m_maxVisualizedCost)
                     {
                         voxel.gameObject.SetActive(false);
@@ -303,7 +307,10 @@ public class VoxelView : MonoBehaviour
                 }
             }
         }
-
+        if (m_distribution != null)
+        {
+            m_distribution.SetValues(costs);
+        }
     }
 
     #endregion
