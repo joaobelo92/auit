@@ -332,6 +332,14 @@ namespace AUIT
             }
 
             LocalObjectiveHandler currentHandler = element.GetComponent<LocalObjectiveHandler>();
+            if (currentHandler.Objectives.Count == 0)
+            {
+                Debug.LogWarning($"[AdaptationManager.ComputeCost()]: " +
+                                 $"Unable to find any objectives on " +
+                                 $"{element.name}...");
+                return 0.0f;
+            }
+
             float cost = currentHandler.Objectives.Sum(
                 objective => objective.Weight * objective.CostFunction(l));
             float elementWeightSum = currentHandler.Objectives.Sum(objective => objective.Weight);
