@@ -31,8 +31,6 @@ namespace AUIT.AdaptationObjectives
             if (Objectives.Contains(objective))
                 return;
 
-            Debug.Log(objective.name);
-
             /*
             if (_objectiveTypes.Contains(objective.GetType()))
             {

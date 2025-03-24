@@ -11,7 +11,17 @@ public class Element : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     public void Init()
     {
-        m_mat = GetComponent<Renderer>().material;
+        Renderer r = GetComponent<Renderer>();
+        if (r == null)
+        {
+            r = GetComponentInChildren<Renderer>();
+        }
+        if (r == null)
+        {
+            Debug.LogError("Element: No renderer found");
+            return;
+        }
+        m_mat = r.material;
         m_originalColor = m_mat.color;
         m_hideColor = new Color(m_originalColor.r, m_originalColor.g, m_originalColor.b, 0.05f);
 

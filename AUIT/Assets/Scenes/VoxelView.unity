@@ -179,13 +179,14 @@ GameObject:
   - component: {fileID: 129919063}
   - component: {fileID: 129919064}
   - component: {fileID: 129919065}
-  m_Layer: 0
+  - component: {fileID: 129919066}
+  m_Layer: 7
   m_Name: recipes
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &129919059
 Transform:
   m_ObjectHideFlags: 0
@@ -313,6 +314,18 @@ MonoBehaviour:
   physicalLayerMask:
     serializedVersion: 2
     m_Bits: 256
+--- !u!114 &129919066
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 129919058}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4991997583cd3ee43b6545b861888885, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &273655861
 GameObject:
   m_ObjectHideFlags: 0
@@ -325,7 +338,7 @@ GameObject:
   - component: {fileID: 273655865}
   - component: {fileID: 273655864}
   - component: {fileID: 273655863}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: window
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3289,7 +3302,7 @@ GameObject:
   - component: {fileID: 538726167}
   - component: {fileID: 538726166}
   - component: {fileID: 538726165}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: window
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3426,10 +3439,14 @@ MonoBehaviour:
     backend: 0
     solver: SimulatedAnnealing
   solverSettings:
-    rid: 2980885368181358671
+    rid: 2980885368181358688
   developmentMode: 1
   gameObjectsToOptimize:
-  - {fileID: 1916628227}
+  - {fileID: 1410621370}
+  - {fileID: 1025882993}
+  - {fileID: 129919058}
+  - {fileID: 2031470405}
+  - {fileID: 782915230}
   constraints:
   - type: 0
     minimum: -1.6
@@ -3446,7 +3463,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 2980885368181358671
+    - rid: 2980885368181358688
       type: {class: SimulatedAnnealingSolver, ns: AUIT.Solvers, asm: Assembly-CSharp}
       data:
         iterations: 1500
@@ -3607,13 +3624,14 @@ GameObject:
   - component: {fileID: 782915235}
   - component: {fileID: 782915236}
   - component: {fileID: 782915237}
-  m_Layer: 0
+  - component: {fileID: 782915238}
+  m_Layer: 7
   m_Name: video
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &782915231
 Transform:
   m_ObjectHideFlags: 0
@@ -3741,6 +3759,64 @@ MonoBehaviour:
   physicalLayerMask:
     serializedVersion: 2
     m_Bits: 256
+--- !u!114 &782915238
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 782915230}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4991997583cd3ee43b6545b861888885, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!1 &813001055
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 813001056}
+  - component: {fileID: 813001057}
+  m_Layer: 0
+  m_Name: Refrigerator Pose
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &813001056
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 813001055}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1367704171}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &813001057
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 813001055}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce698ca27f6af5947865c3051c41a640, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_objectName: refrigerator
+  m_objects: {fileID: 1639674289}
 --- !u!1 &846422399
 GameObject:
   m_ObjectHideFlags: 0
@@ -3759,7 +3835,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &846422400
 Transform:
   m_ObjectHideFlags: 0
@@ -3861,10 +3937,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 948486870}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8a415d69825c7d243b32377482d827da, type: 3}
+  m_Script: {fileID: 11500000, guid: ce698ca27f6af5947865c3051c41a640, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  contextSource: {fileID: 0}
+  m_objectName: gasstove
+  m_objects: {fileID: 1639674289}
 --- !u!1 &1025882993
 GameObject:
   m_ObjectHideFlags: 0
@@ -3880,13 +3957,14 @@ GameObject:
   - component: {fileID: 1025882998}
   - component: {fileID: 1025882999}
   - component: {fileID: 1025883000}
-  m_Layer: 0
+  - component: {fileID: 1025883001}
+  m_Layer: 7
   m_Name: instructions
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1025882994
 Transform:
   m_ObjectHideFlags: 0
@@ -4014,6 +4092,18 @@ MonoBehaviour:
   physicalLayerMask:
     serializedVersion: 2
     m_Bits: 256
+--- !u!114 &1025883001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1025882993}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4991997583cd3ee43b6545b861888885, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1217115066
 GameObject:
   m_ObjectHideFlags: 0
@@ -4184,6 +4274,7 @@ Transform:
   - {fileID: 1219749624}
   - {fileID: 112165932}
   - {fileID: 948486871}
+  - {fileID: 813001056}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1410621370
@@ -4201,13 +4292,14 @@ GameObject:
   - component: {fileID: 1410621375}
   - component: {fileID: 1410621376}
   - component: {fileID: 1410621377}
-  m_Layer: 0
+  - component: {fileID: 1410621378}
+  m_Layer: 7
   m_Name: ingredients
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1410621371
 Transform:
   m_ObjectHideFlags: 0
@@ -4298,7 +4390,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   weight: 0.5
-  targetContextSource: {fileID: 1219749625}
+  targetContextSource: {fileID: 813001057}
   goalXYDistance: 1
   yInterval: 1
   distanceXZInterval: 0.2
@@ -4335,6 +4427,18 @@ MonoBehaviour:
   physicalLayerMask:
     serializedVersion: 2
     m_Bits: 256
+--- !u!114 &1410621378
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1410621370}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4991997583cd3ee43b6545b861888885, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1445628986
 GameObject:
   m_ObjectHideFlags: 0
@@ -4347,7 +4451,7 @@ GameObject:
   - component: {fileID: 1445628990}
   - component: {fileID: 1445628989}
   - component: {fileID: 1445628988}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: window
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4633,7 +4737,7 @@ GameObject:
   - component: {fileID: 1784506004}
   - component: {fileID: 1784506003}
   - component: {fileID: 1784506002}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: window
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5176,7 +5280,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   weight: 0.5
-  targetContextSource: {fileID: 948486872}
+  targetContextSource: {fileID: 0}
   offset: {x: 0, y: 0, z: 0}
   distanceThreshold: 0.3
 --- !u!1 &2031470405
@@ -5194,13 +5298,14 @@ GameObject:
   - component: {fileID: 2031470411}
   - component: {fileID: 2031470412}
   - component: {fileID: 2031470413}
-  m_Layer: 0
+  - component: {fileID: 2031470414}
+  m_Layer: 7
   m_Name: timer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &2031470406
 Transform:
   m_ObjectHideFlags: 0
@@ -5326,6 +5431,18 @@ MonoBehaviour:
   physicalLayerMask:
     serializedVersion: 2
     m_Bits: 256
+--- !u!114 &2031470414
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2031470405}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4991997583cd3ee43b6545b861888885, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &2064500390
 GameObject:
   m_ObjectHideFlags: 0
@@ -5383,7 +5500,7 @@ GameObject:
   - component: {fileID: 2069679877}
   - component: {fileID: 2069679876}
   - component: {fileID: 2069679875}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: window
   m_TagString: Untagged
   m_Icon: {fileID: 0}
