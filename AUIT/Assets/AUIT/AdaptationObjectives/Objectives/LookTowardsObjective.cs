@@ -29,6 +29,11 @@ namespace AUIT.AdaptationObjectives
 
         public override float CostFunction(Layout optimizationTarget, Layout initialLayout = null)
         {
+            if (targetContextSource == null)
+            {
+                Debug.LogError("LookTowardsObjective.CostFunction(): Target context source is not set.");
+            }
+
             Vector3 targetPosition = targetContextSource.GetValue().position;
             
             Matrix4x4 TRS = Matrix4x4.TRS(optimizationTarget.Position, optimizationTarget.Rotation, transform.lossyScale);
@@ -44,6 +49,11 @@ namespace AUIT.AdaptationObjectives
 
         public override Layout OptimizationRule(Layout optimizationTarget, Layout initialLayout)
         {
+            if (targetContextSource == null)
+            {
+                Debug.LogError("LookTowardsObjective.OptimizationRule(): Target context source is not set.");
+            }
+
             Vector3 targetPosition = targetContextSource.GetValue().position;
             Vector3 forward = (optimizationTarget.Position - targetPosition).normalized;
             Quaternion rotationAligned = Quaternion.LookRotation(lookTowards == Direction.LookAway ? forward : -forward, Vector3.up);

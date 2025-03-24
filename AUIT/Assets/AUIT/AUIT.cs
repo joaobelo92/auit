@@ -319,6 +319,30 @@ namespace AUIT
             return isEfficient.GetData<int>();
         }
 
+        public float ComputerElementCost(GameObject element, Layout l = null)
+        {
+            l ??= _layout;
+
+            if (!isActiveAndEnabled)
+            {
+                Debug.LogError($"[AdaptationManager.ComputeCost()]: " +
+                               $"AdaptationManager on " +
+                               $"{gameObject.name} is disabled!");
+                return 0.0f;
+            }
+
+            LocalObjectiveHandler currentHandler = element.GetComponent<LocalObjectiveHandler>();
+            float cost = currentHandler.Objectives.Sum(
+                objective => objective.Weight * objective.CostFunction(l));
+            float elementWeightSum = currentHandler.Objectives.Sum(objective => objective.Weight);
+            if (elementWeightSum >= 0)
+            {
+                cost /= elementWeightSum;
+            }
+
+            return cost;
+        }
+
         public float ComputeCost(Layout l = null, bool verbose = false)
         {
             l ??= _layout;

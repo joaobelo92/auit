@@ -20,6 +20,11 @@ namespace AUIT.AdaptationObjectives
         // Start is called before the first frame update
         public override float CostFunction(Layout optimizationTarget, Layout initialLayout = null)
         {
+            if (targetContextSource == null)
+            {
+                Debug.LogError("AnchorToTargetObjective.CostFunction(): Target context source is not set.");
+            }
+
             // Vector3 positionLocalCoordinates = contextSourceTransform.worldToLocalMatrix.MultiplyPoint3x4(optimizationTarget.Position);
 
             Vector3 contextSourcePosition = targetContextSource.GetValue().position;
@@ -32,6 +37,10 @@ namespace AUIT.AdaptationObjectives
 
         public override Layout OptimizationRule(Layout optimizationTarget, Layout initialLayout = null)
         {
+            if (targetContextSource == null) {
+                Debug.LogError("AnchorToTargetObjective.OptimizationRule(): Target context source is not set.");
+            }
+
             Vector3 contextSourcePosition = targetContextSource.GetValue().position;
             Vector3 target = contextSourcePosition + offset;
 

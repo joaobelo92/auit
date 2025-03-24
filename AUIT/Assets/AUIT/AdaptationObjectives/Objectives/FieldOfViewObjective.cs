@@ -28,6 +28,11 @@ namespace AUIT.AdaptationObjectives
 
         public override float CostFunction(Layout optimizationTarget, Layout initialLayout = null)
         {
+            if (userContextSource == null)
+            {
+                Debug.LogError("FieldOfViewObjective.CostFunction(): User context source is not set.");
+            }
+
             // Idea: get angle between gaze and object vectors on y and x axis
             // Then we define intervals that are acceptable, e.g. comprising near/mid/far peripheral view
             // Cost function increases the further is is from that interval
@@ -56,6 +61,11 @@ namespace AUIT.AdaptationObjectives
 
         public override Layout OptimizationRule(Layout optimizationTarget, Layout initialLayout)
         {
+            if (userContextSource == null)
+            {
+                Debug.LogError("FieldOfViewObjective.OptimizationRule(): User context source is not set.");
+            }
+
             Transform contextSourceTransform = userContextSource.GetValue();
             // Would be efficient to cache rotation when cost function is computed
             Vector3 target = contextSourceTransform.worldToLocalMatrix.MultiplyPoint3x4(optimizationTarget.Position);

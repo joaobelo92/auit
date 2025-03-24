@@ -34,7 +34,6 @@ namespace AUIT.AdaptationObjectives
         private Vector3 GetDistanceVector(Layout optimizationTarget)
         {
             // y values should not be changed here, otherwise we have a sphere instead of a radius from the user
-            
             Vector3 targetPosition = targetContextSource.GetValue().position;
             Vector3 currentPosition = optimizationTarget.Position; 
 
@@ -44,6 +43,11 @@ namespace AUIT.AdaptationObjectives
 
         public override float CostFunction(Layout optimizationTarget, Layout initialLayout = null)
         {
+            if (targetContextSource == null)
+            {
+                Debug.LogError("DistanceIntervalObjective.CostFunction(): Target context source is not set.");
+            }
+
             // Get distance from user on x and z axis
             Vector3 distanceVector = GetDistanceVector(optimizationTarget);
             // TODO: check if possible to delegate context
@@ -65,6 +69,11 @@ namespace AUIT.AdaptationObjectives
 
         public override Layout OptimizationRule(Layout optimizationTarget, Layout initialLayout)
         {
+            if (targetContextSource == null)
+            {
+                Debug.LogError("DistanceIntervalObjective.OptimizationRule(): Target context source is not set.");
+            }
+
             Vector3 distanceVector = GetDistanceVector(optimizationTarget);
             distanceVector.y = 0;
             Vector3 targetPosition = targetContextSource.GetValue().position;
@@ -99,6 +108,12 @@ namespace AUIT.AdaptationObjectives
             Layout result = optimizationTarget.Clone();
             result.Position = optimizationTarget.Position + distanceVector;
             return result;
+        }
+
+        private void OnEnable()
+        {
+            
+
         }
     }
 }

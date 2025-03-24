@@ -11,6 +11,8 @@ public class VoxelView : MonoBehaviour
     public Transform m_bounds;
 
     [Header("Settings")]
+    public GameObject m_element;
+
     [Range(0.1f, 1f)]
     public float m_voxelSize;
     [Range(0.01f, 1f)]
@@ -262,6 +264,12 @@ public class VoxelView : MonoBehaviour
 
     public void VisualizeCosts()
     {
+        if (m_element == null)
+        {
+            Debug.LogError("VoxelView.VisualizeCosts(): Element is not set.");
+            return;
+        }
+
         if (m_updatingVoxels)
         {
             return;
@@ -282,7 +290,7 @@ public class VoxelView : MonoBehaviour
                     Voxel voxel = m_voxels[x, y, z];
                     Vector3 position = voxel.transform.position;
                     layout.Position = position;
-                    float cost = m_auit.ComputeCost(layout);
+                    float cost = m_auit.ComputerElementCost(m_element, layout);
                     if (cost > m_maxVisualizedCost)
                     {
                         voxel.gameObject.SetActive(false);

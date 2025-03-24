@@ -8,19 +8,28 @@ namespace AUIT.AdaptationObjectives
     public class PhysicalOcclusionObjective : LocalObjective
     {
         [SerializeField]
+        private ContextSource<Transform> userContextSource;
+
+        [SerializeField]
         private LayerMask physicalLayerMask;
 
-        private Collider layoutCollider;
-
-        private bool IsOccluded(Layout optimizationTarget)
+        private bool IsOccluding(Layout optimizationTarget)
         {
-            Bounds bounds = layoutCollider.bounds;
-            return Physics.CheckBox(optimizationTarget.Position, bounds.extents, optimizationTarget.Rotation, physicalLayerMask);
+            Transform contextSourceTransform = userContextSource.GetValue();
+            Vector3 toElement = optimizationTarget.Position - contextSourceTransform.position;
+            Vector3 direction = toElement.normalized;
+            float distance = direction.magnitude;
+            return Physics.Raycast(contextSourceTransform.position, direction, distance, physicalLayerMask);
         }
 
         public override float CostFunction(Layout optimizationTarget, Layout initialLayout = null)
         {
-            if (IsOccluded(optimizationTarget))
+            if (userContextSource == null)
+            {
+                Debug.LogError("PhysicalOcclusionObjective.CostFunction(): User context source is not set.");
+            }
+
+            if (IsOccluding(optimizationTarget))
             {
                 return 1.0f; // High cost if occluded
             }
@@ -32,17 +41,27 @@ namespace AUIT.AdaptationObjectives
 
         public override Layout OptimizationRule(Layout optimizationTarget, Layout initialLayout = null)
         {
-            Layout result = optimizationTarget.Clone();
+            if (userContextSource == null)
+            {
+                Debug.LogError("PhysicalOcclusionObjective.OptimizationRule(): User context source is not set.");
+            }
 
-            Bounds bounds = layoutCollider.bounds;
-            Collider[] overlapping = Physics.OverlapBox(optimizationTarget.Position, bounds.extents, optimizationTarget.Rotation, physicalLayerMask);
+            Layout result = optimizationTarget.Clone();
 
             Vector3 moveDirection = Random.insideUnitSphere;
             moveDirection *= Random.Range(0, 0.3f);
 
-            foreach (Collider overlap in overlapping)
+            if (IsOccluding(optimizationTarget))
             {
-                moveDirection += (optimizationTarget.Position - overlap.transform.position).normalized;
+                Transform contextSourceTransform = userContextSource.GetValue();
+                Vector3 occludedDirection = (optimizationTarget.Position - contextSourceTransform.position).normalized;
+                // Get perpendicular plane to the occluded direction
+                Vector3 tangent = Vector3.Cross(occludedDirection, Vector3.up);
+                Vector3 bitangent = Vector3.Cross(occludedDirection, tangent);
+                float angle = Random.Range(0, 2 * Mathf.PI);
+                Vector3 randomDirection = (tangent * Mathf.Cos(angle) + bitangent * Mathf.Sin(angle)).normalized;
+
+                moveDirection += randomDirection; 
             }
 
             result.Position += 0.05f * HelperMath.SampleNormalDistribution(1f, 0.5f) * moveDirection;
@@ -57,7 +76,6 @@ namespace AUIT.AdaptationObjectives
 
         protected override void Start()
         {
-            layoutCollider = GetComponentInChildren<Collider>();
         }
 
         private void Update()
