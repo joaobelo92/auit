@@ -484,12 +484,12 @@ MonoBehaviour:
   m_bounds: {fileID: 346269842}
   m_element: {fileID: 1410621370}
   m_voxelSize: 0.5
-  m_voxelMargin: 0.3
+  m_voxelMargin: 0.2
   m_costGradient:
     serializedVersion: 2
-    key0: {r: 0.40392157, g: 0.6627451, b: 0.8117647, a: 0.39215687}
+    key0: {r: 0.40392157, g: 0.6627451, b: 0.8117647, a: 1}
     key1: {r: 0.9372549, g: 0.5411765, b: 0.38431373, a: 0}
-    key2: {r: 0.9372549, g: 0.5411765, b: 0.38431373, a: 0}
+    key2: {r: 0, g: 0, b: 0, a: 0}
     key3: {r: 0, g: 0, b: 0, a: 0}
     key4: {r: 0, g: 0, b: 0, a: 0}
     key5: {r: 0, g: 0, b: 0, a: 0}
@@ -497,7 +497,7 @@ MonoBehaviour:
     key7: {r: 0, g: 0, b: 0, a: 0}
     ctime0: 0
     ctime1: 65535
-    ctime2: 65535
+    ctime2: 0
     ctime3: 0
     ctime4: 0
     ctime5: 0
@@ -511,14 +511,14 @@ MonoBehaviour:
     atime5: 0
     atime6: 0
     atime7: 0
-    m_Mode: 2
+    m_Mode: 0
     m_ColorSpace: 0
     m_NumColorKeys: 2
     m_NumAlphaKeys: 2
   m_maxVisualizedCost: 1
   m_visualizePareto: 0
   m_mode: 0
-  m_updateInterval: 1
+  m_updateInterval: 0.1
 --- !u!1 &346269841
 GameObject:
   m_ObjectHideFlags: 0
@@ -3475,7 +3475,7 @@ MonoBehaviour:
     backend: 0
     solver: SimulatedAnnealing
   solverSettings:
-    rid: 2980885434652426297
+    rid: 2980885434652426301
   developmentMode: 1
   gameObjectsToOptimize:
   - {fileID: 1410621370}
@@ -3495,7 +3495,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 2980885434652426297
+    - rid: 2980885434652426301
       type: {class: SimulatedAnnealingSolver, ns: AUIT.Solvers, asm: Assembly-CSharp}
       data:
         iterations: 1500
@@ -4322,7 +4322,6 @@ GameObject:
   - component: {fileID: 1410621373}
   - component: {fileID: 1410621374}
   - component: {fileID: 1410621378}
-  - component: {fileID: 1410621379}
   m_Layer: 7
   m_Name: ingredients
   m_TagString: Untagged
@@ -4400,25 +4399,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4991997583cd3ee43b6545b861888885, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &1410621379
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1410621370}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 30add0f0340921240a40123a24380930, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  weight: 0.5
-  taskContextSource: {fileID: 2033713941}
-  userContextSource: {fileID: 1219749625}
-  maxAngle: 90
-  taskRelevances:
-  - task: 1
-    value: 1
 --- !u!1 &1445628986
 GameObject:
   m_ObjectHideFlags: 0
@@ -5467,7 +5447,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0bcb6cf3ff9489c42b666af9fdcf23ae, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  task: 0
+  task: 1
 --- !u!1 &2064500390
 GameObject:
   m_ObjectHideFlags: 0
