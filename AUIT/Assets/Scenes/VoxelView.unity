@@ -3475,7 +3475,7 @@ MonoBehaviour:
     backend: 0
     solver: SimulatedAnnealing
   solverSettings:
-    rid: 2980885434652426293
+    rid: 2980885434652426297
   developmentMode: 1
   gameObjectsToOptimize:
   - {fileID: 1410621370}
@@ -3495,7 +3495,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 2980885434652426293
+    - rid: 2980885434652426297
       type: {class: SimulatedAnnealingSolver, ns: AUIT.Solvers, asm: Assembly-CSharp}
       data:
         iterations: 1500
@@ -4307,6 +4307,7 @@ Transform:
   - {fileID: 112165932}
   - {fileID: 948486871}
   - {fileID: 813001056}
+  - {fileID: 2033713940}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1410621370
@@ -4408,13 +4409,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 1410621370}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7fad511158bdc3043a6c5791a6ac0718, type: 3}
+  m_Script: {fileID: 11500000, guid: 30add0f0340921240a40123a24380930, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   weight: 0.5
-  targetContextSource: {fileID: 1219749625}
-  angleThreshold: 30
-  lookTowards: 0
+  taskContextSource: {fileID: 2033713941}
+  userContextSource: {fileID: 1219749625}
+  maxAngle: 90
+  taskRelevances:
+  - task: 1
+    value: 1
 --- !u!1 &1445628986
 GameObject:
   m_ObjectHideFlags: 0
@@ -5419,6 +5423,51 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4991997583cd3ee43b6545b861888885, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &2033713939
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2033713940}
+  - component: {fileID: 2033713941}
+  m_Layer: 0
+  m_Name: Task
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2033713940
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2033713939}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1367704171}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2033713941
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2033713939}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0bcb6cf3ff9489c42b666af9fdcf23ae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  task: 0
 --- !u!1 &2064500390
 GameObject:
   m_ObjectHideFlags: 0

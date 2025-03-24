@@ -30,7 +30,7 @@ public class VoxelView : MonoBehaviour
     public Mode m_mode = Mode.OnRequest;
 
     [HideInInspector]
-    public float m_updateInterval = 1f;
+    public float m_updateInterval = 0.1f;
 
     
 
