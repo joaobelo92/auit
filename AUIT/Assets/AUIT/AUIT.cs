@@ -54,6 +54,8 @@ namespace AUIT
         [NonSerialized]
         public bool initialized = false;
         
+        public List<MultiElementObjective> MultiElementObjectives { get; } = new ();
+        
         #region MonoBehaviour Implementation
         
         private void AssignSolver()
@@ -207,7 +209,7 @@ namespace AUIT
 
             Debug.Log($"Invoking solver: {backendSolver.solver}");
             (OptimizationResponse response, _, _) = await _asyncSolver.
-                OptimizeCoroutine(layouts, objectives);
+                OptimizeCoroutine(layouts, objectives, MultiElementObjectives);
             
             Debug.Log($"First res: {response.suggested.elements[0].Position}");
             return response;
@@ -516,12 +518,18 @@ namespace AUIT
 
         public void RegisterMultiElementObjective(MultiElementObjective multiElementObjective)
         {
-            throw new NotImplementedException();
+            if (MultiElementObjectives.Contains(multiElementObjective))
+                return;
+
+            MultiElementObjectives.Add(multiElementObjective);
         }
 
         public void UnregisterMultiElementObjective(MultiElementObjective multiElementObjective)
         {
-            throw new NotImplementedException();
+            if (!MultiElementObjectives.Contains(multiElementObjective))
+                return;
+
+            MultiElementObjectives.Remove(multiElementObjective);
         }
     }
     

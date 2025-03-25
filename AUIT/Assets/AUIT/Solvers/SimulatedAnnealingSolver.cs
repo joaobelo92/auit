@@ -29,6 +29,7 @@ namespace AUIT.Solvers
         public override async UniTask<(OptimizationResponse, NDarray, NDarray)> OptimizeCoroutine(
             List<Layout> initialLayouts, 
             List<List<LocalObjective>> objectives,
+            List<MultiElementObjective> multiElementObjectives,
             bool saveCosts=false
             )
         {
@@ -37,6 +38,7 @@ namespace AUIT.Solvers
 
             List<List<float>> objectiveCosts = new List<List<float>>();
             List<float> totalObjectiveCosts = new List<float>();
+            List<float> multiObjectiveCosts = new List<float>();
             for (int i = 0; i < bestLayout.Count; i++)
             {
                 List<float> costs = new List<float>();
@@ -49,6 +51,12 @@ namespace AUIT.Solvers
                 }
                 objectiveCosts.Add(costs);
                 totalObjectiveCosts.Add(totalCost);
+                
+                for (int j = 0; j < multiElementObjectives.Count; j++)
+                {
+                    float objectiveCost = multiElementObjectives[j].CostFunction(bestLayout.ToArray());
+                    multiObjectiveCosts.Add(objectiveCost);
+                }
             }
 
             for (int i = 0; i < iterations; i++)
@@ -62,12 +70,22 @@ namespace AUIT.Solvers
                 int maxCostElementIndex = totalObjectiveCosts.IndexOf(maxCostElement);
                 float maxCostObjective = objectiveCosts[maxCostElementIndex].Max();
                 int maxCostObjectiveIndex = objectiveCosts[maxCostElementIndex].IndexOf(maxCostObjective);
-
+                float maxCostMultiObjective = multiObjectiveCosts.Max();
+                int maxMultiObjectiveIndex = multiObjectiveCosts.IndexOf(maxCostMultiObjective);
                 
-                currentLayout[maxCostElementIndex] = objectives[maxCostElementIndex][maxCostObjectiveIndex].OptimizationRule(currentLayout[maxCostElementIndex]);
 
+                if (maxCostObjective > maxCostMultiObjective)
+                {
+                    currentLayout[maxCostElementIndex] = objectives[maxCostElementIndex][maxCostObjectiveIndex].OptimizationRule(currentLayout[maxCostElementIndex]);
+                }
+                else
+                {
+                    currentLayout = multiElementObjectives[maxMultiObjectiveIndex].OptimizationRule(currentLayout);
+                }
+                
                 objectiveCosts = new List<List<float>>();
                 totalObjectiveCosts = new List<float>();
+                multiObjectiveCosts = new List<float>();
                 for (int j = 0; j < currentLayout.Count; j++)
                 {
                     List<float> costs = new List<float>();
@@ -82,7 +100,15 @@ namespace AUIT.Solvers
                     totalObjectiveCosts.Add(totalCost);
                 }
 
-                float currentCost = totalObjectiveCosts.Sum() / totalObjectiveCosts.Count;
+                
+                for (int j = 0; j < multiElementObjectives.Count; j++)
+                {
+                    float objectiveCost = multiElementObjectives[j].CostFunction(currentLayout.ToArray());
+                    multiObjectiveCosts.Add(objectiveCost);
+                }
+
+                float currentCost = (totalObjectiveCosts.Sum() + multiObjectiveCosts.Sum()) / 
+                                    (totalObjectiveCosts.Count + multiObjectiveCosts.Count);
 
                 // Early stopping 
                 if (currentCost <= earlyStopping)

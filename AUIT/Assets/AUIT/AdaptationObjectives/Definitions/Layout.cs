@@ -80,5 +80,6 @@ namespace AUIT.AdaptationObjectives.Definitions
         {
             return "Position: " + _position + ", Rotation: " + _rotation + ", Scale: " + _scale;
         }
+
     }
 }

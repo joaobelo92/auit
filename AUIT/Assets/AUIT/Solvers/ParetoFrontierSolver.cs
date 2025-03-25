@@ -35,6 +35,7 @@ namespace AUIT.Solvers
         public override async UniTask<(OptimizationResponse, NDarray, NDarray)> OptimizeCoroutine(
             List<Layout> initialLayouts, 
             List<List<LocalObjective>> objectives,
+            List<MultiElementObjective> multiElementObjectives,
             bool saveCosts=false
         )
         {

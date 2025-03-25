@@ -20,6 +20,7 @@ namespace AUIT.Solvers
         public abstract UniTask<(OptimizationResponse, NDarray, NDarray)> OptimizeCoroutine(
             List<Layout> initialLayouts,
             List<List<LocalObjective>> objectives,
+            List<MultiElementObjective> multiElementObjectives,
             bool saveCosts=false
         );
         public AUIT Auit { set; get; } 
