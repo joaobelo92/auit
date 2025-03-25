@@ -18,7 +18,14 @@ public class BoundingBox
 
 public class ParaHomeLoader : MonoBehaviour
 {
-    
+    #region Delegates 
+
+    public delegate void OnScenesLoaded(List<ParaHomeContext> contexts);
+    public OnScenesLoaded onScenesLoaded;
+
+    #endregion
+
+
     #region Events 
 
     public UnityEvent sceneLoadedEvent = new UnityEvent();
@@ -390,6 +397,17 @@ public class ParaHomeLoader : MonoBehaviour
     {
         LoadSequencePoses();
         LoadSequenceSceneObjects();
+
+        if (onScenesLoaded != null)
+        {
+            List<ParaHomeContext> contexts = new List<ParaHomeContext>();
+            for (int i = 0; i < m_poses.Length && i < m_sceneObjects.Length; i++)
+            {
+                ParaHomeContext context = new ParaHomeContext(m_poses[i], m_sceneObjects[i]);
+                contexts.Add(context);
+            }
+            onScenesLoaded(contexts);
+        }
     }
 
     public void ClearScenes()
@@ -533,6 +551,16 @@ public class ParaHomeLoader : MonoBehaviour
             m_sceneObjects[i] = new ParaHomeScene(sceneInfo.environmentInfo);
         }
 
+        if (onScenesLoaded != null)
+        {
+            List<ParaHomeContext> contexts = new List<ParaHomeContext>();
+            for (int i = 0; i < m_poses.Length && i < m_sceneObjects.Length; i++)
+            {
+                ParaHomeContext context = new ParaHomeContext(m_poses[i], m_sceneObjects[i]);
+                contexts.Add(context);
+            }
+            onScenesLoaded(contexts);
+        }
     }
 
     private void Start()

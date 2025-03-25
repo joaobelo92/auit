@@ -18,7 +18,7 @@ public class PolicyView : MonoBehaviour
     public Camera m_userCamera;
     public Camera m_supportCamera;
 
-    public int m_numSamples = 100;
+    public int m_numSamples = 10;
 
     public bool m_enableHovering = false;
 
@@ -59,6 +59,15 @@ public class PolicyView : MonoBehaviour
     {
         get { return m_currentContext; }
         set { m_currentContext = value; }
+    }
+
+    private void SetContexts(List<ParaHomeContext> contexts)
+    {
+        m_contexts = contexts;
+        if (m_contexts.Count > 0)
+        {
+            m_currentContext = 0;
+        }
     }
 
     public void AddContext()
@@ -525,6 +534,12 @@ public class PolicyView : MonoBehaviour
 
             m_samples[":",i] = min + (max - min) * m_samples[":", i];
         }
+        if (m_numParameters > 1)
+        {
+            var row_sums = np.sum(m_samples, axis: 1, keepdims: true);
+            row_sums = np.maximum(row_sums, np.ones_like(row_sums) * 1e-10);
+            m_samples = m_samples / row_sums;
+        }
 
         int numContexts = m_contexts.Count;
         for (int ci = 0; ci < numContexts; ci++)
@@ -700,6 +715,16 @@ public class PolicyView : MonoBehaviour
     {
         HandleHovering();
     }
+
+    private void OnEnable()
+    {
+        m_paraHomeLoader.onScenesLoaded += SetContexts;
+    }
+
+    private void OnDisable()
+    {
+        m_paraHomeLoader.onScenesLoaded -= SetContexts;
+    }
 }
 
 [CustomEditor(typeof(PolicyView))]
@@ -721,6 +746,7 @@ public class PolicyViewEditor : Editor
 
         // label
         EditorGUILayout.LabelField("Contexts", EditorStyles.boldLabel);
+        /*
         if (GUILayout.Button("Add Context"))
         {
             policyView.AddContext();
@@ -729,6 +755,7 @@ public class PolicyViewEditor : Editor
         {
             policyView.ClearContexts();
         }
+        */
         if (policyView.NumContexts > 1)
         {
             EditorGUI.BeginChangeCheck();
@@ -737,6 +764,9 @@ public class PolicyViewEditor : Editor
             {
                 policyView.LoadContext();
             }
+        } else
+        {
+            EditorGUILayout.LabelField("No contexts loaded");
         }
         EditorGUILayout.Space();
 

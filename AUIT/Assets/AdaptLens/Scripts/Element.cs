@@ -1,46 +1,74 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Element : MonoBehaviour
 {
     private const string LAYER = "Element";
-    private Material m_mat;
-    private Color m_originalColor;
+    private List<Material> m_mat;
+    private List<Color> m_originalColors;
     private Color m_highlightColor = Color.white;
-    private Color m_hideColor;
+    private List<Color> m_hideColors;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     public void Init()
     {
+        List<Renderer> rs = new List<Renderer>(); 
         Renderer r = GetComponent<Renderer>();
-        if (r == null)
+        if (r != null)
         {
-            r = GetComponentInChildren<Renderer>();
+            rs.Add(r);
         }
-        if (r == null)
+        foreach (Renderer rChild in GetComponentsInChildren<Renderer>())
+        {
+            rs.Add(rChild);
+        }
+        if (rs.Count <= 0)
         {
             Debug.LogError("Element: No renderer found");
             return;
         }
-        m_mat = r.material;
-        m_originalColor = m_mat.color;
-        m_hideColor = new Color(m_originalColor.r, m_originalColor.g, m_originalColor.b, 0.05f);
+        m_mat = new List<Material>();
+        foreach (Renderer rend in rs)
+        {
+            foreach (Material mat in rend.materials)
+            {
+                m_mat.Add(mat);
+            }
+        }
+        m_originalColors = new List<Color>();
+        m_hideColors = new List<Color>();
+        foreach (Material mat in m_mat)
+        {
+            Color originalColor = mat.color;
+            m_originalColors.Add(originalColor);
+            m_hideColors.Add(new Color(originalColor.r, originalColor.g, originalColor.b, 0.05f));
+        }
 
         gameObject.layer = LayerMask.NameToLayer(LAYER);
     }
 
     public void SetHighlight()
     {
-        m_mat.color = m_highlightColor;
+        foreach (Material mat in m_mat)
+        {
+            mat.color = m_highlightColor;
+        }
     }
 
     public void SetHide()
     {
-        m_mat.color = m_hideColor;
+        for (int i = 0; i < m_hideColors.Count; i++)
+        {
+            m_mat[i].color = m_hideColors[i];
+        }
     }
 
     public void SetOriginal()
     {
-        m_mat.color = m_originalColor;
+        for (int i = 0; i < m_originalColors.Count; i++)
+        {
+            m_mat[i].color = m_originalColors[i];
+        }
     }
 
     // Update is called once per frame
