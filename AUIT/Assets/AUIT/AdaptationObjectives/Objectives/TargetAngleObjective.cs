@@ -5,26 +5,16 @@ using Random = UnityEngine.Random;
 
 namespace AUIT.AdaptationObjectives
 {
-    public class FieldOfViewObjective : LocalObjective
+    public class TargetAngleObjective : LocalObjective
     {
         [SerializeField]
         private ContextSource<Transform> userContextSource;
 
         [SerializeField]
-        private PeripheralVisionBoundary peripheralVisionBoundary = PeripheralVisionBoundary.Near;
-        [SerializeField]
-        private float maxAngle = 90f;
-
-        private Quaternion quaternion;
-        private float[] boundaryOrigin = { 0f, 3.5f, 17.5f, 45f };
-        private float[] boundaryInterval = { 2f, 1.5f, 12.5f, 18f };
+        private float targetAngle = 0f;
 
         [SerializeField]
-        private bool useCustomBoundary = false;
-        [SerializeField]
-        private float customBoundaryOrigin = 12.0f;
-        [SerializeField]
-        private float customBoundaryInterval = 3.0f;
+        private float angleInterval = 5f;
 
         public override float CostFunction(Layout optimizationTarget, Layout initialLayout = null)
         {
@@ -43,19 +33,9 @@ namespace AUIT.AdaptationObjectives
 
             // Inspired by https://en.wikipedia.org/wiki/Peripheral_vision
             // float cost = Mathf.Max(Mathf.Abs(rotation - boundaryOrigin[index]), boundaryDifference[index]) - boundaryDifference[index];
-            float angleDiff;
-            
-            if (useCustomBoundary)
-            {
-                angleDiff = Mathf.Max(Mathf.Abs(angle - customBoundaryOrigin), customBoundaryInterval) - customBoundaryInterval;
-            }
-            else
-            {
-                int index = (int)peripheralVisionBoundary;
-                angleDiff = Mathf.Max(Mathf.Abs(angle - boundaryOrigin[index]), boundaryInterval[index]) - boundaryInterval[index];
-            }
+            float angleDiff = Mathf.Abs(angle - targetAngle); 
 
-            float cost = Mathf.Min(angleDiff / maxAngle, 1);
+            float cost = Mathf.Min(angleDiff / angleInterval, 1);
             return cost;
         }
 
@@ -70,17 +50,12 @@ namespace AUIT.AdaptationObjectives
             // Would be efficient to cache rotation when cost function is computed
             Vector3 target = contextSourceTransform.worldToLocalMatrix.MultiplyPoint3x4(optimizationTarget.Position);
 
-            float angle = Mathf.Acos(Vector3.Dot(Vector3.forward, target) / target.magnitude) * Mathf.Rad2Deg;
-
-            int index = (int)peripheralVisionBoundary;
-            float dir = angle - boundaryInterval[index] > 0 ? 1 : -1;
-
             Layout result = optimizationTarget.Clone();
 
             if (Random.value < 0.5f)
             {
                 Vector3 move = contextSourceTransform.localToWorldMatrix.MultiplyPoint3x4(new Vector3(0, 0, target.magnitude)) - optimizationTarget.Position;
-                result.Position = optimizationTarget.Position + move * HelperMath.SampleNormalDistribution(0.1f, 0.1f) * dir;
+                result.Position = optimizationTarget.Position + move * HelperMath.SampleNormalDistribution(0.1f, 0.1f);
             }
             else // move some cm at random
             {
@@ -92,13 +67,13 @@ namespace AUIT.AdaptationObjectives
 
         public override Layout DirectRule(Layout optimizationTarget)
         {
-            Transform contextSourceTransform = userContextSource.GetValue();
+            // Transform contextSourceTransform = userContextSource.GetValue();
             // Would be efficient to cache rotation when cost function is computed
-            Vector3 target = contextSourceTransform.worldToLocalMatrix.MultiplyPoint3x4(optimizationTarget.Position);
-            quaternion = Quaternion.FromToRotation(target, Vector3.forward);
+            // Vector3 target = contextSourceTransform.worldToLocalMatrix.MultiplyPoint3x4(optimizationTarget.Position);
+            // Quaternion quaternion = Quaternion.FromToRotation(target, Vector3.forward);
 
             Layout result = optimizationTarget.Clone();
-            result.Position = contextSourceTransform.localToWorldMatrix.MultiplyPoint(quaternion * target);
+            // result.Position = contextSourceTransform.localToWorldMatrix.MultiplyPoint(quaternion * target);
 
             return result;
         }

@@ -25,11 +25,16 @@ namespace AUIT.AdaptationObjectives.Objectives
                     .First(l => layout.Id == l.GetComponent<LocalObjectiveHandler>().Id);
             
                 MeshFilter[] meshFilter = go.GetComponentsInChildren<MeshFilter>();
-                if (meshFilter.Length != 1 || !meshFilter[0].mesh)
+                if (meshFilter.Length == 0 || !meshFilter[0].mesh)
                 {
-                    Debug.LogError($"Mesh or MeshFilter is missing in {go.name} or there are multiple ({meshFilter.Length}). " +
+                    Debug.LogError($"Mesh or MeshFilter is missing in {go.name}" +
                                    $"This is required for the AvoidInterElementOcclusionObjective component.");
                     return;
+                }
+
+                if (meshFilter.Length != 1)
+                {
+                    Debug.LogWarning($"Multiple Mesh or MeshFilter in {go.name}. Picking first found.");
                 }
 
                 Mesh mesh = meshFilter[0].mesh;
@@ -52,8 +57,6 @@ namespace AUIT.AdaptationObjectives.Objectives
                 }
                 
                 _bounds.Add((new Vector3(minX, minY, minZ), new Vector3(maxX, maxY, maxZ)));
-            
-                Debug.Log($"Bounds for {go.name}: {minX} {minY} {minZ} / {maxX} {maxY} {maxZ}");
             }
         }
 

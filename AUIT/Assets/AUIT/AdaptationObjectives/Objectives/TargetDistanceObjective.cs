@@ -5,7 +5,7 @@ using Random = UnityEngine.Random;
 
 namespace AUIT.AdaptationObjectives
 {
-    public class DistanceIntervalObjective : LocalObjective
+    public class TargetDistanceObjective : LocalObjective
     {
         // In this case optimization target must be a transform
         // Add validation in the future
@@ -13,24 +13,10 @@ namespace AUIT.AdaptationObjectives
         private ContextSource<Transform> targetContextSource;
 
         [SerializeField]
-        private float goalXYDistance = 0.3f;
+        private float targetDistance = 0.3f;
 
         [SerializeField]
-        private float yInterval = 0.25f;
-        [SerializeField]
-        private float distanceXZInterval = 0.1f;
-        [SerializeField]
-        private float maxDistance = 2f;
-
-        private Vector3 GetDistanceVector(Layout optimizationTarget)
-        {
-            // y values should not be changed here, otherwise we have a sphere instead of a radius from the user
-            Vector3 targetPosition = targetContextSource.GetValue().position;
-            Vector3 currentPosition = optimizationTarget.Position; 
-
-            Vector3 distanceVector = targetPosition - currentPosition;
-            return distanceVector;
-        }
+        private float distanceInterval = 0.1f;
 
         public override float CostFunction(Layout optimizationTarget, Layout initialLayout = null)
         {
@@ -39,23 +25,13 @@ namespace AUIT.AdaptationObjectives
                 Debug.LogError("DistanceIntervalObjective.CostFunction(): Target context source is not set.");
             }
 
-            // Get distance from user on x and z axis
-            Vector3 distanceVector = GetDistanceVector(optimizationTarget);
-            // TODO: check if possible to delegate context
             Vector3 targetPosition = targetContextSource.GetValue().position;
             Vector3 currentPosition = optimizationTarget.Position;
 
-            // distance y axis
-            float height = Mathf.Abs(targetPosition.y - currentPosition.y);
-            float heightFromInterval = Mathf.Max(0, height - yInterval);
-
-            // distance xz plane
+            Vector3 distanceVector = targetPosition - currentPosition;
             distanceVector.y = 0;
-            float distanceXZ = Mathf.Abs(distanceVector.magnitude - goalXYDistance);
-            float distanceFromInterval = Mathf.Max(0, distanceXZ - distanceXZInterval);
-            // Add distance in XZ axis to distance in Y axis 
-            float totalDistance = heightFromInterval + distanceFromInterval;
-            return Mathf.Min(totalDistance / maxDistance, 1);
+            float distanceXZ = Mathf.Abs(distanceVector.magnitude - targetDistance);
+            return Mathf.Min(distanceXZ / distanceInterval, 1);
         }
 
         public override Layout OptimizationRule(Layout optimizationTarget, Layout initialLayout)
@@ -65,19 +41,21 @@ namespace AUIT.AdaptationObjectives
                 Debug.LogError("DistanceIntervalObjective.OptimizationRule(): Target context source is not set.");
             }
 
-            Vector3 distanceVector = GetDistanceVector(optimizationTarget);
-            distanceVector.y = 0;
             Vector3 targetPosition = targetContextSource.GetValue().position;
             Vector3 currentPosition = optimizationTarget.Position;
+            Vector3 displacement = targetPosition - currentPosition;
+            displacement.y = 0;
+            float distance = displacement.magnitude - targetDistance;
+            Vector3 direction = Mathf.Sign(distance) * displacement.normalized;
 
-            float distance = distanceVector.magnitude - goalXYDistance;
-            distanceVector = Vector3.Normalize(distanceVector);
             Layout result = optimizationTarget.Clone();
+
+
             // Two different strategies
             if (Random.value > 0.5f)
             {
-                Vector3 position = optimizationTarget.Position + HelperMath.SampleNormalDistribution(distance, 0.5f) * distanceVector;
-                position.y = currentPosition.y + (targetPosition.y - currentPosition.y) * HelperMath.SampleNormalDistribution(1f, 0.5f);
+                Vector3 position = optimizationTarget.Position + direction * HelperMath.SampleNormalDistribution(0.1f, 0.1f);
+                position.y = currentPosition.y + (targetPosition.y - currentPosition.y) * HelperMath.SampleNormalDistribution(0.1f, 0.1f);
                 result.Position = position;
             }
             else // just move at random
@@ -95,10 +73,21 @@ namespace AUIT.AdaptationObjectives
 
         public override Layout DirectRule(Layout optimizationTarget)
         {
-            Vector3 distanceVector = GetDistanceVector(optimizationTarget);
+
+            //Vector3 distanceVector = GetDistanceVector(optimizationTarget);
             Layout result = optimizationTarget.Clone();
-            result.Position = optimizationTarget.Position + distanceVector;
+            //result.Position = optimizationTarget.Position + distanceVector;
             return result;
+        }
+
+        private new void OnEnable()
+        {
+            base.OnEnable();
+
+            if (targetContextSource == null)
+            {
+                targetContextSource = GetUserPoseContextSource();
+            }
         }
 
     }
