@@ -3560,7 +3560,7 @@ MonoBehaviour:
     backend: 0
     solver: SimulatedAnnealing
   solverSettings:
-    rid: 2980885454921924661
+    rid: 2980885454921924667
   developmentMode: 1
   _lookAtUser: 1
   userContextSource: {fileID: 1219749625}
@@ -3582,7 +3582,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 2980885454921924661
+    - rid: 2980885454921924667
       type: {class: SimulatedAnnealingSolver, ns: AUIT.Solvers, asm: Assembly-CSharp}
       data:
         iterations: 1500
@@ -4531,8 +4531,8 @@ GameObject:
   - component: {fileID: 1410621373}
   - component: {fileID: 1410621374}
   - component: {fileID: 1410621378}
-  - component: {fileID: 1410621379}
   - component: {fileID: 1410621380}
+  - component: {fileID: 1410621379}
   m_Layer: 7
   m_Name: ingredients
   m_TagString: Untagged
@@ -4620,16 +4620,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 1410621370}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e0c8b51d228e4ea9a09dd36fc8b1426d, type: 3}
+  m_Script: {fileID: 11500000, guid: be055729b4a0ca84686b2e0cfacd0fd7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   weight: 0.5
   userContextSource: {fileID: 1219749625}
-  peripheralVisionBoundary: 1
-  maxAngle: 90
-  useCustomBoundary: 0
-  customBoundaryOrigin: 12
-  customBoundaryInterval: 3
+  targetAngle: 0
+  angleInterval: 5
 --- !u!114 &1410621380
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4639,15 +4636,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 1410621370}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bc1fab3e51264f07a5228bacf7f56af9, type: 3}
+  m_Script: {fileID: 11500000, guid: a68f8cb2c36bdfc4eb6545e9c2b14096, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   weight: 0.5
   targetContextSource: {fileID: 1219749625}
-  goalXYDistance: 0.3
-  yInterval: 0.25
-  distanceXZInterval: 0.1
-  maxDistance: 2
+  targetDistance: 0.3
+  distanceInterval: 0.1
 --- !u!1 &1445628986
 GameObject:
   m_ObjectHideFlags: 0
