@@ -6,6 +6,7 @@ using System.Collections;
 using Dummiesman;
 using UnityEditor;
 using System;
+using UnityEngine.Events;
 
 public class BoundingBox
 {
@@ -17,6 +18,13 @@ public class BoundingBox
 
 public class ParaHomeLoader : MonoBehaviour
 {
+    
+    #region Events 
+
+    public UnityEvent sceneLoadedEvent = new UnityEvent();
+
+    #endregion 
+
     #region Static Fields
 
     public static readonly string[] OBJ_PARTS = { "base", "part1", "part2" };
@@ -45,12 +53,13 @@ public class ParaHomeLoader : MonoBehaviour
         Sequence,
         Saved
     }
-    public LoadOptions loadOption = LoadOptions.Saved;
+    public LoadOptions m_loadOption = LoadOptions.Saved;
     public string m_rootDir = "ParaHome";
     public string m_scanDir = "data/scan";
     public string m_seqDir = "data/seq";
     public string m_seq = "s1";
     public string m_savedDir = "data/saved";
+    public bool m_loadOnStart = true;
 
 
     public Vector3 m_offsetPos = Vector3.zero;
@@ -394,6 +403,8 @@ public class ParaHomeLoader : MonoBehaviour
     {
         LoadSceneObjects(i);
         LoadScenePoses(i);
+
+        sceneLoadedEvent?.Invoke();
     }
 
     public ParaHomeScene CurrentScene
@@ -524,6 +535,23 @@ public class ParaHomeLoader : MonoBehaviour
 
     }
 
+    private void Start()
+    {
+        if (m_loadOnStart)
+        {
+            switch (m_loadOption)
+            {
+                case LoadOptions.Sequence:
+                    LoadScenes();
+                    break;
+                case LoadOptions.Saved:
+                    LoadSavedScenes();
+                    LoadScene(0);
+                    break;
+            }
+        }
+    }
+
     #endregion
 
 
@@ -533,6 +561,7 @@ public class ParaHomeLoader : MonoBehaviour
 public class ParaHomeLoaderEditor : Editor
 {
     ParaHomeLoader paraHomeLoader;
+    SerializedProperty sceneLoadedEventProperty;
 
     public void LoadSequenceGUI()
     {
@@ -611,6 +640,12 @@ public class ParaHomeLoaderEditor : Editor
         }
     }
 
+    private void OnEnable()
+    {
+        paraHomeLoader = (ParaHomeLoader)target;
+        sceneLoadedEventProperty = serializedObject.FindProperty("sceneLoadedEvent");
+    }
+
 
     public override void OnInspectorGUI()
     {
@@ -642,11 +677,12 @@ public class ParaHomeLoaderEditor : Editor
 
         // Include dropdown here 
         EditorGUILayout.LabelField("Settings", EditorStyles.boldLabel);
-        paraHomeLoader.loadOption = (ParaHomeLoader.LoadOptions)EditorGUILayout.EnumPopup("Load Setting", paraHomeLoader.loadOption);
+        paraHomeLoader.m_loadOnStart = EditorGUILayout.Toggle("Load On Start", paraHomeLoader.m_loadOnStart);
+        paraHomeLoader.m_loadOption = (ParaHomeLoader.LoadOptions)EditorGUILayout.EnumPopup("Load Setting", paraHomeLoader.m_loadOption);
         paraHomeLoader.m_rootDir = EditorGUILayout.TextField("Root Directory", paraHomeLoader.m_rootDir);
 
 
-        switch (paraHomeLoader.loadOption) {
+        switch (paraHomeLoader.m_loadOption) {
             case ParaHomeLoader.LoadOptions.Sequence:
                 LoadSequenceGUI();
                 break;
@@ -654,7 +690,14 @@ public class ParaHomeLoaderEditor : Editor
                 LoadSavedGUI();
                 break;
         }
-    
+
+        EditorGUILayout.Space(10);
+
+        EditorGUILayout.LabelField("Events", EditorStyles.boldLabel);
+        EditorGUILayout.PropertyField(sceneLoadedEventProperty, new GUIContent("Scene Loaded Event"), true);
+        serializedObject.ApplyModifiedProperties();
+
+
     }
 }
 

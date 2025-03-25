@@ -40,6 +40,19 @@ namespace AUIT.AdaptationObjectives
         /// <returns></returns>
         public abstract Layout DirectRule(Layout optimizationTarget);
 
+        public ContextSource<Transform> GetUserPoseContextSource()
+        {
+            // Search scene for GameObject "User Pose" with a TransformContextSourceComponent
+            
+            ContextSource<Transform> userPoseContextSource = null;
+            GameObject userPose = GameObject.Find("User Pose");
+            if (userPose != null)
+            {
+                userPoseContextSource = userPose.GetComponent<ContextSource<Transform>>();
+            }
+            return userPoseContextSource;
+        }
+
 
         #endregion
 

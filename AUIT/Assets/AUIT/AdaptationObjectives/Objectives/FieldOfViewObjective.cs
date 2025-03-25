@@ -102,5 +102,15 @@ namespace AUIT.AdaptationObjectives
 
             return result;
         }
+
+        private new void OnEnable()
+        {
+            base.OnEnable();
+
+            if (userContextSource == null)
+            {
+                userContextSource = GetUserPoseContextSource();
+            }
+        }
     }
 }

@@ -74,12 +74,14 @@ namespace AUIT.AdaptationObjectives
             throw new System.NotImplementedException();
         }
 
-        protected override void Start()
+        private new void OnEnable()
         {
-        }
+            base.OnEnable();
 
-        private void Update()
-        {
+            if (userContextSource == null)
+            {
+                userContextSource = GetUserPoseContextSource();
+            }
         }
     }
 
