@@ -234,6 +234,7 @@ public class VoxelView : MonoBehaviour
             return;
         }
         int numVoxels = m_voxels.Length;
+        LocalObjectiveHandler elementObjectiveHandler = m_element.GetComponent<LocalObjectiveHandler>();
         Layout[] layouts = new Layout[numVoxels];
         int li = 0;
         for (int x = 0; x < m_voxelDims.x; x++)
@@ -244,11 +245,16 @@ public class VoxelView : MonoBehaviour
                 {
                     Voxel voxel = m_voxels[x, y, z];
                     Vector3 position = voxel.transform.position;
-                    layouts[li++] = new Layout(position);
+                    Layout layout = new Layout(
+                        elementObjectiveHandler.Id,
+                        m_element.transform
+                        );
+                    layout.Position = position;
+                    layouts[li++] = layout;
                 }
             }
         }
-        int[] nonDominated = m_auit.ComputePareto(layouts);
+        int[] nonDominated = m_auit.ComputeElementPareto(m_element, layouts);
         foreach (Voxel voxel in m_voxels)
         {
             voxel.gameObject.SetActive(false);
@@ -260,7 +266,12 @@ public class VoxelView : MonoBehaviour
             int x = i / (m_voxelDims.y * m_voxelDims.z);
             Voxel paretoVoxel = m_voxels[x, y, z];
             paretoVoxel.gameObject.SetActive(true);
-            float cost = m_auit.ComputeCost(new Layout(paretoVoxel.transform.position));
+            Layout layout = new Layout(
+                elementObjectiveHandler.Id,
+                m_element.transform
+                );
+            layout.Position = paretoVoxel.transform.position;
+            float cost = m_auit.ComputeElementCost(m_element, layout);
             paretoVoxel.SetColor(m_costGradient.Evaluate(cost));
         }
     }

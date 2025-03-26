@@ -683,7 +683,7 @@ public class PolicyView : MonoBehaviour
         int layerMask = 1 << LayerMask.NameToLayer("Element");
         if (Physics.Raycast(ray, out hit, Mathf.Infinity, layerMask))
         {
-            Element element = hit.transform.parent.GetComponent<Element>();
+            Element element = hit.transform.GetComponent<Element>();
             if (element != null)
             {
                 for (int ei = 0; ei < m_currentLayouts.Count; ei++)
@@ -691,9 +691,16 @@ public class PolicyView : MonoBehaviour
                     Element[] elements = m_currentLayouts[ei];
                     if (elements.Contains(element))
                     {
-                        Debug.Log("Hovering");
                         SetHover(ei);
                         m_sacs.SetHoverSACs(ei);
+
+                        // Support selection on mouse click
+                        if (Input.GetMouseButtonDown(0))
+                        {
+                            SetSelected(ei);
+                        }
+
+
                         return;
                     }
                 }

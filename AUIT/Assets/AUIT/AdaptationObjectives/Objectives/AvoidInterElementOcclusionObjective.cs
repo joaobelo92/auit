@@ -191,7 +191,7 @@ namespace AUIT.AdaptationObjectives.Objectives
             }
 
             float combinations = auit.gameObjectsToOptimize.Count * (auit.gameObjectsToOptimize.Count - 1) / 2;
-            Debug.Log("Cost: " + cost / combinations);
+            
             return cost / combinations;
         }
 

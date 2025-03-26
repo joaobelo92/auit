@@ -334,6 +334,38 @@ namespace AUIT
             return isEfficient.GetData<int>();
         }
 
+        public int[] ComputeElementPareto(GameObject element, Layout[] ls)
+        {
+            int numSamples = ls.Length;
+            int numObjectives = NumObjectives;
+            NDarray scores = np.zeros((numSamples, numObjectives));
+            Debug.Log($"{numSamples} samples, {numObjectives} objectives");
+
+            // Get layout of all elements 
+            Layout[] lAll = gatherLayouts().ToArray();
+
+            // Get layout of target element
+            Layout lElement = lAll[gameObjectsToOptimize.IndexOf(element)];
+
+            LocalObjectiveHandler currentHandler = element.GetComponent<LocalObjectiveHandler>();
+            for (int si = 0; si < numSamples; si++)
+            {
+                Layout l = ls[si];
+                int oi = 0;
+                foreach (var objective in currentHandler.Objectives)
+                {
+                    scores[si, oi++] = np.array(objective.CostFunction(l));
+                }
+                foreach (var objective in MultiElementObjectives)
+                {
+                    scores[si, oi++] = np.array(objective.CostFunction(l, lAll, lElement));
+                }
+            }
+
+            NDarray isEfficient = IsParetoDominated(scores);
+            return isEfficient.GetData<int>();
+        }
+
         public float ComputeElementCost(GameObject element, Layout l = null)
         {
             l ??= _layout;
