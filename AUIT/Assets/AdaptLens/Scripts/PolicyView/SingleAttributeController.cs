@@ -29,6 +29,9 @@ public class SingleAttributeController
     private List<float> m_values = new List<float>();
     private List<Vector2> m_points = new List<Vector2>();
 
+    private List<float> m_offsets = new List<float>();
+
+
     private float m_minValue = 0;
     private float m_maxValue = 1;
     private float m_minMaxBuffer = 0.1f;
@@ -90,11 +93,13 @@ public class SingleAttributeController
     public void ClearValues()
     {
         m_values.Clear();
+        m_offsets.Clear();
     }
 
     public void AddValue(float value)
     {
         m_values.Add(value);
+        m_offsets.Add(Random.Range(-1f, 1f));
 
         // Update min and max values
         if (value < m_minValue) m_minValue = value;
@@ -140,6 +145,11 @@ public class SingleAttributeController
         return new Vector2(x, y);
     }
 
+    private Vector2 OffsetGraphPosition(float offset, Rect cr)
+    {
+        return new Vector2(0, offset * cr.height / 2);
+    }
+
     private float GraphPositionValue(Vector2 point, float min, float max, Rect cr)
     {
         float x = point.x - cr.x;
@@ -163,7 +173,9 @@ public class SingleAttributeController
         {
             Handles.color = m_pointColor;
             float value = m_values[i];
-            Vector2 point = ValueGraphPosition(value, min, max, cr);
+            float offset = m_offsets[i];
+
+            Vector2 point = ValueGraphPosition(value, min, max, cr) + OffsetGraphPosition(offset, cr);
             Handles.DrawSolidDisc(point, Vector3.forward, m_pointSize);
             m_points.Add(point);
         }
@@ -209,7 +221,8 @@ public class SingleAttributeController
         for (int i = 0; i < m_values.Count; i++)
         {
             float value = m_values[i];
-            Vector2 valuePoint = ValueGraphPosition(value, min, max,cr);
+            float offset = m_offsets[i];
+            Vector2 valuePoint = ValueGraphPosition(value, min, max,cr) + OffsetGraphPosition(offset, cr);
             if (Vector2.Distance(mousePos, valuePoint) < m_pointSize)
             {
                 hoverIndex = i;
