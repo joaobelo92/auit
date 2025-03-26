@@ -142,7 +142,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &67399914
 Transform:
   m_ObjectHideFlags: 0
@@ -315,8 +315,8 @@ MonoBehaviour:
   weight: 0.5
   userContextSource: {fileID: 0}
   targetAngle: 45
-  innerAngleInterval: 10
-  outerAngleInterval: 10
+  innerAngleDistance: 10
+  outerAngleDistance: 45
 --- !u!1 &94737070
 GameObject:
   m_ObjectHideFlags: 0
@@ -757,7 +757,7 @@ MonoBehaviour:
     m_ColorSpace: 0
     m_NumColorKeys: 2
     m_NumAlphaKeys: 2
-  m_maxVisualizedCost: 1
+  m_maxVisualizedCostPercentage: 1
   m_visualizePareto: 0
   m_mode: 0
   m_updateInterval: 0.1
@@ -3891,11 +3891,10 @@ MonoBehaviour:
     backend: 0
     solver: SimulatedAnnealing
   solverSettings:
-    rid: 2980885475889250409
+    rid: 2980885483240554549
   developmentMode: 1
   gameObjectsToOptimize:
   - {fileID: 939544978}
-  - {fileID: 67399913}
   constraints:
   - type: 0
     minimum: -1.6
@@ -3912,7 +3911,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 2980885475889250409
+    - rid: 2980885483240554549
       type: {class: SimulatedAnnealingSolver, ns: AUIT.Solvers, asm: Assembly-CSharp}
       data:
         iterations: 1500
@@ -4320,7 +4319,9 @@ MonoBehaviour:
   m_gallery: {fileID: 846422403}
   m_userCamera: {fileID: 1341102933}
   m_supportCamera: {fileID: 1217115068}
+  m_samplingApproach: 1
   m_numSamples: 10
+  m_increment: 0.2
   m_initializePlacement: 0
   m_enableHovering: 0
 --- !u!114 &846422402
@@ -4364,6 +4365,8 @@ GameObject:
   - component: {fileID: 939544981}
   - component: {fileID: 939544987}
   - component: {fileID: 939544988}
+  - component: {fileID: 939544989}
+  - component: {fileID: 939544990}
   m_Layer: 7
   m_Name: instructions
   m_TagString: Untagged
@@ -4543,8 +4546,41 @@ MonoBehaviour:
   weight: 0.5
   userContextSource: {fileID: 0}
   targetAngle: 0
-  innerAngleInterval: 15
-  outerAngleInterval: 30
+  innerAngleDistance: 10
+  outerAngleDistance: 45
+--- !u!114 &939544989
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 939544978}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a68f8cb2c36bdfc4eb6545e9c2b14096, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  weight: 0.5
+  targetContextSource: {fileID: 0}
+  targetDistance: 0.3
+  innerDistance: 0.1
+  outerDistance: 0.5
+--- !u!114 &939544990
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 939544978}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8d10cbea53ae22843854d89a56f7a337, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  weight: 0.5
+  physicalLayerMask:
+    serializedVersion: 2
+    m_Bits: 256
 --- !u!1 &948486870
 GameObject:
   m_ObjectHideFlags: 0
@@ -4730,6 +4766,50 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!1 &1014150039
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1014150041}
+  - component: {fileID: 1014150040}
+  m_Layer: 0
+  m_Name: GameObject
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1014150040
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1014150039}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dcda433ab70ec6646a6d2cb6afccc9be, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!4 &1014150041
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1014150039}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1.1471142, y: 1.2773131, z: -1.4791864}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1025882993
 GameObject:
   m_ObjectHideFlags: 0
@@ -4856,8 +4936,8 @@ MonoBehaviour:
   weight: 0.5
   userContextSource: {fileID: 1219749625}
   targetAngle: 0
-  innerAngleInterval: 5
-  outerAngleInterval: 10
+  innerAngleDistance: 10
+  outerAngleDistance: 45
 --- !u!1 &1052745201
 GameObject:
   m_ObjectHideFlags: 0
@@ -5334,8 +5414,8 @@ MonoBehaviour:
   weight: 0.5
   userContextSource: {fileID: 1219749625}
   targetAngle: 0
-  innerAngleInterval: 5
-  outerAngleInterval: 10
+  innerAngleDistance: 10
+  outerAngleDistance: 45
 --- !u!114 &1410621380
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5351,7 +5431,8 @@ MonoBehaviour:
   weight: 0.5
   targetContextSource: {fileID: 1219749625}
   targetDistance: 0.3
-  distanceInterval: 0.1
+  innerDistance: 0.1
+  outerDistance: 0.5
 --- !u!1 &1445628986
 GameObject:
   m_ObjectHideFlags: 0
@@ -5905,8 +5986,8 @@ MonoBehaviour:
   weight: 0.5
   userContextSource: {fileID: 1219749625}
   targetAngle: 0
-  innerAngleInterval: 5
-  outerAngleInterval: 10
+  innerAngleDistance: 10
+  outerAngleDistance: 45
 --- !u!114 &1668970959
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5922,7 +6003,8 @@ MonoBehaviour:
   weight: 0.5
   targetContextSource: {fileID: 1219749625}
   targetDistance: 0.3
-  distanceInterval: 0.1
+  innerDistance: 0.1
+  outerDistance: 0.5
 --- !u!114 &1668970960
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7248,8 +7330,8 @@ MonoBehaviour:
   weight: 0.5
   userContextSource: {fileID: 1219749625}
   targetAngle: 0
-  innerAngleInterval: 5
-  outerAngleInterval: 10
+  innerAngleDistance: 10
+  outerAngleDistance: 45
 --- !u!114 &2042986847
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7541,3 +7623,4 @@ SceneRoots:
   - {fileID: 441668349}
   - {fileID: 2122511928}
   - {fileID: 624211755}
+  - {fileID: 1014150041}

@@ -16,11 +16,11 @@ namespace AUIT.AdaptationObjectives
 
         [SerializeField]
         [Min(0)]
-        private float innerAngleInterval = 10f;
+        private float innerAngleDistance = 10f;
 
         [SerializeField]
         [Min(0)]
-        private float outerAngleInterval = 45f;
+        private float outerAngleDistance = 45f;
 
         public override float CostFunction(Layout optimizationTarget, Layout initialLayout = null)
         {
@@ -41,7 +41,7 @@ namespace AUIT.AdaptationObjectives
             // float cost = Mathf.Max(Mathf.Abs(rotation - boundaryOrigin[index]), boundaryDifference[index]) - boundaryDifference[index];
             float angleDiff = Mathf.Abs(angle - targetAngle);
 
-            float cost = (angleDiff - innerAngleInterval) / outerAngleInterval;
+            float cost = (angleDiff - innerAngleDistance) / outerAngleDistance;
             cost = Mathf.Clamp01(cost);
             return cost;
         }

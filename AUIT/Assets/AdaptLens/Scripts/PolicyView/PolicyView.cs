@@ -18,7 +18,14 @@ public class PolicyView : MonoBehaviour
     public Camera m_userCamera;
     public Camera m_supportCamera;
 
+    public enum SamplingApproach
+    {
+        Random,
+        Interval
+    }
+    public SamplingApproach m_samplingApproach = SamplingApproach.Interval;
     public int m_numSamples = 10;
+    public float m_increment = 0.2f;
     public bool m_initializePlacement = false;
 
     public bool m_enableHovering = false;
@@ -529,22 +536,41 @@ public class PolicyView : MonoBehaviour
             return;
         }
 
-        m_samples = np.random.rand(m_numSamples, m_numParameters);
-        for (int i = 0; i < m_numParameters; i++)
+        switch (m_samplingApproach)
         {
-            Parameters.ParamReference<float> parameter = parameters[i];
-            float min = 0;
-            float max = 1;
-            min = ((Parameters.FloatParamReference)parameter).min;
-            max = ((Parameters.FloatParamReference)parameter).max;
+            case SamplingApproach.Interval:
+                m_samples = IntervalSampling.GenerateSamples(m_increment, m_numParameters);
+                m_numSamples = m_samples.shape[0];
+                Debug.Log($"Interval" +
+                    $"Increment: {m_increment}\n" +
+                    $"Num parameters {m_numParameters}\n" +
+                    $"Shape: {m_samples.shape}\n" +
+                    $"{m_samples}");
+                break;
+            case SamplingApproach.Random:
+                m_samples = np.random.rand(m_numSamples, m_numParameters);
+                for (int i = 0; i < m_numParameters; i++)
+                {
+                    Parameters.ParamReference<float> parameter = parameters[i];
+                    float min = 0;
+                    float max = 1;
+                    min = ((Parameters.FloatParamReference)parameter).min;
+                    max = ((Parameters.FloatParamReference)parameter).max;
 
-            m_samples[":",i] = min + (max - min) * m_samples[":", i];
-        }
-        if (m_numParameters > 1)
-        {
-            var row_sums = np.sum(m_samples, axis: 1, keepdims: true);
-            row_sums = np.maximum(row_sums, np.ones_like(row_sums) * 1e-10);
-            m_samples = m_samples / row_sums;
+                    m_samples[":", i] = min + (max - min) * m_samples[":", i];
+                }
+                if (m_numParameters > 1)
+                {
+                    var row_sums = np.sum(m_samples, axis: 1, keepdims: true);
+                    row_sums = np.maximum(row_sums, np.ones_like(row_sums) * 1e-10);
+                    m_samples = m_samples / row_sums;
+                }
+                Debug.Log($"Random" +
+                    $"Increment: {m_increment}\n" +
+                    $"Num parameters {m_numParameters}\n" +
+                    $"Shape: {m_samples.shape}\n" +
+                    $"{m_samples}");
+                break;
         }
 
         int numContexts = m_contexts.Count;
@@ -799,7 +825,17 @@ public class PolicyViewEditor : Editor
         EditorGUILayout.Space();
 
         EditorGUILayout.LabelField("Sampling", EditorStyles.boldLabel);
-        policyView.m_numSamples = EditorGUILayout.IntField("Number of Samples", policyView.m_numSamples);
+        policyView.m_samplingApproach = (PolicyView.SamplingApproach)EditorGUILayout.EnumPopup("Sampling Approach", policyView.m_samplingApproach);
+        switch (policyView.m_samplingApproach)
+        {
+            case PolicyView.SamplingApproach.Random:
+                policyView.m_numSamples = EditorGUILayout.IntField("Number of Samples", policyView.m_numSamples);
+                break;
+            case PolicyView.SamplingApproach.Interval:
+                policyView.m_increment = EditorGUILayout.FloatField("Increment", policyView.m_increment);
+                break;
+        }
+        
         policyView.m_initializePlacement = EditorGUILayout.Toggle("Initialize Placement", policyView.m_initializePlacement);
         if (GUILayout.Button("Sample Policies"))
         {

@@ -16,7 +16,10 @@ namespace AUIT.AdaptationObjectives
         private float targetDistance = 0.3f;
 
         [SerializeField]
-        private float distanceInterval = 0.1f;
+        private float innerDistance = 0.1f;
+
+        [SerializeField]
+        private float outerDistance = 0.5f;
 
         public override float CostFunction(Layout optimizationTarget, Layout initialLayout = null)
         {
@@ -31,7 +34,10 @@ namespace AUIT.AdaptationObjectives
             Vector3 distanceVector = targetPosition - currentPosition;
             distanceVector.y = 0;
             float distanceXZ = Mathf.Abs(distanceVector.magnitude - targetDistance);
-            return Mathf.Min(distanceXZ / distanceInterval, 1);
+
+            float cost = (distanceXZ - innerDistance) / outerDistance;
+            cost = Mathf.Clamp01(cost);
+            return cost;
         }
 
         public override Layout OptimizationRule(Layout optimizationTarget, Layout initialLayout)

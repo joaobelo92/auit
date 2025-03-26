@@ -220,11 +220,11 @@ namespace AUIT
                 return null;
             }
 
-            Debug.Log($"Invoking solver: {backendSolver.solver}");
+            //Debug.Log($"Invoking solver: {backendSolver.solver}");
             (OptimizationResponse response, _, _) = await _asyncSolver.
                 OptimizeCoroutine(layouts, objectives, MultiElementObjectives);
 
-            Debug.Log($"First res: {response.suggested.elements[0].Position}");
+            //Debug.Log($"First res: {response.suggested.elements[0].Position}");
             return response;
         }
 
