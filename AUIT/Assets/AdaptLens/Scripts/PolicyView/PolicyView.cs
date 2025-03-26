@@ -515,6 +515,7 @@ public class PolicyView : MonoBehaviour
             return;
         }
 
+        m_parameters.GetParameters();
         List<Parameters.ParamReference<float>> parameters = m_parameters.GetParametersAll();
         m_numParameters = parameters.Count;
         if (m_numParameters == 0)
@@ -673,12 +674,13 @@ public class PolicyView : MonoBehaviour
             return;
         }
         Ray ray = m_userCamera.ScreenPointToRay(Input.mousePosition);
+        Debug.DrawRay(m_userCamera.transform.position, ray.direction * 500, Color.yellow, Time.deltaTime);
         RaycastHit hit;
         // Get Element layer mask
         int layerMask = 1 << LayerMask.NameToLayer("Element");
         if (Physics.Raycast(ray, out hit, Mathf.Infinity, layerMask))
         {
-            Element element = hit.transform.GetComponent<Element>();
+            Element element = hit.transform.parent.GetComponent<Element>();
             if (element != null)
             {
                 for (int ei = 0; ei < m_currentLayouts.Count; ei++)
@@ -686,6 +688,7 @@ public class PolicyView : MonoBehaviour
                     Element[] elements = m_currentLayouts[ei];
                     if (elements.Contains(element))
                     {
+                        Debug.Log("Hovering");
                         SetHover(ei);
                         m_sacs.SetHoverSACs(ei);
                         return;

@@ -216,7 +216,18 @@ namespace AUIT
             Debug.Log($"Invoking solver: {backendSolver.solver}");
             (OptimizationResponse response, _, _) = await _asyncSolver.
                 OptimizeCoroutine(layouts, objectives, MultiElementObjectives);
-            
+
+            foreach (Layout result in response.suggested.elements)
+            {
+                if (_lookAtUser && userContextSource != null)
+                {
+                    Vector3 userPosition = userContextSource.GetValue().position;
+                    Vector3 direction = userPosition - result.Position;
+                    Quaternion rotation = Quaternion.LookRotation(direction);
+                    result.Rotation = rotation;
+                }
+            }
+
             Debug.Log($"First res: {response.suggested.elements[0].Position}");
             return response;
         }
