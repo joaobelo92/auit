@@ -66,13 +66,34 @@ namespace AUIT.Solvers
 
                 // get highest objective and use its optimization rule
                 // A lot of possible optimizations here (e.g. iterating multiple times through costs)... for now this will do.
-                float maxCostElement = totalObjectiveCosts.Max();
-                int maxCostElementIndex = totalObjectiveCosts.IndexOf(maxCostElement);
-                float maxCostObjective = objectiveCosts[maxCostElementIndex].Max();
-                int maxCostObjectiveIndex = objectiveCosts[maxCostElementIndex].IndexOf(maxCostObjective);
-                float maxCostMultiObjective = multiObjectiveCosts.Max();
-                int maxMultiObjectiveIndex = multiObjectiveCosts.IndexOf(maxCostMultiObjective);
+
+                int maxCostElementIndex = -1;
+                int maxCostObjectiveIndex = -1;
+                int maxMultiObjectiveIndex = -1;
+                float maxCostElement = 0f;
+                float maxCostObjective = 0f;
+                float maxCostMultiObjective = 0f;
                 
+                if (objectives.Count > 0)
+                {
+                    maxCostElement = totalObjectiveCosts.Max();
+                    maxCostElementIndex = totalObjectiveCosts.IndexOf(maxCostElement);
+                    maxCostObjective = objectiveCosts[maxCostElementIndex].Max();
+                    maxCostObjectiveIndex = objectiveCosts[maxCostElementIndex].IndexOf(maxCostObjective);
+                }
+
+                if (multiElementObjectives.Count > 0)
+                {
+                    maxCostMultiObjective = multiObjectiveCosts.Max();
+                    maxMultiObjectiveIndex = multiObjectiveCosts.IndexOf(maxCostMultiObjective);
+                }
+                
+                // Optimal solution found 
+                if (maxCostMultiObjective <= 0 && maxCostElement <= 0)
+                {
+                    bestLayout = currentLayout;
+                    break;
+                }
 
                 if (maxCostObjective > maxCostMultiObjective)
                 {

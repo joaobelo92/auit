@@ -49,17 +49,19 @@ MonoBehaviour:
     backend: 0
     solver: SimulatedAnnealing
   solverSettings:
-    rid: 1320836174484602973
+    rid: 3494139699756531760
   developmentMode: 1
+  _lookAtUser: 1
+  userContextSource: {fileID: 0}
   gameObjectsToOptimize:
   - {fileID: 0}
+  constraints: []
   references:
     version: 2
     RefIds:
-    - rid: 1320836174484602973
+    - rid: 3494139699756531760
       type: {class: SimulatedAnnealingSolver, ns: AUIT.Solvers, asm: Assembly-CSharp}
       data:
-        constraints: []
         iterations: 1500
         minimumTemperature: 0.000001
         initialTemperature: 10000
