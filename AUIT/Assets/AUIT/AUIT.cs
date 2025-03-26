@@ -176,18 +176,28 @@ namespace AUIT
             // be obtained dynamically in the future, but for now we hardcode 
             // the properties we want to optimize.
             List<List<LocalObjective>> objectives = new List<List<LocalObjective>>();
-            List<Layout> layouts = new List<Layout>();
+            List<Layout> layouts = gatherLayouts();
 
             for (int i = 0; i < _gameObjects.Length; i++)
             {
                 objectives.Add(_gameObjects[i].Item2.Objectives);
-                layouts.Add(new 
+                
+            }
+            return (objectives, layouts);
+        }
+
+        public List<Layout> gatherLayouts()
+        {
+            List<Layout> layouts = new List<Layout>();
+            for (int i = 0; i < _gameObjects.Length; i++)
+            {
+                layouts.Add(new
                     Layout(
-                        _gameObjects[i].Item2.Id, 
+                        _gameObjects[i].Item2.Id,
                         _gameObjects[i].Item1.transform
                     ));
             }
-            return (objectives, layouts);
+            return layouts;
         }
 
         public async UniTask<OptimizationResponse> OptimizeLayout()
@@ -324,9 +334,10 @@ namespace AUIT
             return isEfficient.GetData<int>();
         }
 
-        public float ComputerElementCost(GameObject element, Layout l = null)
+        public float ComputeElementCost(GameObject element, Layout l = null)
         {
             l ??= _layout;
+
 
             if (!isActiveAndEnabled)
             {
@@ -345,11 +356,21 @@ namespace AUIT
                 return 0.0f;
             }
 
+
+            // Get layout of all elements 
+            Layout[] lAll = gatherLayouts().ToArray();
+            // Get layout of target element
+            Layout lElement = lAll[gameObjectsToOptimize.IndexOf(element)];
+            
+
             float cost = currentHandler.Objectives.Sum(
                 objective => objective.Weight * objective.CostFunction(l));
             float elementWeightSum = currentHandler.Objectives.Sum(objective => objective.Weight);
 
-            // TODO: Account for global objective
+            // Accounting for global objectives
+            cost += MultiElementObjectives.Sum(
+                objective => objective.Weight * objective.CostFunction(l, lAll, lElement));
+            elementWeightSum += MultiElementObjectives.Sum(objective => objective.Weight);
 
             if (elementWeightSum >= 0)
             {

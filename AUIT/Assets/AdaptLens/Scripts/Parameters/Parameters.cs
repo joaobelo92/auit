@@ -86,10 +86,8 @@ public class Parameters : MonoBehaviour
     {
         m_parameters.Clear();
 
-        // TODO: Get global objectives
-
+        // Local objectives
         List<(string, List<LocalObjective>)> objectives = m_auit.GetLocalObjectives();
-        
         foreach ((string obj, List<LocalObjective> objs) in objectives)
         {
             List<(string, List<ParamReference<float>>)> objParams = new List<(string, List<ParamReference<float>>)>();
@@ -100,6 +98,16 @@ public class Parameters : MonoBehaviour
             }
             m_parameters.Add((obj, objParams));
         }
+
+        // Multi-element objectives 
+        List<MultiElementObjective> globalObjectives = m_auit.MultiElementObjectives;
+        List<(string, List<ParamReference<float>>)> globalObjParams = new List<(string, List<ParamReference<float>>)>();
+        foreach (var o in globalObjectives)
+        {
+            (string oName, List<ParamReference<float>> oParams) = GetParameters(o);
+            globalObjParams.Add((oName, oParams));
+        }
+        m_parameters.Add(("multi-element", globalObjParams));
 
     }
 

@@ -54,7 +54,8 @@ namespace AUIT.Solvers
                 
                 for (int j = 0; j < multiElementObjectives.Count; j++)
                 {
-                    float objectiveCost = multiElementObjectives[j].CostFunction(bestLayout.ToArray());
+                    // Yi Fei: Updating to include conderation of weight
+                    float objectiveCost = multiElementObjectives[j].Weight * multiElementObjectives[j].CostFunction(bestLayout.ToArray());
                     multiObjectiveCosts.Add(objectiveCost);
                 }
             }
@@ -124,7 +125,8 @@ namespace AUIT.Solvers
                 // Here is where we compute the multi-element objectives
                 for (int j = 0; j < multiElementObjectives.Count; j++)
                 {
-                    float objectiveCost = multiElementObjectives[j].CostFunction(currentLayout.ToArray());
+                    // Yi Fei: Updating to include conderation of weight
+                    float objectiveCost = multiElementObjectives[j].Weight * multiElementObjectives[j].CostFunction(currentLayout.ToArray());
                     multiObjectiveCosts.Add(objectiveCost);
                 }
 

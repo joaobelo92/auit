@@ -493,6 +493,7 @@ public class PolicyView : MonoBehaviour
 
     public async void SamplePolicies()
     {
+        ClearSaved();
         ClearSampledResults();
         m_layouts.Clear();
         m_filteredSamples = null;

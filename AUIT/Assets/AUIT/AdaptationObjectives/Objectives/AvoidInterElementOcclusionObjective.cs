@@ -16,6 +16,44 @@ namespace AUIT.AdaptationObjectives.Objectives
         private List<(Vector3, Vector3)> _bounds = new List<(Vector3, Vector3)>();
         private bool _boundsInitialized = false;
         private List<int> elementsColliding = new List<int>();
+
+        private bool GetMeshBounds(GameObject go, out Vector3 boundsMin, out Vector3 boundsMax)
+        {
+            boundsMin = Vector3.zero;
+            boundsMax = Vector3.zero;
+
+            MeshFilter meshFilter = go.GetComponent<MeshFilter>();
+            if (meshFilter == null || !meshFilter.mesh)
+            {
+                Debug.LogError($"Mesh or MeshFilter is missing in {go.name}" +
+                               $"This is required for the AvoidInterElementOcclusionObjective component.");
+                return false;
+            }
+
+            Mesh mesh = meshFilter.mesh;
+            Vector3[] vertices = mesh.vertices;
+
+            float minX = vertices[0].x, minY = vertices[0].y, minZ = vertices[0].z;
+            float maxX = vertices[0].x, maxY = vertices[0].y, maxZ = vertices[0].z;
+            for (int i = 1; i < vertices.Length; i++)
+            {
+                Vector3 v = vertices[i];
+
+                if (v.x < minX) minX = v.x;
+                if (v.y < minY) minY = v.y;
+                if (v.z < minZ) minZ = v.z;
+
+                if (v.x > maxX) maxX = v.x;
+                if (v.y > maxY) maxY = v.y;
+                if (v.z > maxZ) maxZ = v.z;
+            }
+
+            boundsMin = new Vector3(minX, minY, minZ);
+            boundsMax = new Vector3(maxX, maxY, maxZ);
+
+
+            return true;
+        }
         
         private void InitializeMeshBounds(Layout[] layouts)
         {
@@ -24,97 +62,119 @@ namespace AUIT.AdaptationObjectives.Objectives
                 GameObject go = auit.gameObjectsToOptimize
                     .First(l => layout.Id == l.GetComponent<LocalObjectiveHandler>().Id);
             
-                MeshFilter[] meshFilter = go.GetComponentsInChildren<MeshFilter>();
-                if (meshFilter.Length == 0 || !meshFilter[0].mesh)
+                if (GetMeshBounds(go, out Vector3 boundsMin, out Vector3 boundsMax))
                 {
-                    Debug.LogError($"Mesh or MeshFilter is missing in {go.name}" +
-                                   $"This is required for the AvoidInterElementOcclusionObjective component.");
-                    return;
+                    _bounds.Add((boundsMin, boundsMax));
                 }
-
-                if (meshFilter.Length != 1)
-                {
-                    Debug.LogWarning($"Multiple Mesh or MeshFilter in {go.name}. Picking first found.");
-                }
-
-                Mesh mesh = meshFilter[0].mesh;
-                Vector3[] vertices = mesh.vertices;
-
-                float minX = vertices[0].x, minY = vertices[0].y, minZ = vertices[0].z;
-                float maxX = vertices[0].x, maxY = vertices[0].y, maxZ = vertices[0].z;
-
-                for (int i = 1; i < vertices.Length; i++)
-                {
-                    Vector3 v = vertices[i];
-
-                    if (v.x < minX) minX = v.x;
-                    if (v.y < minY) minY = v.y;
-                    if (v.z < minZ) minZ = v.z;
-
-                    if (v.x > maxX) maxX = v.x;
-                    if (v.y > maxY) maxY = v.y;
-                    if (v.z > maxZ) maxZ = v.z;
-                }
-                
-                _bounds.Add((new Vector3(minX, minY, minZ), new Vector3(maxX, maxY, maxZ)));
             }
         }
 
-
-        public override float CostFunction(Layout[] optimizationTarget, Layout initialLayout = null)
+        private bool CalcPolygonScreenSpace(Layout layout, (Vector3, Vector3) bounds, out List<Vector2> pointsScreenSpace)
         {
-            float cost = 0f;
-            elementsColliding = new List<int>();
-            List<List<Vector2>> polygonsScreenSpace = new ();
-            
-            if (!_boundsInitialized)
+            // GameObject go = auit.gameObjectsToOptimize
+            //     .First(l => layout.Id == l.GetComponent<LocalObjectiveHandler>().Id);
+            Matrix4x4 trs = Matrix4x4.TRS(layout.Position, layout.Rotation, layout.Scale);
+            // Debug.Log($"Layout: {layout.Position} {layout.Rotation.eulerAngles} {layout.Scale}");
+
+            // multiply bounds by proposal's TRS (need to check 8x, for screen bounds)
+            Vector3[] trsBounds =
             {
-                InitializeMeshBounds(optimizationTarget);
-                _boundsInitialized = true;
+                    trs.MultiplyPoint3x4(new Vector3(bounds.Item1.x, bounds.Item1.y, bounds.Item1.z)),
+                    trs.MultiplyPoint3x4(new Vector3(bounds.Item2.x, bounds.Item1.y, bounds.Item1.z)),
+                    trs.MultiplyPoint3x4(new Vector3(bounds.Item2.x, bounds.Item2.y, bounds.Item1.z)),
+                    trs.MultiplyPoint3x4(new Vector3(bounds.Item1.x, bounds.Item1.y, bounds.Item2.z)),
+                    trs.MultiplyPoint3x4(new Vector3(bounds.Item1.x, bounds.Item2.y, bounds.Item2.z)),
+                    trs.MultiplyPoint3x4(new Vector3(bounds.Item1.x, bounds.Item2.y, bounds.Item1.z)),
+                    trs.MultiplyPoint3x4(new Vector3(bounds.Item2.x, bounds.Item1.y, bounds.Item2.z)),
+                    trs.MultiplyPoint3x4(new Vector3(bounds.Item2.x, bounds.Item2.y, bounds.Item2.z))
+                };
+
+            pointsScreenSpace = new();
+            foreach (Vector3 bound in trsBounds)
+            {
+                Vector3 boundToScreenPoint = userContextSource.GetValue().WorldToScreenPoint(bound);
+                if (boundToScreenPoint.z > 0)
+                {
+                    pointsScreenSpace.Add(new Vector2(boundToScreenPoint.x, boundToScreenPoint.y));
+                }
             }
+
+            if (pointsScreenSpace.Count >= 3)
+            {
+
+                pointsScreenSpace = ComputeConvexHull(pointsScreenSpace);
+                if (pointsScreenSpace.Count >= 3)
+                    return true; 
+            }
+            return false;
+        }
+
+        private List<List<Vector2>> CalcPolygonsScreenSpace(Layout[] optimizationTarget) 
+        {
+            List<List<Vector2>> polygonsScreenSpace = new();
 
             for (int i = 0; i < optimizationTarget.Length; i++)
             {
                 Layout layout = optimizationTarget[i];
-                
-                // GameObject go = auit.gameObjectsToOptimize
-                //     .First(l => layout.Id == l.GetComponent<LocalObjectiveHandler>().Id);
-                Matrix4x4 trs = Matrix4x4.TRS(layout.Position, layout.Rotation, layout.Scale);
-                // Debug.Log($"Layout: {layout.Position} {layout.Rotation.eulerAngles} {layout.Scale}");
+                (Vector3, Vector3) bounds = _bounds[i];
+                if (CalcPolygonScreenSpace(layout, bounds, out List<Vector2> pointsScreenSpace))
+                {
+                    polygonsScreenSpace.Add(pointsScreenSpace);
+                }
+            }
 
-                // multiply bounds by proposal's TRS (need to check 8x, for screen bounds)
-                Vector3[] bounds =
+            return polygonsScreenSpace;
+        }
+
+        public override float CostFunction(Layout optimizationTarget, Layout[] optimizationTargets, Layout initialLayout = null)
+        {
+            int overlaps = 0;
+
+            // Yi Fei: Is element colliding being used for anything?
+            elementsColliding = new List<int>();
+
+            if (!_boundsInitialized)
+            {
+                InitializeMeshBounds(optimizationTargets);
+                _boundsInitialized = true;
+            }
+
+            int targetIndex = Array.IndexOf(optimizationTargets, initialLayout);
+            //Debug.Log(targetIndex);
+
+            List<List<Vector2>> polygonsScreenSpace = CalcPolygonsScreenSpace(optimizationTargets);
+
+            if (CalcPolygonScreenSpace(optimizationTarget, _bounds[targetIndex], out List<Vector2> targetScreenSpace)) {
+                for (int i = 0; i < polygonsScreenSpace.Count; i++)
                 {
-                    trs.MultiplyPoint3x4(new Vector3(_bounds[i].Item1.x, _bounds[i].Item1.y, _bounds[i].Item1.z)),
-                    trs.MultiplyPoint3x4(new Vector3(_bounds[i].Item2.x, _bounds[i].Item1.y, _bounds[i].Item1.z)),
-                    trs.MultiplyPoint3x4(new Vector3(_bounds[i].Item2.x, _bounds[i].Item2.y, _bounds[i].Item1.z)),
-                    trs.MultiplyPoint3x4(new Vector3(_bounds[i].Item1.x, _bounds[i].Item1.y, _bounds[i].Item2.z)),
-                    trs.MultiplyPoint3x4(new Vector3(_bounds[i].Item1.x, _bounds[i].Item2.y, _bounds[i].Item2.z)),
-                    trs.MultiplyPoint3x4(new Vector3(_bounds[i].Item1.x, _bounds[i].Item2.y, _bounds[i].Item1.z)),
-                    trs.MultiplyPoint3x4(new Vector3(_bounds[i].Item2.x, _bounds[i].Item1.y, _bounds[i].Item2.z)),
-                    trs.MultiplyPoint3x4(new Vector3(_bounds[i].Item2.x, _bounds[i].Item2.y, _bounds[i].Item2.z))
-                };
-            
-                List<Vector2> pointsScreenSpace = new ();
-                foreach (Vector3 bound in bounds)
-                {
-                    Vector3 boundToScreenPoint = userContextSource.GetValue().WorldToScreenPoint(bound);
-                    if (boundToScreenPoint.z > 0)
+                    if (i != targetIndex && PolygonsOverlap(targetScreenSpace, polygonsScreenSpace[i]))
                     {
-                        pointsScreenSpace.Add(new Vector2(boundToScreenPoint.x, boundToScreenPoint.y));
+                        elementsColliding.Add(i);
+                        overlaps += 1;
                     }
                 }
-                
-                if (pointsScreenSpace.Count >= 3)
-                {
-                    
-                    pointsScreenSpace = ComputeConvexHull(pointsScreenSpace);
-                    if (pointsScreenSpace.Count >= 3)
-                        polygonsScreenSpace.Add(pointsScreenSpace);
-                }
-                
-                
             }
+
+            // Exclude overlaps with self 
+            //int maxOverlaps = Mathf.Max(polygonsScreenSpace.Count - 1, 1);
+            float cost = (overlaps > 0) ? 1 : 0;
+            //Debug.Log("Cost: " + cost);
+            return cost;
+        }
+
+
+        public override float CostFunction(Layout[] optimizationTargets, Layout initialLayout = null)
+        {
+            float cost = 0f;
+            elementsColliding = new List<int>();
+            
+            if (!_boundsInitialized)
+            {
+                InitializeMeshBounds(optimizationTargets);
+                _boundsInitialized = true;
+            }
+
+            List<List<Vector2>> polygonsScreenSpace = CalcPolygonsScreenSpace(optimizationTargets);
 
             for (int i = 0; i < polygonsScreenSpace.Count; i++)
             {
@@ -220,6 +280,11 @@ namespace AUIT.AdaptationObjectives.Objectives
                 if (dot < min) min = dot;
                 if (dot > max) max = dot;
             }
+        }
+
+        private new void OnEnable()
+        {
+            base.OnEnable();
         }
     }
 }

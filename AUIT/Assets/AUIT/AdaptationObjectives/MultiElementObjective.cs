@@ -10,7 +10,13 @@ namespace AUIT.AdaptationObjectives
         
         
         protected AUIT auit;
-        
+
+        [Parameter("Weight")]
+        [SerializeField]
+        [Range(0, 1)]
+        protected float weight = 0.5f;
+        public float Weight { get { return weight; } set { weight = value; } }
+
         #region MonoBehaviour Implementation
 
         protected virtual void Awake()
@@ -37,9 +43,11 @@ namespace AUIT.AdaptationObjectives
         }
 
         #endregion
+
+        public abstract float CostFunction(Layout target, Layout[] optimizationTargets, Layout initialLayout = null);
         
         public abstract float CostFunction(Layout[] optimizationTargets, Layout initialLayout = null);
 
-        public abstract List<Layout> OptimizationRule(List<Layout> optimizationTarget, Layout initialLayout = null);
+        public abstract List<Layout> OptimizationRule(List<Layout> optimizationTargets, Layout initialLayout = null);
     }
 }

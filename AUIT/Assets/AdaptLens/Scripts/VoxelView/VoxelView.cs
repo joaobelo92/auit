@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEditor;
 using AUIT.AdaptationObjectives.Definitions;
 using System.Collections.Generic;
+using AUIT.AdaptationObjectives;
 
 public class VoxelView : MonoBehaviour
 {
@@ -282,7 +283,11 @@ public class VoxelView : MonoBehaviour
             return;
         }
 
-        Layout layout = new Layout(Vector3.zero);
+        LocalObjectiveHandler elementObjectiveHandler = m_element.GetComponent<LocalObjectiveHandler>();
+        Layout layout = new Layout(
+            elementObjectiveHandler.Id,
+            m_element.transform
+            );
         List<float> costs = new List<float>();
         for (int x = 0; x < m_voxelDims.x; x++)
         {
@@ -293,7 +298,7 @@ public class VoxelView : MonoBehaviour
                     Voxel voxel = m_voxels[x, y, z];
                     Vector3 position = voxel.transform.position;
                     layout.Position = position;
-                    float cost = m_auit.ComputerElementCost(m_element, layout);
+                    float cost = m_auit.ComputeElementCost(m_element, layout);
                     costs.Add(cost);
                     if (cost > m_maxVisualizedCost)
                     {

@@ -135,6 +135,7 @@ GameObject:
   - component: {fileID: 67399917}
   - component: {fileID: 67399916}
   - component: {fileID: 67399922}
+  - component: {fileID: 67399923}
   m_Layer: 7
   m_Name: ingredients
   m_TagString: Untagged
@@ -299,6 +300,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   userContextSource: {fileID: 1219749625}
+--- !u!114 &67399923
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 67399913}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a68f8cb2c36bdfc4eb6545e9c2b14096, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  weight: 0.5
+  targetContextSource: {fileID: 0}
+  targetDistance: 0.3
+  distanceInterval: 0.1
 --- !u!1 &94737070
 GameObject:
   m_ObjectHideFlags: 0
@@ -705,14 +722,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_auit: {fileID: 642232615}
   m_bounds: {fileID: 346269842}
-  m_distribution: {fileID: 0}
-  m_element: {fileID: 0}
+  m_distribution: {fileID: 318291449}
+  m_element: {fileID: 939544978}
   m_voxelSize: 0.5
   m_voxelMargin: 0.2
   m_costGradient:
     serializedVersion: 2
-    key0: {r: 0.40392157, g: 0.6627451, b: 0.8117647, a: 1}
-    key1: {r: 0.9372549, g: 0.5411765, b: 0.38431373, a: 0}
+    key0: {r: 0.40392157, g: 0.6627451, b: 0.8117647, a: 0}
+    key1: {r: 0.9372549, g: 0.5411765, b: 0.38431373, a: 1}
     key2: {r: 0, g: 0, b: 0, a: 0}
     key3: {r: 0, g: 0, b: 0, a: 0}
     key4: {r: 0, g: 0, b: 0, a: 0}
@@ -3815,7 +3832,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &624211755
 Transform:
   m_ObjectHideFlags: 0
@@ -3848,9 +3865,9 @@ GameObject:
   m_Component:
   - component: {fileID: 642232616}
   - component: {fileID: 642232615}
-  - component: {fileID: 642232619}
   - component: {fileID: 642232617}
   - component: {fileID: 642232618}
+  - component: {fileID: 642232619}
   m_Layer: 0
   m_Name: AUIT
   m_TagString: Untagged
@@ -3874,11 +3891,11 @@ MonoBehaviour:
     backend: 0
     solver: SimulatedAnnealing
   solverSettings:
-    rid: 2980885475889250359
+    rid: 2980885475889250397
   developmentMode: 1
   gameObjectsToOptimize:
-  - {fileID: 67399913}
   - {fileID: 939544978}
+  - {fileID: 67399913}
   constraints:
   - type: 0
     minimum: -1.6
@@ -3895,7 +3912,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 2980885475889250359
+    - rid: 2980885475889250397
       type: {class: SimulatedAnnealingSolver, ns: AUIT.Solvers, asm: Assembly-CSharp}
       data:
         iterations: 1500
@@ -3956,6 +3973,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b87777693561432c8fffddd81a870919, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  weight: 0.5
   userContextSource: {fileID: 475268783}
 --- !u!1 &718127019
 GameObject:
@@ -4536,9 +4554,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   weight: 0.5
-  userContextSource: {fileID: 0}
+  userContextSource: {fileID: 1219749625}
   targetAngle: 0
-  angleInterval: 5
+  angleInterval: 30
 --- !u!1 &948486870
 GameObject:
   m_ObjectHideFlags: 0
@@ -5801,7 +5819,7 @@ MonoBehaviour:
   sceneLoadedEvent:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 642232619}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: AUIT.AdaptationTriggers.CallbackOptimizationTrigger,
           Assembly-CSharp
         m_MethodName: ApplyStrategy
@@ -6391,6 +6409,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b87777693561432c8fffddd81a870919, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  weight: 0.5
   userContextSource: {fileID: 0}
 --- !u!114 &1811387866
 MonoBehaviour:
@@ -7341,7 +7360,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &2064500391
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7508,8 +7527,8 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 67399914}
   - {fileID: 939544979}
+  - {fileID: 67399914}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1660057539 &9223372036854775807
