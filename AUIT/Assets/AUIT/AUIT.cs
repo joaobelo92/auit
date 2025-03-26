@@ -43,10 +43,6 @@ namespace AUIT
         // To be phased out for multiple layouts
         private Layout _layout;
 
-        // Set elements to always look towards user
-        public bool _lookAtUser = true;
-        public ContextSource<Transform> userContextSource;
-
         public List<GameObject> gameObjectsToOptimize;
 
         private (GameObject, LocalObjectiveHandler)[] _gameObjects;
@@ -217,18 +213,6 @@ namespace AUIT
             Debug.Log($"Invoking solver: {backendSolver.solver}");
             (OptimizationResponse response, _, _) = await _asyncSolver.
                 OptimizeCoroutine(layouts, objectives, MultiElementObjectives);
-
-            // TODO: There's probably a better way to do this --> Add to individual elements
-            foreach (Layout result in response.suggested.elements)
-            {
-                if (_lookAtUser && userContextSource != null)
-                {
-                    Vector3 userPosition = userContextSource.GetValue().position;
-                    Vector3 direction = userPosition - result.Position;
-                    Quaternion rotation = Quaternion.LookRotation(direction);
-                    result.Rotation = rotation;
-                }
-            }
 
             Debug.Log($"First res: {response.suggested.elements[0].Position}");
             return response;
