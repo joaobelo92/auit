@@ -19,6 +19,7 @@ public class PolicyView : MonoBehaviour
     public Camera m_supportCamera;
 
     public int m_numSamples = 10;
+    public bool m_initializePlacement = false;
 
     public bool m_enableHovering = false;
 
@@ -142,11 +143,14 @@ public class PolicyView : MonoBehaviour
             for (int ei = 0; ei < numElements; ei++)
             {
                 Layout element = elements[ei];
-                optimizedResult[ei].transform.position = element.Position;
-                optimizedResult[ei].transform.rotation = element.Rotation;
-                optimizedResult[ei].transform.localScale = element.Scale;
-                optimizedElements[ei] = optimizedResult[ei].GetComponent<Element>();
-                optimizedElements[ei].Init();
+                GameObject resultObj = optimizedResult[ei];
+                resultObj.SetActive(true);
+                resultObj.transform.position = element.Position;
+                resultObj.transform.rotation = element.Rotation;
+                resultObj.transform.localScale = element.Scale;
+                Element resultElement = resultObj.GetComponent<Element>();
+                resultElement.Init();
+                optimizedElements[ei] = resultElement;
             }
             m_currentLayouts.Add(optimizedElements);
         }
@@ -552,6 +556,17 @@ public class PolicyView : MonoBehaviour
             m_paraHomeLoader.LoadSceneObjects(scene);
             m_paraHomeLoader.LoadScenePoses(pose);
 
+            // Initialize placement to in front of user camera
+            if (m_initializePlacement)
+            {
+                foreach (GameObject obj in auit.gameObjectsToOptimize)
+                {
+                    obj.transform.position = m_userCamera.transform.position + m_userCamera.transform.forward;
+                    obj.transform.rotation = Quaternion.LookRotation(-m_userCamera.transform.forward);
+                }
+            }
+
+
             Layout[][] layouts = new Layout[m_numSamples][];
             for (int si = 0; si < m_numSamples; si++)
             {
@@ -785,6 +800,7 @@ public class PolicyViewEditor : Editor
 
         EditorGUILayout.LabelField("Sampling", EditorStyles.boldLabel);
         policyView.m_numSamples = EditorGUILayout.IntField("Number of Samples", policyView.m_numSamples);
+        policyView.m_initializePlacement = EditorGUILayout.Toggle("Initialize Placement", policyView.m_initializePlacement);
         if (GUILayout.Button("Sample Policies"))
         {
             policyView.SamplePolicies();

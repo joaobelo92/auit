@@ -11,10 +11,16 @@ namespace AUIT.AdaptationObjectives
         private ContextSource<Transform> userContextSource;
 
         [SerializeField]
+        [Min(0)]
         private float targetAngle = 0f;
 
         [SerializeField]
-        private float angleInterval = 5f;
+        [Min(0)]
+        private float innerAngleInterval = 10f;
+
+        [SerializeField]
+        [Min(0)]
+        private float outerAngleInterval = 45f;
 
         public override float CostFunction(Layout optimizationTarget, Layout initialLayout = null)
         {
@@ -33,9 +39,10 @@ namespace AUIT.AdaptationObjectives
 
             // Inspired by https://en.wikipedia.org/wiki/Peripheral_vision
             // float cost = Mathf.Max(Mathf.Abs(rotation - boundaryOrigin[index]), boundaryDifference[index]) - boundaryDifference[index];
-            float angleDiff = Mathf.Abs(angle - targetAngle); 
+            float angleDiff = Mathf.Abs(angle - targetAngle);
 
-            float cost = Mathf.Min(angleDiff / angleInterval, 1);
+            float cost = (angleDiff - innerAngleInterval) / outerAngleInterval;
+            cost = Mathf.Clamp01(cost);
             return cost;
         }
 

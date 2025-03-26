@@ -3,6 +3,7 @@ using UnityEditor;
 using AUIT.AdaptationObjectives.Definitions;
 using System.Collections.Generic;
 using AUIT.AdaptationObjectives;
+using System.Linq;
 
 public class VoxelView : MonoBehaviour
 {
@@ -23,7 +24,7 @@ public class VoxelView : MonoBehaviour
     public Gradient m_costGradient;
 
     [Range(0, 1)]
-    public float m_maxVisualizedCost = 1f;
+    public float m_maxVisualizedCostPercentage = 1f;
 
     public bool m_visualizePareto = false;
 
@@ -35,18 +36,18 @@ public class VoxelView : MonoBehaviour
     [HideInInspector]
     public float m_updateInterval = 0.1f;
 
-    
+
 
     #endregion
 
     #region Private Fields
 
-    private GameObject m_voxelObj; 
+    private GameObject m_voxelObj;
     private Voxel[,,] m_voxels;
     private Vector3Int m_voxelDims;
 
     private Vector3 m_prevBounds;
-    private float m_prevVoxelSize; 
+    private float m_prevVoxelSize;
     private float m_prevVoxelMargin;
 
     private bool m_updatingVoxels;
@@ -74,7 +75,7 @@ public class VoxelView : MonoBehaviour
             Debug.Log("VoxelView.IsParamsValid(): Bounds must be larger than voxel size.");
             return false;
         }
-        return true; 
+        return true;
     }
 
     // Initialize voxels
@@ -103,8 +104,8 @@ public class VoxelView : MonoBehaviour
         Vector3 voxelSize = new Vector3(m_bounds.localScale.x / m_voxelDims.x,
             m_bounds.localScale.y / m_voxelDims.y,
             m_bounds.localScale.z / m_voxelDims.z);
-        Vector3 offset = - m_bounds.localScale / 2f + 0.5f * voxelSize;
-        
+        Vector3 offset = -m_bounds.localScale / 2f + 0.5f * voxelSize;
+
         m_voxels = new Voxel[m_voxelDims.x, m_voxelDims.y, m_voxelDims.z];
         for (int x = 0; x < m_voxelDims.x; x++) {
             for (int y = 0; y < m_voxelDims.y; y++) {
@@ -311,18 +312,41 @@ public class VoxelView : MonoBehaviour
                     layout.Position = position;
                     float cost = m_auit.ComputeElementCost(m_element, layout);
                     costs.Add(cost);
-                    if (cost > m_maxVisualizedCost)
-                    {
-                        voxel.gameObject.SetActive(false);
-                    }
-                    else
-                    {
-                        voxel.gameObject.SetActive(true);
-                        voxel.SetColor(m_costGradient.Evaluate(cost));
-                    }
+                    voxel.gameObject.SetActive(true);
+                    voxel.SetColor(m_costGradient.Evaluate(cost));
                 }
             }
         }
+        // Get minimum cost 
+        if (costs.Count > 0)
+        {
+            float min = costs.Min();
+            float max = costs.Max();
+            float range = max - min;
+            int ci = 0; 
+            for (int x = 0; x < m_voxelDims.x; x++)
+            {
+                for (int y = 0; y < m_voxelDims.y; y++)
+                {
+                    for (int z = 0; z < m_voxelDims.z; z++)
+                    {
+                        float cost = (costs[ci++] - min);
+                        if (range > 0)
+                        {
+                            cost /= range;
+                        }
+                        if (cost > m_maxVisualizedCostPercentage)
+                        {
+                            m_voxels[x, y, z].gameObject.SetActive(false);
+                        }
+                    }
+                } 
+            }
+        }
+        
+
+
+
         if (m_distribution != null)
         {
             m_distribution.SetValues(costs);
