@@ -59,7 +59,8 @@ namespace AUIT
         // flag to signal that the manager has been initialized
         [NonSerialized]
         public bool initialized = false;
-        
+
+        // NOTE: This is where all the multi-element objectives are stored
         public List<MultiElementObjective> MultiElementObjectives { get; } = new ();
         
         #region MonoBehaviour Implementation
@@ -217,6 +218,7 @@ namespace AUIT
             (OptimizationResponse response, _, _) = await _asyncSolver.
                 OptimizeCoroutine(layouts, objectives, MultiElementObjectives);
 
+            // TODO: There's probably a better way to do this --> Add to individual elements
             foreach (Layout result in response.suggested.elements)
             {
                 if (_lookAtUser && userContextSource != null)
@@ -362,10 +364,15 @@ namespace AUIT
             float cost = currentHandler.Objectives.Sum(
                 objective => objective.Weight * objective.CostFunction(l));
             float elementWeightSum = currentHandler.Objectives.Sum(objective => objective.Weight);
+
+            // TODO: Account for global objective
+
             if (elementWeightSum >= 0)
             {
                 cost /= elementWeightSum;
             }
+
+            
 
             return cost;
         }
@@ -406,6 +413,8 @@ namespace AUIT
                 }
                 cost += elementCostSum;
             }
+
+            // TODO: Global objective cost
             
             cost /= gameObjectsToOptimize.Count;
             return cost;

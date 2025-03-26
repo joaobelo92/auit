@@ -560,6 +560,8 @@ public class PolicyView : MonoBehaviour
                     float value = (float)m_samples[si, pi];
                     parameter.Value = value;
                 }
+
+                // Call to solver
                 OptimizationResponse response = await auit.OptimizeLayout();
 
                 Layout[] elements = response.suggested.elements;

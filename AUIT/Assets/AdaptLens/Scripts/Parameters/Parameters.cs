@@ -86,6 +86,8 @@ public class Parameters : MonoBehaviour
     {
         m_parameters.Clear();
 
+        // TODO: Get global objectives
+
         List<(string, List<LocalObjective>)> objectives = m_auit.GetLocalObjectives();
         
         foreach ((string obj, List<LocalObjective> objs) in objectives)

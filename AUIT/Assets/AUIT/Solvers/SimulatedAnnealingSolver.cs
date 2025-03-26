@@ -121,7 +121,7 @@ namespace AUIT.Solvers
                     totalObjectiveCosts.Add(totalCost);
                 }
 
-                
+                // Here is where we compute the multi-element objectives
                 for (int j = 0; j < multiElementObjectives.Count; j++)
                 {
                     float objectiveCost = multiElementObjectives[j].CostFunction(currentLayout.ToArray());
