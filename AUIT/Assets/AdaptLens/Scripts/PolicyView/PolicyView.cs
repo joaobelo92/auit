@@ -606,6 +606,8 @@ public class PolicyView : MonoBehaviour
 
                 // Call to solver
                 OptimizationResponse response = await auit.OptimizeLayout();
+                
+                // TODO: Retrieve costs
 
                 Layout[] elements = response.suggested.elements;
                 int numElements = elements.Length;
