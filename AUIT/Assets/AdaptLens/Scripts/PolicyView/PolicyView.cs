@@ -589,8 +589,27 @@ public class PolicyView : MonoBehaviour
                 m_numSamples = m_samples.shape[0];
                 m_samples -= m_increment * np.random.rand(m_numSamples, m_numParameters);
                 m_samples = np.clip(m_samples, np.array(0), np.array(1));
+
+                if (m_numParameters > 1)
+                {
+                    var row_sums = np.sum(m_samples, axis: 1, keepdims: true);
+                    m_samples = m_samples / row_sums;
+                }
                 break;
             case SamplingApproach.Random:
+                m_samples = RandomSample.UniformSampleSimplex(m_numSamples, m_numParameters);
+                for (int i = 0; i < m_numParameters; i++)
+                {
+                    Parameters.ParamReference<float> parameter = parameters[i];
+                    float min = 0;
+                    float max = 1;
+                    min = ((Parameters.FloatParamReference)parameter).min;
+                    max = ((Parameters.FloatParamReference)parameter).max;
+
+                    m_samples[":", i] = min + (max - min) * m_samples[":", i];
+                }
+
+                /*
                 m_samples = np.random.rand(m_numSamples, m_numParameters);
                 for (int i = 0; i < m_numParameters; i++)
                 {
@@ -602,18 +621,14 @@ public class PolicyView : MonoBehaviour
 
                     m_samples[":", i] = min + (max - min) * m_samples[":", i];
                 }
-                
-                
+                */
+
                 break;
         }
 
-        if (m_numParameters > 1)
-        {
-            var row_sums = np.sum(m_samples, axis: 1, keepdims: true);
-            m_samples = m_samples / row_sums;
-        }
+        
 
-        Debug.Log($"Sampling Approach: {m_samplingApproach}" +
+        Debug.Log($"Sampling Approach: {m_samplingApproach}\n" +
                     $"Increment: {m_increment}\n" +
                     $"Num parameters {m_numParameters}\n" +
                     $"Shape: {m_samples.shape}");

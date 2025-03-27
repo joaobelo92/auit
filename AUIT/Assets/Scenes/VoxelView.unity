@@ -318,7 +318,7 @@ MonoBehaviour:
   userContextSource: {fileID: 0}
   targetAngle: 60
   innerAngleDistance: 10
-  outerAngleDistance: 10
+  outerAngleDistance: 20
 --- !u!114 &67399924
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -334,8 +334,8 @@ MonoBehaviour:
   weight: 0.5
   targetContextSource: {fileID: 0}
   targetDistance: 1
-  innerDistance: 0.1
-  outerDistance: 0.1
+  innerDistance: 0.2
+  outerDistance: 0.3
 --- !u!114 &67399925
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3928,7 +3928,7 @@ MonoBehaviour:
     backend: 0
     solver: SimulatedAnnealing
   solverSettings:
-    rid: 2980885498634961001
+    rid: 2980885498634961015
   developmentMode: 1
   gameObjectsToOptimize:
   - {fileID: 939544978}
@@ -3949,7 +3949,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 2980885498634961001
+    - rid: 2980885498634961015
       type: {class: SimulatedAnnealingSolver, ns: AUIT.Solvers, asm: Assembly-CSharp}
       data:
         iterations: 1500
@@ -4417,8 +4417,8 @@ MonoBehaviour:
   m_gallery: {fileID: 846422403}
   m_userCamera: {fileID: 1341102933}
   m_supportCamera: {fileID: 1217115068}
-  m_samplingApproach: 1
-  m_numSamples: 10
+  m_samplingApproach: 0
+  m_numSamples: 200
   m_increment: 0.5
   m_initializePlacement: 1
   m_enableHovering: 0
@@ -4661,8 +4661,8 @@ MonoBehaviour:
   weight: 0.5
   targetContextSource: {fileID: 0}
   targetDistance: 1
-  innerDistance: 0.1
-  outerDistance: 0.1
+  innerDistance: 0.2
+  outerDistance: 0.3
 --- !u!114 &939544990
 MonoBehaviour:
   m_ObjectHideFlags: 0

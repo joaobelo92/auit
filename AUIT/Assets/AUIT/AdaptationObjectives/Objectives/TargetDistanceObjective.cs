@@ -32,7 +32,7 @@ namespace AUIT.AdaptationObjectives
             Vector3 currentPosition = optimizationTarget.Position;
 
             Vector3 distanceVector = targetPosition - currentPosition;
-            //distanceVector.y = 0;
+            distanceVector.y = 0;
             float distance = Mathf.Abs(distanceVector.magnitude - targetDistance);
 
             float cost = (distance - innerDistance) / outerDistance;
@@ -50,7 +50,7 @@ namespace AUIT.AdaptationObjectives
             Vector3 targetPosition = targetContextSource.GetValue().position;
             Vector3 currentPosition = optimizationTarget.Position;
             Vector3 displacement = targetPosition - currentPosition;
-            //displacement.y = 0;
+            displacement.y = 0;
             float distance = displacement.magnitude - targetDistance;
             Vector3 direction = Mathf.Sign(distance) * displacement.normalized;
 
@@ -60,6 +60,8 @@ namespace AUIT.AdaptationObjectives
             // Two different strategies
             if (Random.value > 0.5f)
             {
+                direction.y = Mathf.Sign(targetPosition.y - currentPosition.y);
+                direction.Normalize();
                 Vector3 position = optimizationTarget.Position + 0.05f * HelperMath.SampleNormalDistribution(1.0f, 0.5f) * direction;
                 //position.y = currentPosition.y + (targetPosition.y - currentPosition.y) * HelperMath.SampleNormalDistribution(0.1f, 0.1f);
                 result.Position = position;
