@@ -136,13 +136,15 @@ GameObject:
   - component: {fileID: 67399916}
   - component: {fileID: 67399922}
   - component: {fileID: 67399923}
+  - component: {fileID: 67399924}
+  - component: {fileID: 67399925}
   m_Layer: 7
   m_Name: ingredients
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &67399914
 Transform:
   m_ObjectHideFlags: 0
@@ -317,6 +319,39 @@ MonoBehaviour:
   targetAngle: 45
   innerAngleDistance: 10
   outerAngleDistance: 45
+--- !u!114 &67399924
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 67399913}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a68f8cb2c36bdfc4eb6545e9c2b14096, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  weight: 0.5
+  targetContextSource: {fileID: 0}
+  targetDistance: 1
+  innerDistance: 0.2
+  outerDistance: 0.5
+--- !u!114 &67399925
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 67399913}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8d10cbea53ae22843854d89a56f7a337, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  weight: 0.5
+  physicalLayerMask:
+    serializedVersion: 2
+    m_Bits: 0
 --- !u!1 &94737070
 GameObject:
   m_ObjectHideFlags: 0
@@ -3868,6 +3903,7 @@ GameObject:
   - component: {fileID: 642232615}
   - component: {fileID: 642232617}
   - component: {fileID: 642232618}
+  - component: {fileID: 642232619}
   m_Layer: 0
   m_Name: AUIT
   m_TagString: Untagged
@@ -3891,10 +3927,11 @@ MonoBehaviour:
     backend: 0
     solver: SimulatedAnnealing
   solverSettings:
-    rid: 2980885483240554559
+    rid: 2980885483240554600
   developmentMode: 1
   gameObjectsToOptimize:
   - {fileID: 939544978}
+  - {fileID: 67399913}
   constraints:
   - type: 0
     minimum: -1.6
@@ -3911,7 +3948,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 2980885483240554559
+    - rid: 2980885483240554600
       type: {class: SimulatedAnnealingSolver, ns: AUIT.Solvers, asm: Assembly-CSharp}
       data:
         iterations: 1500
@@ -3960,6 +3997,66 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 87016b92a7ea4db197f26248477f1e6f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &642232619
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 642232613}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b87777693561432c8fffddd81a870919, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  weight: 0.5
+  userContextSource: {fileID: 0}
+--- !u!1 &680008016
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 680008018}
+  - component: {fileID: 680008017}
+  m_Layer: 0
+  m_Name: GameObject
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!114 &680008017
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 680008016}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dcda433ab70ec6646a6d2cb6afccc9be, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  M: 0
+  increment: 0
+--- !u!4 &680008018
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 680008016}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.3875825, y: 0.32596955, z: -0.032101355}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &718127019
 GameObject:
   m_ObjectHideFlags: 0
@@ -4322,7 +4419,7 @@ MonoBehaviour:
   m_samplingApproach: 1
   m_numSamples: 10
   m_increment: 0.2
-  m_initializePlacement: 0
+  m_initializePlacement: 1
   m_enableHovering: 0
 --- !u!114 &846422402
 MonoBehaviour:
@@ -4574,13 +4671,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 939544978}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8d10cbea53ae22843854d89a56f7a337, type: 3}
+  m_Script: {fileID: 11500000, guid: ec5c8f9fb4d4d384aa043a32a465f174, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   weight: 0.5
+  userContextSource: {fileID: 0}
   physicalLayerMask:
     serializedVersion: 2
-    m_Bits: 256
+    m_Bits: 0
 --- !u!1 &948486870
 GameObject:
   m_ObjectHideFlags: 0
@@ -5846,8 +5944,8 @@ MonoBehaviour:
   sceneLoadedEvent:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: AUIT.AdaptationTriggers.CallbackOptimizationTrigger,
+      - m_Target: {fileID: 642232618}
+        m_TargetAssemblyTypeName: AUIT.AdaptationTriggers.OnRequestOptimizationTrigger,
           Assembly-CSharp
         m_MethodName: ApplyStrategy
         m_Mode: 1
@@ -7579,3 +7677,4 @@ SceneRoots:
   - {fileID: 441668349}
   - {fileID: 2122511928}
   - {fileID: 624211755}
+  - {fileID: 680008018}

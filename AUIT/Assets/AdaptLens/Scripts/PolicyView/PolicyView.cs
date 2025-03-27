@@ -504,6 +504,7 @@ public class PolicyView : MonoBehaviour
 
     public async void SamplePolicies()
     {
+        DateTime tsStart = DateTime.Now;
         ClearSaved();
         ClearSampledResults();
         m_layouts.Clear();
@@ -540,12 +541,10 @@ public class PolicyView : MonoBehaviour
         {
             case SamplingApproach.Interval:
                 m_samples = IntervalSampling.GenerateSamples(m_increment, m_numParameters);
+                m_samples = np.concatenate(new NDarray[] { m_samples, m_samples }, axis: 0);
                 m_numSamples = m_samples.shape[0];
-                Debug.Log($"Interval" +
-                    $"Increment: {m_increment}\n" +
-                    $"Num parameters {m_numParameters}\n" +
-                    $"Shape: {m_samples.shape}\n" +
-                    $"{m_samples}");
+                m_samples -= m_increment * np.random.rand(m_numSamples, m_numParameters);
+                m_samples = np.clip(m_samples, np.array(0), np.array(1));
                 break;
             case SamplingApproach.Random:
                 m_samples = np.random.rand(m_numSamples, m_numParameters);
@@ -559,19 +558,21 @@ public class PolicyView : MonoBehaviour
 
                     m_samples[":", i] = min + (max - min) * m_samples[":", i];
                 }
-                if (m_numParameters > 1)
-                {
-                    var row_sums = np.sum(m_samples, axis: 1, keepdims: true);
-                    row_sums = np.maximum(row_sums, np.ones_like(row_sums) * 1e-10);
-                    m_samples = m_samples / row_sums;
-                }
-                Debug.Log($"Random" +
-                    $"Increment: {m_increment}\n" +
-                    $"Num parameters {m_numParameters}\n" +
-                    $"Shape: {m_samples.shape}\n" +
-                    $"{m_samples}");
+                
+                
                 break;
         }
+
+        if (m_numParameters > 1)
+        {
+            var row_sums = np.sum(m_samples, axis: 1, keepdims: true);
+            m_samples = m_samples / row_sums;
+        }
+
+        Debug.Log($"Sampling Approach: {m_samplingApproach}" +
+                    $"Increment: {m_increment}\n" +
+                    $"Num parameters {m_numParameters}\n" +
+                    $"Shape: {m_samples.shape}");
 
         int numContexts = m_contexts.Count;
         for (int ci = 0; ci < numContexts; ci++)
@@ -619,6 +620,8 @@ public class PolicyView : MonoBehaviour
         }
         
         LoadContext();
+
+        Debug.Log((DateTime.Now - tsStart).TotalSeconds);
 
         m_sacs.Init(m_parameters.GetParametersInfo());
         

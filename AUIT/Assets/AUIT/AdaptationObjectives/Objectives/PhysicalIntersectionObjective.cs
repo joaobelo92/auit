@@ -57,7 +57,7 @@ namespace AUIT.AdaptationObjectives
 
         protected override void Start()
         {
-            layoutCollider = GetComponentInChildren<Collider>();
+            layoutCollider = GetComponent<Collider>();
 
             if (layoutCollider == null)
             {
@@ -65,8 +65,11 @@ namespace AUIT.AdaptationObjectives
             }
         }
 
-        private void Update()
+        private new void OnEnable()
         {
+            base.OnEnable();
+
+            physicalLayerMask = LayerMask.GetMask("Physical Environment");
         }
     }
 

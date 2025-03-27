@@ -18,6 +18,7 @@ public class SingleAttributeController
     private int m_id;
 
     private float m_height = 50;
+    private float m_margin = 10;
     private Color m_color = new Color(0.2f, 0.2f, 0.2f);
 
     private Color m_gridColor = new Color(0.4f, 0.4f, 0.4f, 0.2f);
@@ -147,7 +148,7 @@ public class SingleAttributeController
 
     private Vector2 OffsetGraphPosition(float offset, Rect cr)
     {
-        return new Vector2(0, offset * cr.height / 2);
+        return new Vector2(0, offset * (cr.height / 2 - m_margin));
     }
 
     private float GraphPositionValue(Vector2 point, float min, float max, Rect cr)

@@ -285,6 +285,8 @@ namespace AUIT.AdaptationObjectives.Objectives
         private new void OnEnable()
         {
             base.OnEnable();
+
+            userContextSource = GetUserCameraContextSource();
         }
     }
 }

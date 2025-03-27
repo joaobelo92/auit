@@ -5,6 +5,9 @@ using Numpy;
 
 public class IntervalSampling : MonoBehaviour
 {
+    public int M;
+    public float increment; 
+
     public static NDarray GenerateSamples(float increment, int M)
     {
         int totalUnits = (int)Math.Round(1.0 / increment);
@@ -64,8 +67,12 @@ public class IntervalSampling : MonoBehaviour
 
     private void Start()
     {
-        NDarray result = GenerateSamples(0.2f, 3);
-
+        if (M > 0 && increment > 0)
+        {
+            NDarray result = GenerateSamples(increment, M);
+            Debug.Log(result.shape);
+        }
+        
     }
 
 }

@@ -32,7 +32,7 @@ namespace AUIT.AdaptationObjectives
             auit.RegisterMultiElementObjective(this);
         }
 
-        protected virtual void Start()
+        protected virtual void Start() 
         {
         }
 
@@ -49,5 +49,18 @@ namespace AUIT.AdaptationObjectives
         public abstract float CostFunction(Layout[] optimizationTargets, Layout initialLayout = null);
 
         public abstract List<Layout> OptimizationRule(List<Layout> optimizationTargets, Layout initialLayout = null);
+
+        public ContextSource<Camera> GetUserCameraContextSource()
+        {
+            // Search scene for GameObject "User Pose" with a TransformContextSourceComponent
+
+            ContextSource<Camera> userPoseContextSource = null;
+            GameObject userPose = GameObject.Find("User Camera");
+            if (userPose != null)
+            {
+                userPoseContextSource = userPose.GetComponent<ContextSource<Camera>>();
+            }
+            return userPoseContextSource;
+        }
     }
 }

@@ -82,6 +82,8 @@ namespace AUIT.AdaptationObjectives
             {
                 userContextSource = GetUserPoseContextSource();
             }
+
+            physicalLayerMask = LayerMask.GetMask("Physical Environment");
         }
     }
 
