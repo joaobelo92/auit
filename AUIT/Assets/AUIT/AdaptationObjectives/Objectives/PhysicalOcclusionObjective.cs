@@ -1,7 +1,10 @@
+using AUIT.AdaptationObjectives;
 using AUIT.AdaptationObjectives.Definitions;
 using AUIT.AdaptationObjectives.Extras;
 using System.Linq;
+using UnityEditor;
 using UnityEngine;
+using static UnityEngine.GraphicsBuffer;
 
 namespace AUIT.AdaptationObjectives
 {
@@ -13,14 +16,36 @@ namespace AUIT.AdaptationObjectives
         [SerializeField]
         private LayerMask physicalLayerMask;
 
-        private bool IsOccluding(Layout optimizationTarget)
+        private Vector3[] GetCheckPoints(Layout layout)
+        {
+            // Assuming x = width, y = height
+            // Checking center and corners of the layout element
+            Vector3[] checkTargets = new Vector3[] {
+                new Vector3 (-0.5f, -0.5f, 0),
+                new Vector3 (-0.5f, 0.5f, 0),
+                new Vector3 (0.5f, -0.5f, 0),
+                new Vector3 (0.5f, 0.5f, 0),
+                new Vector3 (0, 0, 0),
+            };
+            Matrix4x4 trs = Matrix4x4.TRS(layout.Position, layout.Rotation, layout.Scale);
+            for (int i = 0; i < checkTargets.Length; i++)
+            {
+                checkTargets[i] = trs.MultiplyPoint(checkTargets[i]);
+            }
+
+            return checkTargets;
+        }
+
+        private bool IsOccluding(Vector3 optimizationTarget)
         {
             Transform contextSourceTransform = userContextSource.GetValue();
-            Vector3 toElement = optimizationTarget.Position - contextSourceTransform.position;
+            Vector3 toElement = optimizationTarget - contextSourceTransform.position;
             Vector3 direction = toElement.normalized;
-            float distance = direction.magnitude;
-            return Physics.Raycast(contextSourceTransform.position, direction, distance, physicalLayerMask);
+            float distance = toElement.magnitude;
+            bool occluding = Physics.Raycast(contextSourceTransform.position, direction, distance, physicalLayerMask);
+            return occluding;
         }
+
 
         public override float CostFunction(Layout optimizationTarget, Layout initialLayout = null)
         {
@@ -28,15 +53,29 @@ namespace AUIT.AdaptationObjectives
             {
                 Debug.LogError("PhysicalOcclusionObjective.CostFunction(): User context source is not set.");
             }
+            
+            float overlaps = 0;
+            Vector3[] checkTargets = GetCheckPoints(optimizationTarget);
+            foreach (Vector3 target in checkTargets)
+            {
+                if (IsOccluding(target))
+                {
+                    overlaps += 1; 
+                }
+            }
+            return overlaps / checkTargets.Length;
+        }
 
-            if (IsOccluding(optimizationTarget))
-            {
-                return 1.0f; // High cost if occluded
-            }
-            else
-            {
-                return 0;
-            }
+        private Vector3 GetPlanarDirection(Layout optimizationTarget)
+        {
+            Transform contextSourceTransform = userContextSource.GetValue();
+            Vector3 occludedDirection = (optimizationTarget.Position - contextSourceTransform.position).normalized;
+            Vector3 tangent = Vector3.Cross(occludedDirection, Vector3.up);
+            Vector3 bitangent = Vector3.Cross(occludedDirection, tangent);
+            float angle = Random.Range(0, 2 * Mathf.PI);
+            Vector3 randomDirection = (tangent * Mathf.Cos(angle) + bitangent * Mathf.Sin(angle)).normalized;
+            return randomDirection;
+
         }
 
         public override Layout OptimizationRule(Layout optimizationTarget, Layout initialLayout = null)
@@ -48,23 +87,30 @@ namespace AUIT.AdaptationObjectives
 
             Layout result = optimizationTarget.Clone();
 
-            Vector3 moveDirection = Random.insideUnitSphere;
-            moveDirection *= Random.Range(0, 0.3f);
+            Vector3 moveDirection = Vector3.zero;
 
-            if (IsOccluding(optimizationTarget))
+            float moveStrategy = Random.value;
+            if (moveStrategy < 0.33)
             {
-                Transform contextSourceTransform = userContextSource.GetValue();
-                Vector3 occludedDirection = (optimizationTarget.Position - contextSourceTransform.position).normalized;
-                // Get perpendicular plane to the occluded direction
-                Vector3 tangent = Vector3.Cross(occludedDirection, Vector3.up);
-                Vector3 bitangent = Vector3.Cross(occludedDirection, tangent);
-                float angle = Random.Range(0, 2 * Mathf.PI);
-                Vector3 randomDirection = (tangent * Mathf.Cos(angle) + bitangent * Mathf.Sin(angle)).normalized;
-
-                moveDirection += randomDirection; 
+                Vector3[] checkPoints = GetCheckPoints(optimizationTarget);
+                Vector3 center = checkPoints[4];
+                for (int i = 0; i < 4; i++)
+                {
+                    Vector3 corner = checkPoints[i];
+                    if (IsOccluding(corner))
+                    {
+                        moveDirection += (corner - center).normalized;
+                    }
+                }
+                moveDirection = moveDirection.normalized;
+            } else if (moveStrategy < 0.66) {
+                moveDirection = GetPlanarDirection(optimizationTarget);
+            } else
+            {
+                moveDirection = Random.onUnitSphere;
             }
 
-            result.Position += 0.05f * HelperMath.SampleNormalDistribution(1f, 0.5f) * moveDirection;
+            result.Position += 0.05f * HelperMath.SampleNormalDistribution(1, 0.5f) * moveDirection;
 
             return result; 
         }

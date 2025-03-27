@@ -37,14 +37,31 @@ namespace AUIT.AdaptationObjectives
             Bounds bounds = layoutCollider.bounds;
             Collider[] overlapping = Physics.OverlapBox(optimizationTarget.Position, bounds.extents, optimizationTarget.Rotation, physicalLayerMask);
 
-            Vector3 moveDirection = Random.insideUnitSphere;
-            moveDirection *= Random.Range(0, 0.3f);
-
-            foreach (Collider overlap in overlapping)
+            //Vector3 moveDirection = Random.insideUnitSphere;
+            //moveDirection *= Random.Range(0, 0.3f);
+            Vector3 moveDirection = Vector3.zero;
+            if (overlapping.Length > 0)
             {
-                moveDirection += (optimizationTarget.Position - overlap.transform.position).normalized;
-            }
+                float minDistance = float.MaxValue;
+                foreach (Collider overlap in overlapping)
+                {
+                    float distance = (optimizationTarget.Position - overlap.transform.position).magnitude;
+                    if (distance < minDistance)
+                    {
+                        minDistance = distance;
+                        moveDirection = (optimizationTarget.Position - overlap.transform.position).normalized;
+                    }
+                }
 
+                if (Random.value > 0.5)
+                {
+                    moveDirection += Random.insideUnitSphere;
+                }
+            } else
+            {
+                moveDirection = Random.insideUnitSphere;
+            }
+            moveDirection.Normalize();
             result.Position += 0.05f * HelperMath.SampleNormalDistribution(1f, 0.5f) * moveDirection;
 
             return result; 

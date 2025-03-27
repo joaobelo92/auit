@@ -1,5 +1,10 @@
+using AUIT; 
+using AUIT.AdaptationObjectives;
+using AUIT.AdaptationObjectives.Definitions;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
+using static UnityEngine.GraphicsBuffer;
 
 public class Element : MonoBehaviour
 {
@@ -71,9 +76,48 @@ public class Element : MonoBehaviour
         }
     }
 
+    public void DebugCost()
+    {
+        Layout layout = new Layout("debug", transform);
+        //float cost = CostFunction(layout);
+        List<List<LocalObjective>> localObjectives = AUIT.AUIT.Instance.gatherOptimizationData().objectives;
+        List<MultiElementObjective> globalObjectives = AUIT.AUIT.Instance.MultiElementObjectives;
+        List<List<float>> objectiveCosts;
+        List<float> multiObjectiveCosts;
+        (objectiveCosts, multiObjectiveCosts) = AUIT.Solvers.Utils.ComputeCostsUnweighted(new List<Layout>() { layout }, localObjectives, globalObjectives);
+        string debug = "";
+        for (int i = 0; i < localObjectives.Count; i++)
+        {
+            for (int j = 0; j < localObjectives[i].Count; j++)
+            {
+                debug += localObjectives[i][j].gameObject.name + ", " + localObjectives[i][j].GetType().Name + ": " + objectiveCosts[i][j] + "\n";
+            }
+        }
+        for (int i = 0; i < globalObjectives.Count; i++)
+        {
+            debug += "global, " + globalObjectives[i].GetType().Name + ": " + multiObjectiveCosts[i] + "\n";
+        }
+        Debug.Log(debug);
+    }
+
     // Update is called once per frame
     void Update()
     {
         
+    }
+}
+
+
+[CustomEditor(typeof(Element))]
+public class ElementEditor : Editor
+{
+    public override void OnInspectorGUI()
+    {
+        base.OnInspectorGUI();
+        Element element = (Element)target;
+        if (GUILayout.Button("Debug Cost"))
+        {
+            element.DebugCost();
+        }
     }
 }

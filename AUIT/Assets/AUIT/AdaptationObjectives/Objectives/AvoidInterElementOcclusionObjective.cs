@@ -199,7 +199,7 @@ namespace AUIT.AdaptationObjectives.Objectives
         {
             Vector3 position = optimizationTarget[elementsColliding.Last()].Position;
             optimizationTarget[elementsColliding.Last()].Position = position + Random.insideUnitSphere * 
-                HelperMath.SampleNormalDistribution(0.5f, 0.5f) * 0.05f;
+                HelperMath.SampleNormalDistribution(0.1f, 0.5f) * 0.05f;
             return optimizationTarget;
         }
 

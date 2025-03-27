@@ -18,6 +18,8 @@ namespace AUIT
 {
     public sealed class AUIT : MonoBehaviour
     {
+        public static AUIT Instance;
+
         public string Id { get; } = Guid.NewGuid().ToString();
 
         private LocalObjectiveHandler _localObjectiveHandler;
@@ -110,6 +112,8 @@ namespace AUIT
 
         private void Start()
         {
+            Instance = this; 
+
             AsyncIO.ForceDotNet.Force();
             // Start by gathering all the game objects to optimize
             int size = gameObjectsToOptimize.Count;

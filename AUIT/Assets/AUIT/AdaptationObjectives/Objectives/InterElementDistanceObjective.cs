@@ -106,19 +106,19 @@ namespace AUIT.AdaptationObjectives.Objectives
                 Vector3 displacement = layoutAnchor.Position - layoutMove.Position;
                 float distance = displacement.magnitude;
                 float diff = distance - targetDistance;
-                move = Mathf.Sign(diff) * 0.05f * HelperMath.SampleNormalDistribution(0.5f, 0.5f) * displacement.normalized;
+                move = Mathf.Sign(diff) * displacement.normalized;
+
+                if (Random.value > 0.5)
+                {
+                    move += Random.insideUnitSphere;
+                }
             } else
             {
                 iMove = Random.Range(0, optimizationTargets.Count);
+                move = Random.insideUnitSphere;
             }
 
-            
-            if (Random.value > 0.5)
-            {
-                move += Random.insideUnitSphere * HelperMath.SampleNormalDistribution(0.5f, 0.5f) * 0.05f;
-            }
-
-            optimizationTargets[iMove].Position += move;
+            optimizationTargets[iMove].Position += 0.05f *HelperMath.SampleNormalDistribution(0.5f, 0.5f) * move;
 
 
             return optimizationTargets;
