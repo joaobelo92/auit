@@ -15,7 +15,8 @@ namespace AUIT.AdaptationTriggers
             
             OptimizationResponse response = await Auit.OptimizeLayout();
             
-            Auit.Adapt(response.solutions);
+            if (response != null)
+                Auit.Adapt(response.solutions);
         }
 
         private void Update()

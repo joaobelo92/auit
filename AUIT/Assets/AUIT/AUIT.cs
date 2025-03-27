@@ -122,7 +122,7 @@ namespace AUIT
                     .GetComponent<LocalObjectiveHandler>();
                 if (goLocalObjectiveHandler == null)
                 {
-                    Debug.LogError("No handler found in " +
+                    Debug.LogWarning("No objectives / objective handler found in " +
                                    $"{gameObjectsArray[i].name}!");
                 }
                 _gameObjects[i] = (gameObjectsArray[i],
@@ -180,7 +180,8 @@ namespace AUIT
 
             for (int i = 0; i < _gameObjects.Length; i++)
             {
-                objectives.Add(_gameObjects[i].Item2.Objectives);
+                if (_gameObjects[i].Item2 != null)
+                    objectives.Add(_gameObjects[i].Item2.Objectives);
                 
             }
             return (objectives, layouts);
@@ -191,11 +192,14 @@ namespace AUIT
             List<Layout> layouts = new List<Layout>();
             for (int i = 0; i < _gameObjects.Length; i++)
             {
-                layouts.Add(new
-                    Layout(
-                        _gameObjects[i].Item2.Id,
-                        _gameObjects[i].Item1.transform
-                    ));
+                if (_gameObjects[i].Item2 != null)
+                {
+                    layouts.Add(new
+                        Layout(
+                            _gameObjects[i].Item2.Id,
+                            _gameObjects[i].Item1.transform
+                        ));
+                }
             }
             return layouts;
         }
