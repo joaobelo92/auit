@@ -39,6 +39,7 @@ namespace AUIT.AdaptationObjectives.Objectives
             }
 
             float normalizationFactor = Mathf.Max(1, numDist);
+            Debug.Log(cost);
             return cost / normalizationFactor;
         }
 
@@ -85,42 +86,40 @@ namespace AUIT.AdaptationObjectives.Objectives
                 }
             }
 
-            /*
-            Vector3 move = Random.insideUnitSphere * HelperMath.SampleNormalDistribution(0.5f, 0.5f) * 0.05f;
-            int iMove = -1; 
+            int iMove = -1;
+            Vector3 move = Vector3.zero;
             if (iMin >= 0 && jMin >= 0)
             {
                 int iAnchor;
                 if (Random.value > 0.5)
                 {
-                    anchorLayout = optimizationTargets[iMin];
-                    moveLayout = optimizationTargets[jMin];
-                } else
-                {
-                    anchorLayout = optimizationTargets[jMin];
-                    moveLayout = optimizationTargets[iMin];
+                    iMove = iMin;
+                    iAnchor = jMin;
                 }
-
-            }
-            
-            (Random.value > 0.5) ? iMin : jMin;
-            if (iMove < 0)
-            {
-                iMove = Random.Range(0, optimizationTargets.Count);
-                move = 
+                else
+                {
+                    iMove = jMin;
+                    iAnchor = iMin;
+                }
+                Layout layoutMove = optimizationTargets[iMove];
+                Layout layoutAnchor = optimizationTargets[iAnchor];
+                Vector3 displacement = layoutAnchor.Position - layoutMove.Position;
+                float distance = displacement.magnitude;
+                float diff = distance - targetDistance;
+                move = Mathf.Sign(diff) * 0.05f * HelperMath.SampleNormalDistribution(0.5f, 0.5f) * displacement.normalized;
             } else
             {
-
+                iMove = Random.Range(0, optimizationTargets.Count);
             }
-            if (Random.value < 0.5f)
+
+            
+            if (Random.value > 0.5)
             {
-
+                move += Random.insideUnitSphere * HelperMath.SampleNormalDistribution(0.5f, 0.5f) * 0.05f;
             }
-            Vector3 position = optimizationTarget[elementsColliding.Last()].Position;
-            optimizationTarget[elementsColliding.Last()].Position = position + Random.insideUnitSphere * 
-                HelperMath.SampleNormalDistribution(0.5f, 0.5f) * 0.05f;
-            return optimizationTarget;
-            */
+
+            optimizationTargets[iMove].Position += move;
+
 
             return optimizationTargets;
         }
