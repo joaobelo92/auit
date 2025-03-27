@@ -3928,7 +3928,7 @@ MonoBehaviour:
     backend: 0
     solver: SimulatedAnnealing
   solverSettings:
-    rid: 2980885498634961015
+    rid: 2980885507950510125
   developmentMode: 1
   gameObjectsToOptimize:
   - {fileID: 939544978}
@@ -3949,7 +3949,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 2980885498634961015
+    - rid: 2980885507950510125
       type: {class: SimulatedAnnealingSolver, ns: AUIT.Solvers, asm: Assembly-CSharp}
       data:
         iterations: 1500
@@ -4418,10 +4418,11 @@ MonoBehaviour:
   m_userCamera: {fileID: 1341102933}
   m_supportCamera: {fileID: 1217115068}
   m_samplingApproach: 0
-  m_numSamples: 200
+  m_numSamples: 10
   m_increment: 0.5
   m_initializePlacement: 1
   m_enableHovering: 0
+  m_sacValues: 0
 --- !u!114 &846422402
 MonoBehaviour:
   m_ObjectHideFlags: 0

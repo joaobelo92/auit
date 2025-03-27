@@ -31,6 +31,15 @@ public class PolicyView : MonoBehaviour
 
     public bool m_enableHovering = false;
 
+    public enum SACValues
+    {
+        PerContext,
+        Average,
+        Min,
+        Max
+    }
+    public SACValues m_sacValues = SACValues.PerContext;
+
     //public int m_numSamples = 4;
     //public float m_solver_interval = 0.1f; // todo: use ref
 
@@ -109,13 +118,9 @@ public class PolicyView : MonoBehaviour
         ParaHomeContext context = m_contexts[m_currentContext];
         m_paraHomeLoader.LoadSceneObjects(context.scene);
         m_paraHomeLoader.LoadScenePoses(context.pose);
+        
         // Update costs based on context 
-        if (m_costs != null)
-        {
-            m_sacs.SetValues(m_costs[m_currentContext]);
-        }
-        //m_sacs.SetValues(m_costs[m_currentContext]);
-
+        UpdateSACs();
         LoadSampledResults();
         SetSelected();
         UpdateGallerySaved();
@@ -253,7 +258,24 @@ public class PolicyView : MonoBehaviour
         // var parameterValues = m_samples[":", pi];
 
         // Filtering based on costs 
-        var parameterValues = m_costs[m_currentContext, ":", pi];
+        NDarray parameterValues;
+        // Currently filtering based on average
+        switch (m_sacValues)
+        {
+            case SACValues.Average:
+                parameterValues = np.mean(m_costs, axis: 0)[":", pi];
+                break;
+            case SACValues.Min:
+                parameterValues = np.min(m_costs, axis: new int[] { 0 })[":", pi];
+                break;
+            case SACValues.Max:
+                parameterValues = np.max(m_costs, axis: new int[] { 0 })[":", pi];
+                break;
+            case SACValues.PerContext:
+            default:
+                parameterValues = m_costs[m_currentContext, ":", pi];
+                break;
+        }
 
         var sampleMask = (parameterValues >= min) & (parameterValues <= max);
         var filteredMask = ~sampleMask;
@@ -346,8 +368,7 @@ public class PolicyView : MonoBehaviour
         // Update SACs with samples
         //m_sacs.SetValues(m_samples);
         // Update SACs with costs 
-        m_sacs.SetValues(m_costs[m_currentContext]);
-
+        UpdateSACs();
         m_sacs.SetSACMinMax(pi, min, max);
     }
 
@@ -400,8 +421,39 @@ public class PolicyView : MonoBehaviour
         //m_sacs.SetValues(m_samples);
 
         // Update SACs with costs
-        m_sacs.SetValues(m_costs[m_currentContext]);
+        UpdateSACs();
     }
+
+    public void UpdateSACs()
+    {
+        if (m_costs == null)
+        {
+            return;
+        }
+        
+        NDarray visualizedCosts;
+        switch (m_sacValues)
+        {
+            case SACValues.Average:
+                visualizedCosts = np.mean(m_costs, axis: 0);
+                break;
+            case SACValues.Min:
+                visualizedCosts = np.min(m_costs, axis: new int[] { 0 });
+                break;
+            case SACValues.Max:
+                visualizedCosts = np.max(m_costs, axis: new int[] { 0 });
+                break;
+            case SACValues.PerContext:
+            default:
+                if (m_currentContext < 0 || m_currentContext >= m_contexts.Count)
+                {
+                    return;
+                }
+                visualizedCosts = m_costs[m_currentContext];
+                break;
+        }
+        m_sacs.SetValues(visualizedCosts);
+    } 
 
     private Texture2D CaptureView()
     {
@@ -751,7 +803,8 @@ public class PolicyView : MonoBehaviour
         }
         objectivesInfo.Add(("global", multiObjInfo));
         m_sacs.Init(objectivesInfo);
-        m_sacs.SetValues(m_costs[m_currentContext]);
+
+        UpdateSACs();
 
         // Initialize sacs for weights
         /*
@@ -984,6 +1037,13 @@ public class PolicyViewEditor : Editor
 
         EditorGUILayout.LabelField("Controls", EditorStyles.boldLabel);
         policyView.m_enableHovering = EditorGUILayout.Toggle("Enable Hovering", policyView.m_enableHovering);
+
+        EditorGUI.BeginChangeCheck();
+        policyView.m_sacValues = (PolicyView.SACValues)EditorGUILayout.EnumPopup("SAC Values", policyView.m_sacValues);
+        if (EditorGUI.EndChangeCheck())
+        {
+            policyView.UpdateSACs();
+        }
 
     }
 }
