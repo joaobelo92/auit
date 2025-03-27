@@ -55,11 +55,11 @@ namespace AUIT.AdaptationObjectives
 
                 if (Random.value > 0.5)
                 {
-                    moveDirection += Random.insideUnitSphere;
+                    moveDirection += Random.onUnitSphere;
                 }
             } else
             {
-                moveDirection = Random.insideUnitSphere;
+                moveDirection = Random.onUnitSphere;
             }
             moveDirection.Normalize();
             result.Position += 0.05f * HelperMath.SampleNormalDistribution(1f, 0.5f) * moveDirection;

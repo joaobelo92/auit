@@ -32,10 +32,10 @@ namespace AUIT.AdaptationObjectives
             Vector3 currentPosition = optimizationTarget.Position;
 
             Vector3 distanceVector = targetPosition - currentPosition;
-            distanceVector.y = 0;
-            float distanceXZ = Mathf.Abs(distanceVector.magnitude - targetDistance);
+            //distanceVector.y = 0;
+            float distance = Mathf.Abs(distanceVector.magnitude - targetDistance);
 
-            float cost = (distanceXZ - innerDistance) / outerDistance;
+            float cost = (distance - innerDistance) / outerDistance;
             cost = Mathf.Clamp01(cost);
             return cost;
         }
@@ -50,7 +50,7 @@ namespace AUIT.AdaptationObjectives
             Vector3 targetPosition = targetContextSource.GetValue().position;
             Vector3 currentPosition = optimizationTarget.Position;
             Vector3 displacement = targetPosition - currentPosition;
-            displacement.y = 0;
+            //displacement.y = 0;
             float distance = displacement.magnitude - targetDistance;
             Vector3 direction = Mathf.Sign(distance) * displacement.normalized;
 
@@ -60,16 +60,13 @@ namespace AUIT.AdaptationObjectives
             // Two different strategies
             if (Random.value > 0.5f)
             {
-                Vector3 position = optimizationTarget.Position + direction * HelperMath.SampleNormalDistribution(0.1f, 0.1f);
-                position.y = currentPosition.y + (targetPosition.y - currentPosition.y) * HelperMath.SampleNormalDistribution(0.1f, 0.1f);
+                Vector3 position = optimizationTarget.Position + 0.05f * HelperMath.SampleNormalDistribution(1.0f, 0.5f) * direction;
+                //position.y = currentPosition.y + (targetPosition.y - currentPosition.y) * HelperMath.SampleNormalDistribution(0.1f, 0.1f);
                 result.Position = position;
             }
             else // just move at random
             {
-                float x = HelperMath.SampleNormalDistribution(0.5f, 0.5f) * 0.01f;
-                float y = HelperMath.SampleNormalDistribution(0.5f, 0.5f) * 0.01f;
-                float z = HelperMath.SampleNormalDistribution(0.5f, 0.5f) * 0.01f;
-                Vector3 position = optimizationTarget.Position + new Vector3(x, y, z);
+                Vector3 position = optimizationTarget.Position + 0.05f * HelperMath.SampleNormalDistribution(1.0f, 0.5f) * Random.onUnitSphere;
                 result.Position = position;
             }
 

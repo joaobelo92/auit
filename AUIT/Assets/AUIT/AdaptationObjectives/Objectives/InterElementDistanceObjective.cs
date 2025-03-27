@@ -110,15 +110,16 @@ namespace AUIT.AdaptationObjectives.Objectives
 
                 if (Random.value > 0.5)
                 {
-                    move += Random.insideUnitSphere;
+                    move += Random.onUnitSphere;
                 }
+                move.Normalize();
             } else
             {
                 iMove = Random.Range(0, optimizationTargets.Count);
-                move = Random.insideUnitSphere;
+                move = Random.onUnitSphere;
             }
 
-            optimizationTargets[iMove].Position += 0.05f *HelperMath.SampleNormalDistribution(0.5f, 0.5f) * move;
+            optimizationTargets[iMove].Position += 0.05f * HelperMath.SampleNormalDistribution(1.0f, 0.5f) * move;
 
 
             return optimizationTargets;

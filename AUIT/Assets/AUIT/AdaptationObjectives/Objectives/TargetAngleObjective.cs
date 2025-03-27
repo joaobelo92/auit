@@ -62,11 +62,11 @@ namespace AUIT.AdaptationObjectives
             if (Random.value < 0.5f)
             {
                 Vector3 move = contextSourceTransform.localToWorldMatrix.MultiplyPoint3x4(new Vector3(0, 0, target.magnitude)) - optimizationTarget.Position;
-                result.Position = optimizationTarget.Position + move * HelperMath.SampleNormalDistribution(0.1f, 0.1f);
+                result.Position = optimizationTarget.Position + 0.05f * HelperMath.SampleNormalDistribution(1.0f, 0.5f) * move;
             }
             else // move some cm at random
             {
-                result.Position = optimizationTarget.Position + Random.insideUnitSphere * HelperMath.SampleNormalDistribution(0.5f, 0.5f) * 0.01f;
+                result.Position = optimizationTarget.Position + 0.05f * HelperMath.SampleNormalDistribution(0.5f, 0.5f) * Random.onUnitSphere;
             }
 
             return result;

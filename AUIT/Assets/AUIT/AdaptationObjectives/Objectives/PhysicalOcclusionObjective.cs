@@ -102,7 +102,7 @@ namespace AUIT.AdaptationObjectives
                         moveDirection += (corner - center).normalized;
                     }
                 }
-                moveDirection = moveDirection.normalized;
+                moveDirection.Normalize();
             } else if (moveStrategy < 0.66) {
                 moveDirection = GetPlanarDirection(optimizationTarget);
             } else

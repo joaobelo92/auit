@@ -198,8 +198,8 @@ namespace AUIT.AdaptationObjectives.Objectives
         public override List<Layout> OptimizationRule(List<Layout> optimizationTarget, Layout initialLayout = null)
         {
             Vector3 position = optimizationTarget[elementsColliding.Last()].Position;
-            optimizationTarget[elementsColliding.Last()].Position = position + Random.insideUnitSphere * 
-                HelperMath.SampleNormalDistribution(0.1f, 0.5f) * 0.05f;
+            optimizationTarget[elementsColliding.Last()].Position = position + Random.onUnitSphere * 
+                HelperMath.SampleNormalDistribution(1.0f, 0.5f) * 0.05f;
             return optimizationTarget;
         }
 

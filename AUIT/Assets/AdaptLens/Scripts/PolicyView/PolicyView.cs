@@ -692,7 +692,7 @@ public class PolicyView : MonoBehaviour
                     debugCosts += $"global.{objective.GetType().Name}: {cost}\n";
                 }
 
-                Debug.Log(debugCosts);
+                //Debug.Log(debugCosts);
 
                 
                 Layout[] elements = response.suggested.elements;
@@ -704,7 +704,7 @@ public class PolicyView : MonoBehaviour
                     layouts[si][ei] = element;
                 }
 
-                if ((ci * m_numSamples) + si % debugPrintInterval == 0)
+                if (si % debugPrintInterval == 0)
                 {
                     Debug.Log($"Context {ci + 1}/{numContexts}, Sample {si + 1}/{m_numSamples}");
                 }

@@ -60,7 +60,10 @@ namespace AUIT.AdaptationObjectives
                 float distance = Vector3.Distance(position, target);
                 Vector3 moveDirection = Vector3.Normalize(target - position);
                 // Randomize movement a little
-                moveDirection += Random.insideUnitSphere * Random.Range(0f, 0.3f);
+                if (Random.value > 0.5)
+                {
+                    moveDirection += Random.onUnitSphere;
+                }
                 moveDirection.Normalize();
                 result.Position = position + 0.05f * HelperMath.SampleNormalDistribution(1f, 0.5f) * moveDirection;
             }
