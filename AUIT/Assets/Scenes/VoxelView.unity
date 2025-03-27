@@ -144,7 +144,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &67399914
 Transform:
   m_ObjectHideFlags: 0
@@ -3904,7 +3904,6 @@ GameObject:
   - component: {fileID: 642232615}
   - component: {fileID: 642232617}
   - component: {fileID: 642232618}
-  - component: {fileID: 642232619}
   m_Layer: 0
   m_Name: AUIT
   m_TagString: Untagged
@@ -3928,11 +3927,10 @@ MonoBehaviour:
     backend: 0
     solver: SimulatedAnnealing
   solverSettings:
-    rid: 2980885487176384512
+    rid: 2980885487728984113
   developmentMode: 1
   gameObjectsToOptimize:
   - {fileID: 939544978}
-  - {fileID: 67399913}
   constraints:
   - type: 0
     minimum: -1.6
@@ -3949,7 +3947,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 2980885487176384512
+    - rid: 2980885487728984113
       type: {class: SimulatedAnnealingSolver, ns: AUIT.Solvers, asm: Assembly-CSharp}
       data:
         iterations: 1500
@@ -3998,20 +3996,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 87016b92a7ea4db197f26248477f1e6f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &642232619
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 642232613}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b87777693561432c8fffddd81a870919, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  weight: 0.5
-  userContextSource: {fileID: 0}
 --- !u!1 &680008016
 GameObject:
   m_ObjectHideFlags: 0
@@ -4463,7 +4447,6 @@ GameObject:
   - component: {fileID: 939544981}
   - component: {fileID: 939544987}
   - component: {fileID: 939544989}
-  - component: {fileID: 939544991}
   - component: {fileID: 939544990}
   m_Layer: 7
   m_Name: instructions
@@ -4643,7 +4626,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   weight: 0.5
   targetContextSource: {fileID: 0}
-  targetDistance: 1
+  targetDistance: 1.5
   innerDistance: 0
   outerDistance: 0.5
 --- !u!114 &939544990
@@ -4655,31 +4638,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 939544978}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ec5c8f9fb4d4d384aa043a32a465f174, type: 3}
+  m_Script: {fileID: 11500000, guid: a68f8cb2c36bdfc4eb6545e9c2b14096, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   weight: 0.5
-  userContextSource: {fileID: 0}
-  physicalLayerMask:
-    serializedVersion: 2
-    m_Bits: 0
---- !u!114 &939544991
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 939544978}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: be055729b4a0ca84686b2e0cfacd0fd7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  weight: 0.5
-  userContextSource: {fileID: 0}
-  targetAngle: 0
-  innerAngleDistance: 10
-  outerAngleDistance: 45
+  targetContextSource: {fileID: 0}
+  targetDistance: 0.5
+  innerDistance: 0
+  outerDistance: 0.5
 --- !u!1 &948486870
 GameObject:
   m_ObjectHideFlags: 0
@@ -5929,7 +5895,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1639674288
 MonoBehaviour:
   m_ObjectHideFlags: 0
