@@ -144,7 +144,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &67399914
 Transform:
   m_ObjectHideFlags: 0
@@ -3927,11 +3927,10 @@ MonoBehaviour:
     backend: 0
     solver: SimulatedAnnealing
   solverSettings:
-    rid: 2980885483240554600
+    rid: 2980885483240554601
   developmentMode: 1
   gameObjectsToOptimize:
   - {fileID: 939544978}
-  - {fileID: 67399913}
   constraints:
   - type: 0
     minimum: -1.6
@@ -3948,7 +3947,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 2980885483240554600
+    - rid: 2980885483240554601
       type: {class: SimulatedAnnealingSolver, ns: AUIT.Solvers, asm: Assembly-CSharp}
       data:
         iterations: 1500
@@ -4659,7 +4658,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   weight: 0.5
   targetContextSource: {fileID: 0}
-  targetDistance: 0.3
+  targetDistance: 0.5
   innerDistance: 0.1
   outerDistance: 0.5
 --- !u!114 &939544990
@@ -4671,14 +4670,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 939544978}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ec5c8f9fb4d4d384aa043a32a465f174, type: 3}
+  m_Script: {fileID: 11500000, guid: a68f8cb2c36bdfc4eb6545e9c2b14096, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   weight: 0.5
-  userContextSource: {fileID: 0}
-  physicalLayerMask:
-    serializedVersion: 2
-    m_Bits: 0
+  targetContextSource: {fileID: 0}
+  targetDistance: 1.5
+  innerDistance: 0.1
+  outerDistance: 0.5
 --- !u!1 &948486870
 GameObject:
   m_ObjectHideFlags: 0
