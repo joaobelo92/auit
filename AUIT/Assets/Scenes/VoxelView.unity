@@ -136,15 +136,15 @@ GameObject:
   - component: {fileID: 67399916}
   - component: {fileID: 67399922}
   - component: {fileID: 67399924}
-  - component: {fileID: 67399926}
   - component: {fileID: 67399925}
+  - component: {fileID: 67399926}
   m_Layer: 7
   m_Name: ingredients
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &67399914
 Transform:
   m_ObjectHideFlags: 0
@@ -326,7 +326,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 67399913}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ec5c8f9fb4d4d384aa043a32a465f174, type: 3}
   m_Name: 
@@ -345,14 +345,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 67399913}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: be055729b4a0ca84686b2e0cfacd0fd7, type: 3}
+  m_Script: {fileID: 11500000, guid: e0c8b51d228e4ea9a09dd36fc8b1426d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   weight: 0.5
-  userContextSource: {fileID: 0}
-  targetAngle: 30
-  innerAngleDistance: 10
-  outerAngleDistance: 10
+  userContextSource: {fileID: 1219749625}
+  peripheralVisionBoundary: 0
+  maxAngle: 90
+  useCustomBoundary: 0
+  customBoundaryOrigin: 12
+  customBoundaryInterval: 3
 --- !u!1 &94737070
 GameObject:
   m_ObjectHideFlags: 0
@@ -3927,10 +3929,11 @@ MonoBehaviour:
     backend: 0
     solver: SimulatedAnnealing
   solverSettings:
-    rid: 2980885487728984113
+    rid: 3494139722761764916
   developmentMode: 1
   gameObjectsToOptimize:
   - {fileID: 939544978}
+  - {fileID: 67399913}
   constraints:
   - type: 0
     minimum: -1.6
@@ -3947,7 +3950,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 2980885487728984113
+    - rid: 3494139722761764916
       type: {class: SimulatedAnnealingSolver, ns: AUIT.Solvers, asm: Assembly-CSharp}
       data:
         iterations: 1500
@@ -4446,8 +4449,8 @@ GameObject:
   - component: {fileID: 939544982}
   - component: {fileID: 939544981}
   - component: {fileID: 939544987}
-  - component: {fileID: 939544989}
   - component: {fileID: 939544990}
+  - component: {fileID: 939544991}
   m_Layer: 7
   m_Name: instructions
   m_TagString: Untagged
@@ -4612,23 +4615,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   userContextSource: {fileID: 1219749625}
---- !u!114 &939544989
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 939544978}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a68f8cb2c36bdfc4eb6545e9c2b14096, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  weight: 0.5
-  targetContextSource: {fileID: 0}
-  targetDistance: 1.5
-  innerDistance: 0
-  outerDistance: 0.5
 --- !u!114 &939544990
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4646,6 +4632,25 @@ MonoBehaviour:
   targetDistance: 0.5
   innerDistance: 0
   outerDistance: 0.5
+--- !u!114 &939544991
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 939544978}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e0c8b51d228e4ea9a09dd36fc8b1426d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  weight: 0.5
+  userContextSource: {fileID: 1219749625}
+  peripheralVisionBoundary: 0
+  maxAngle: 90
+  useCustomBoundary: 0
+  customBoundaryOrigin: 12
+  customBoundaryInterval: 3
 --- !u!1 &948486870
 GameObject:
   m_ObjectHideFlags: 0

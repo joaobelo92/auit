@@ -7,6 +7,7 @@ using AUIT.Extras;
 using System.Linq;
 using System.Collections;
 using System;
+using AUIT.Solvers;
 
 public class PolicyView : MonoBehaviour
 {
@@ -607,7 +608,28 @@ public class PolicyView : MonoBehaviour
                 // Call to solver
                 OptimizationResponse response = await auit.OptimizeLayout();
                 
-                // TODO: Retrieve costs
+                List<float> multiObjectiveCosts;
+                List<List<float>> objectiveCosts;
+                (objectiveCosts, multiObjectiveCosts) = Utils.ComputeCosts(response.suggested.elements.ToList(), 
+                    auit.gatherOptimizationData().objectives, auit.MultiElementObjectives);
+
+                // In case you wish to print the costs:
+                // Debug.Log("multiObjectiveCosts:");
+                // foreach (float cost in multiObjectiveCosts)
+                // {
+                //     Debug.Log(cost);
+                // }
+                //
+                // Debug.Log("objectiveCosts:");
+                // for (int i = 0; i < objectiveCosts.Count; i++)
+                // {
+                //     string row = $"Element {i}: ";
+                //     foreach (float cost in objectiveCosts[i])
+                //     {
+                //         row += cost + " ";
+                //     }
+                //     Debug.Log(row);
+                // }
 
                 Layout[] elements = response.suggested.elements;
                 int numElements = elements.Length;

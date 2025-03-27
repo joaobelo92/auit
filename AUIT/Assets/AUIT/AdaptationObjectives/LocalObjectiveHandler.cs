@@ -71,6 +71,8 @@ namespace AUIT.AdaptationObjectives
 
         public void Transition(Layout layout)
         {
+            if (_propertyTransitions == null || _propertyTransitions.Length == 0)
+                return;
             foreach (PropertyTransition propertyTransition in _propertyTransitions)
             {
                 propertyTransition.Adapt(layout);
