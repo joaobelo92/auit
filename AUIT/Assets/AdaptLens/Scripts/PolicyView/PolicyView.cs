@@ -18,6 +18,7 @@ public class PolicyView : MonoBehaviour
     public GalleryView m_gallery;
     public Camera m_userCamera;
     public Camera m_supportCamera;
+    public Transform m_boundaries;
 
     public enum SamplingApproach
     {
@@ -27,9 +28,10 @@ public class PolicyView : MonoBehaviour
     public SamplingApproach m_samplingApproach = SamplingApproach.Interval;
     public int m_numSamples = 10;
     public float m_increment = 0.2f;
-    public bool m_initializePlacement = false;
 
     public bool m_enableHovering = false;
+
+    public bool m_excludeOutOfBounds = true;
 
     public enum SACValues
     {
@@ -598,6 +600,20 @@ public class PolicyView : MonoBehaviour
         SetSelected(selectedIndex);
     }
 
+    private void DeploySelected()
+    {
+        if (m_selected >= 0 && m_currentLayouts.Count > m_selected)
+        {
+            // Get selected parameters
+            float[] parameterValues = m_samples[m_selected, ":"].astype(np.float32).GetData<float>();
+            List<Parameters.ParamReference<float>> parameters = m_parameters.GetParametersAll();
+            for (int i = 0; i < m_numParameters; i++)
+            {
+                parameters[i].Value = parameterValues[i];
+            }
+        }
+    }
+
     public async void SamplePolicies()
     {
         DateTime tsStart = DateTime.Now;
@@ -707,16 +723,6 @@ public class PolicyView : MonoBehaviour
             m_paraHomeLoader.LoadSceneObjects(scene);
             m_paraHomeLoader.LoadScenePoses(pose);
 
-            // Initialize placement to in front of user camera
-            if (m_initializePlacement)
-            {
-                foreach (GameObject obj in auit.gameObjectsToOptimize)
-                {
-                    obj.transform.position = m_userCamera.transform.position + m_userCamera.transform.forward;
-                    obj.transform.rotation = Quaternion.LookRotation(-m_userCamera.transform.forward);
-                }
-            }
-
 
             Layout[][] layouts = new Layout[m_numSamples][];
             for (int si = 0; si < m_numSamples; si++)
@@ -778,7 +784,65 @@ public class PolicyView : MonoBehaviour
             }
             m_layouts.Add(layouts);
         }
-        
+
+        // Filter out of bounds layouts
+        if (m_excludeOutOfBounds && m_boundaries != null)
+        {
+            List<int> outOfBoundsIndices = new List<int>();
+            for (int si = 0; si < m_numSamples; si++)
+            {
+                bool isOutOfBounds = false;
+                for (int ci = 0; ci < numContexts; ci++)
+                {
+                    Layout[] layouts = m_layouts[ci][si];
+                    foreach (Layout layout in layouts)
+                    {
+                        Vector3 position = m_boundaries.InverseTransformPoint(layout.Position);
+                        // within (-0.5, 0.5) in local space
+                        if (position.x < -0.5f || position.x > 0.5f ||
+                            position.y < -0.5f || position.y > 0.5f ||
+                            position.z < -0.5f || position.z > 0.5f)
+                        {
+                            isOutOfBounds = true;
+                            break;
+                        }
+                    }
+                    if (isOutOfBounds)
+                    {
+                        break;
+                    }
+                }
+                if (isOutOfBounds)
+                {
+                    outOfBoundsIndices.Add(si);
+                }
+            }
+
+            // Remove out of bounds samples
+            NDarray inBoundsMask = np.ones(m_numSamples).astype(np.bool_);
+            inBoundsMask[outOfBoundsIndices.ToArray()] = np.array(false);
+
+            m_samples = m_samples[inBoundsMask, ":"];
+            m_costs = m_costs[":", inBoundsMask, ":"];
+            List<Layout[][]> inBoundsLayouts = new List<Layout[][]>();
+            int numInBounds = m_numSamples - outOfBoundsIndices.Count;
+            foreach (Layout[][] layouts in m_layouts)
+            {
+                Layout[][] inBoundsSampleLayouts = new Layout[numInBounds][];
+                int nsi = 0;
+                for (int si = 0; si < m_numSamples; si++)
+                {
+                    if (inBoundsMask[si].GetData<bool>()[0])
+                    {
+                        inBoundsSampleLayouts[nsi++] = layouts[si];
+                    }
+                }
+                inBoundsLayouts.Add(inBoundsSampleLayouts);
+            }
+            m_layouts = inBoundsLayouts;
+        }
+
+
         LoadContext();
 
         // Initialize sacs for costs 
@@ -950,6 +1014,7 @@ public class PolicyView : MonoBehaviour
         m_gallery.onHoverSelected += SetHoverSelected;
         m_gallery.onHoverSaved += SetHoverSaved;
         m_gallery.onSelectedSaved += SetSelectedSaved;
+        m_gallery.onDeploySelected += DeploySelected;
     }
 
     // Update is called once per frame
@@ -983,7 +1048,8 @@ public class PolicyViewEditor : Editor
         policyView.m_sacs = (SingleAttributeControllers)EditorGUILayout.ObjectField("Single Attribute Controllers", policyView.m_sacs, typeof(SingleAttributeControllers), true);
         policyView.m_gallery = (GalleryView)EditorGUILayout.ObjectField("Gallery View", policyView.m_gallery, typeof(GalleryView), true);
         policyView.m_userCamera = (Camera)EditorGUILayout.ObjectField("User Camera", policyView.m_userCamera, typeof(Camera), true);
-        policyView.m_supportCamera = (Camera)EditorGUILayout.ObjectField("support Camera", policyView.m_supportCamera, typeof(Camera), true);
+        policyView.m_supportCamera = (Camera)EditorGUILayout.ObjectField("Support Camera", policyView.m_supportCamera, typeof(Camera), true);
+        policyView.m_boundaries = (Transform)EditorGUILayout.ObjectField("Boundaries", policyView.m_boundaries, typeof(Transform), true);
         EditorGUILayout.Space();
 
         // label
@@ -1024,7 +1090,6 @@ public class PolicyViewEditor : Editor
                 break;
         }
         
-        policyView.m_initializePlacement = EditorGUILayout.Toggle("Initialize Placement", policyView.m_initializePlacement);
         if (GUILayout.Button("Sample Policies"))
         {
             policyView.SamplePolicies();
@@ -1044,6 +1109,8 @@ public class PolicyViewEditor : Editor
         {
             policyView.UpdateSACs();
         }
+
+        policyView.m_excludeOutOfBounds = EditorGUILayout.Toggle("Exclude Out of Bounds", policyView.m_excludeOutOfBounds);
 
     }
 }

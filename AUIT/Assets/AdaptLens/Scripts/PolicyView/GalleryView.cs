@@ -22,6 +22,9 @@ public class GalleryView : MonoBehaviour
     public delegate void OnSelectedSaved(int savedIndex);
     public OnSelectedSaved onSelectedSaved;
 
+    public delegate void OnDeploySelected();
+    public OnDeploySelected onDeploySelected;
+
     public static int SELECTED_WIDTH = 256, SELECTED_HEIGHT = 144;
     public static int SAVED_WIDTH = 192, SAVED_HEIGHT = 108;
 
@@ -109,6 +112,14 @@ public class GalleryView : MonoBehaviour
         }
     }
 
+    public void DeploySelected()
+    {
+        if (onDeploySelected != null)
+        {
+            onDeploySelected();
+        }
+    }
+
 }
 
 [CustomEditor(typeof(GalleryView))]
@@ -165,6 +176,10 @@ public class GalleryViewEditor : Editor
             if (GUILayout.Button("Clear Selected"))
             {
                 galleryView.ClearSelected();
+            }
+            if (GUILayout.Button("Deploy Selected"))
+            {
+                galleryView.ClearSaved();
             }
         }
         EditorGUILayout.Space(20);
