@@ -317,8 +317,8 @@ MonoBehaviour:
   weight: 0.5
   userContextSource: {fileID: 0}
   targetAngle: 60
-  innerAngleDistance: 10
-  outerAngleDistance: 20
+  optimalAngleRange: 10
+  maximumCostAngleRange: 45
 --- !u!114 &67399924
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4036,11 +4036,10 @@ MonoBehaviour:
     backend: 0
     solver: SimulatedAnnealing
   solverSettings:
-    rid: 2980885520411525177
+    rid: 3494139747426893929
   developmentMode: 1
   gameObjectsToOptimize:
   - {fileID: 939544978}
-  - {fileID: 67399913}
   m_initPlacement: 1
   m_initAnchor: {fileID: 1341102932}
   m_initOffset: {x: 0, y: 0, z: 1}
@@ -4060,7 +4059,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 2980885520411525177
+    - rid: 3494139747426893929
       type: {class: SimulatedAnnealingSolver, ns: AUIT.Solvers, asm: Assembly-CSharp}
       data:
         iterations: 1500
@@ -4109,6 +4108,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 87016b92a7ea4db197f26248477f1e6f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  debugCost: 1
 --- !u!114 &642232619
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4116,7 +4116,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 642232613}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b87777693561432c8fffddd81a870919, type: 3}
   m_Name: 
@@ -4794,6 +4794,7 @@ GameObject:
   - component: {fileID: 939544988}
   - component: {fileID: 939544990}
   - component: {fileID: 939544989}
+  - component: {fileID: 939544991}
   m_Layer: 7
   m_Name: instructions
   m_TagString: Untagged
@@ -4965,7 +4966,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 939544978}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: be055729b4a0ca84686b2e0cfacd0fd7, type: 3}
   m_Name: 
@@ -4973,8 +4974,8 @@ MonoBehaviour:
   weight: 0.5
   userContextSource: {fileID: 0}
   targetAngle: 0
-  innerAngleDistance: 10
-  outerAngleDistance: 45
+  optimalAngleRange: 10
+  maximumCostAngleRange: 45
 --- !u!114 &939544989
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4982,7 +4983,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 939544978}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a68f8cb2c36bdfc4eb6545e9c2b14096, type: 3}
   m_Name: 
@@ -4999,7 +5000,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 939544978}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ec5c8f9fb4d4d384aa043a32a465f174, type: 3}
   m_Name: 
@@ -5009,6 +5010,23 @@ MonoBehaviour:
   physicalLayerMask:
     serializedVersion: 2
     m_Bits: 0
+--- !u!114 &939544991
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 939544978}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 89d040b35c9140bbbbeb1e53f919e5f6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  weight: 1
+  userContextSource: {fileID: 475268783}
+  width: 7
+  height: 5
+  grid: 0000000000000000000000000000010000000000000100000000000000000000000000
 --- !u!1 &948486870
 GameObject:
   m_ObjectHideFlags: 0
@@ -5428,8 +5446,8 @@ MonoBehaviour:
   weight: 0.5
   userContextSource: {fileID: 1219749625}
   targetAngle: 0
-  innerAngleDistance: 10
-  outerAngleDistance: 45
+  optimalAngleRange: 10
+  maximumCostAngleRange: 45
 --- !u!1 &1052745201
 GameObject:
   m_ObjectHideFlags: 0
@@ -5943,8 +5961,8 @@ MonoBehaviour:
   weight: 0.5
   userContextSource: {fileID: 1219749625}
   targetAngle: 0
-  innerAngleDistance: 10
-  outerAngleDistance: 45
+  optimalAngleRange: 10
+  maximumCostAngleRange: 45
 --- !u!114 &1410621380
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6623,8 +6641,8 @@ MonoBehaviour:
   weight: 0.5
   userContextSource: {fileID: 1219749625}
   targetAngle: 0
-  innerAngleDistance: 10
-  outerAngleDistance: 45
+  optimalAngleRange: 10
+  maximumCostAngleRange: 45
 --- !u!114 &1668970959
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8183,8 +8201,8 @@ MonoBehaviour:
   weight: 0.5
   userContextSource: {fileID: 1219749625}
   targetAngle: 0
-  innerAngleDistance: 10
-  outerAngleDistance: 45
+  optimalAngleRange: 10
+  maximumCostAngleRange: 45
 --- !u!114 &2042986847
 MonoBehaviour:
   m_ObjectHideFlags: 0

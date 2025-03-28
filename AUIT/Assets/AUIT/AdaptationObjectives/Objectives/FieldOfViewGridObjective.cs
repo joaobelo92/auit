@@ -48,40 +48,84 @@ namespace AUIT.AdaptationObjectives.Objectives
             return grid[y * width + x];
         }
 
-        private void SetCellActive(int x, int y, bool active)
-        {
-            if (x < 0 || x >= width || y < 0 || y >= height) return;
-            grid[y * width + x] = active;
-        }
-
         public override float CostFunction(Layout optimizationTarget, Layout initialLayout = null)
         {
-            if (userContextSource == null)
+            if (userContextSource == null || optimizationTarget == null)
             {
-                Debug.LogError("FieldOfViewObjective.CostFunction(): User context source is not set.");
+                Debug.LogError("CostFunction: Missing required data.");
+                return 1f;
             }
-            
-            Vector3 screenPos = userContextSource.GetValue().WorldToScreenPoint(optimizationTarget.Position);
 
+            Vector3 screenPos = userContextSource.GetValue().WorldToScreenPoint(optimizationTarget.Position);
             if (screenPos.z < 0)
                 return 1f;
-            
+
             int cellX = Mathf.FloorToInt((screenPos.x / Screen.width) * width);
             int cellY = Mathf.FloorToInt((screenPos.y / Screen.height) * height);
-            
-            if (IsCellActive(cellX, cellY))
+
+            int flippedY = (height - 1) - cellY;
+
+            if (IsCellActive(cellX, flippedY))
             {
                 return 0f;
             }
 
-            print($"{DistanceToClosestActiveCell(screenPos).Item1}, {(float) Screen.height}");
-            return Mathf.Clamp01(DistanceToClosestActiveCell(screenPos).Item1 / Screen.height);
+            float screenDiagonal = Mathf.Sqrt(Screen.width * Screen.width + Screen.height * Screen.height);
+            float distance = DistanceToClosestActiveCell(screenPos).Item1;
+
+            return Mathf.Clamp01(distance / (screenDiagonal / 3));
 
         }
 
         public override Layout OptimizationRule(Layout optimizationTarget, Layout initialLayout = null)
         {
-            throw new System.NotImplementedException();
+            if (Random.value < 0.33f)
+            {
+                List<Vector2Int> activeCells = new List<Vector2Int>();
+                for (int y = 0; y < height; y++)
+                {
+                    for (int x = 0; x < width; x++)
+                    {
+                        if (IsCellActive(x, y))
+                        {
+                            activeCells.Add(new Vector2Int(x, y));
+                        }
+                    }
+                }
+
+                if (activeCells.Count == 0)
+                {
+                    Debug.LogWarning("OptimizationRule: No active cells to choose from.");
+                    return optimizationTarget;
+                }
+
+                // Pick active cell at random
+                Vector2Int selectedCell = activeCells[Random.Range(0, activeCells.Count)];
+
+                float cellWidth = Screen.width / (float)width;
+                float cellHeight = Screen.height / (float)height;
+
+                int flippedY = (height - 1) - selectedCell.y;
+
+                Vector3 screenCenter = new Vector3(
+                    (selectedCell.x + 0.5f) * cellWidth,
+                    (flippedY + 0.5f) * cellHeight,
+                    userContextSource.GetValue().WorldToScreenPoint(optimizationTarget.Position).z
+                );
+
+                Vector3 worldTarget = userContextSource.GetValue().ScreenToWorldPoint(screenCenter);
+
+                Layout optimizedLayout = optimizationTarget.Clone();
+                optimizedLayout.Position = worldTarget;
+                return optimizedLayout; 
+            }
+            else
+            {
+                Vector3 position = optimizationTarget.Position;
+                optimizationTarget.Position = position + Random.onUnitSphere * 
+                    (HelperMath.SampleNormalDistribution(1.0f, 0.5f) * 0.05f);
+                return optimizationTarget; 
+            }
         }
 
         public override Layout DirectRule(Layout optimizationTarget)
@@ -137,6 +181,9 @@ namespace AUIT.AdaptationObjectives.Objectives
             // Draw user context source
             SerializedProperty contextProp = serializedObject.FindProperty("userContextSource");
             EditorGUILayout.PropertyField(contextProp, new GUIContent("User Camera Source"));
+            
+            SerializedProperty weightProp = serializedObject.FindProperty("weight");
+            EditorGUILayout.PropertyField(weightProp, new GUIContent("Weight"));
 
             EditorGUI.BeginChangeCheck();
             gridConfig.width = EditorGUILayout.IntSlider("Width", gridConfig.width, 3, 10);
@@ -152,7 +199,7 @@ namespace AUIT.AdaptationObjectives.Objectives
             EditorGUILayout.LabelField("Active Cells", EditorStyles.boldLabel);
 
             EditorGUI.BeginChangeCheck();
-            for (int y = 0; y < gridConfig.height; y++)
+            for (int y = gridConfig.height - 1; y >= 0; y--)
             {
                 EditorGUILayout.BeginHorizontal();
                 for (int x = 0; x < gridConfig.width; x++)
