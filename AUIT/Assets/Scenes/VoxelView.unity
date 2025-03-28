@@ -333,7 +333,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   weight: 0.5
   targetContextSource: {fileID: 0}
-  targetDistance: 1
+  targetDistance: 0.6
   innerDistance: 0.2
   outerDistance: 0.3
 --- !u!114 &67399925
@@ -4042,7 +4042,7 @@ MonoBehaviour:
   - {fileID: 939544978}
   m_initPlacement: 1
   m_initAnchor: {fileID: 1341102932}
-  m_initOffset: {x: 0, y: 0, z: 1}
+  m_initOffset: {x: 0, y: 0, z: 0.6}
   constraints:
   - type: 0
     minimum: -1.6
@@ -4744,7 +4744,7 @@ MonoBehaviour:
   m_gallery: {fileID: 846422403}
   m_userCamera: {fileID: 1341102933}
   m_supportCamera: {fileID: 1217115068}
-  m_boundaries: {fileID: 0}
+  m_boundaries: {fileID: 661520134}
   m_samplingApproach: 0
   m_numSamples: 10
   m_increment: 0.5
@@ -4990,7 +4990,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   weight: 0.5
   targetContextSource: {fileID: 0}
-  targetDistance: 1
+  targetDistance: 0.6
   innerDistance: 0.2
   outerDistance: 0.3
 --- !u!114 &939544990
