@@ -47,6 +47,10 @@ namespace AUIT
 
         public List<GameObject> gameObjectsToOptimize;
 
+        public bool m_initPlacement = true;
+        public Transform m_initAnchor;
+        public Vector3 m_initOffset;
+
         private (GameObject, LocalObjectiveHandler)[] _gameObjects;
 
         
@@ -218,8 +222,25 @@ namespace AUIT
                 return null;
             }
 
+            // Initialize placement to in front of user camera
+            if (m_initPlacement && m_initAnchor != null)
+            {
+                Matrix4x4 anchorMatrix = Matrix4x4.TRS(
+                        m_initAnchor.position,
+                        m_initAnchor.rotation,
+                        Vector3.one
+                    );
+                Vector3 initPosition = anchorMatrix.MultiplyPoint3x4(m_initOffset);
+                Quaternion initRotation = Quaternion.LookRotation(m_initAnchor.position - initPosition);
+                foreach (GameObject obj in gameObjectsToOptimize)
+                {
+                    obj.transform.position = initPosition;
+                    obj.transform.rotation = initRotation;
+                }
+            }
+
             (List<List<LocalObjective>> objectives, List<Layout> layouts) = gatherOptimizationData();
-            
+
             if (objectives.Count == 0)
             {
                 Debug.LogWarning($"[AdaptationManager.OptimizeLayout()]: " +
