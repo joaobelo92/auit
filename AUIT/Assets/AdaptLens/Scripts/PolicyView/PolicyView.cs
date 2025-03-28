@@ -35,12 +35,12 @@ public class PolicyView : MonoBehaviour
 
     public enum SACValues
     {
-        PerContext,
-        Average,
-        Min,
-        Max
+        AverageCost,
+        PerContextCost,
+        MaxCost,
+        ParameterValues
     }
-    public SACValues m_sacValues = SACValues.PerContext;
+    public SACValues m_sacValues = SACValues.AverageCost;
 
     //public int m_numSamples = 4;
     //public float m_solver_interval = 0.1f; // todo: use ref
@@ -264,18 +264,18 @@ public class PolicyView : MonoBehaviour
         // Currently filtering based on average
         switch (m_sacValues)
         {
-            case SACValues.Average:
+            case SACValues.AverageCost:
+            default:
                 parameterValues = np.mean(m_costs, axis: 0)[":", pi];
                 break;
-            case SACValues.Min:
-                parameterValues = np.min(m_costs, axis: new int[] { 0 })[":", pi];
-                break;
-            case SACValues.Max:
+            case SACValues.MaxCost:
                 parameterValues = np.max(m_costs, axis: new int[] { 0 })[":", pi];
                 break;
-            case SACValues.PerContext:
-            default:
+            case SACValues.PerContextCost:
                 parameterValues = m_costs[m_currentContext, ":", pi];
+                break;
+            case SACValues.ParameterValues:
+                parameterValues = m_samples[":", pi];
                 break;
         }
 
@@ -433,28 +433,28 @@ public class PolicyView : MonoBehaviour
             return;
         }
         
-        NDarray visualizedCosts;
+        NDarray visualizedValues;
         switch (m_sacValues)
         {
-            case SACValues.Average:
-                visualizedCosts = np.mean(m_costs, axis: 0);
-                break;
-            case SACValues.Min:
-                visualizedCosts = np.min(m_costs, axis: new int[] { 0 });
-                break;
-            case SACValues.Max:
-                visualizedCosts = np.max(m_costs, axis: new int[] { 0 });
-                break;
-            case SACValues.PerContext:
+            case SACValues.AverageCost:
             default:
+                visualizedValues = np.mean(m_costs, axis: 0);
+                break;
+            case SACValues.MaxCost:
+                visualizedValues = np.max(m_costs, axis: new int[] { 0 });
+                break;
+            case SACValues.PerContextCost:
                 if (m_currentContext < 0 || m_currentContext >= m_contexts.Count)
                 {
                     return;
                 }
-                visualizedCosts = m_costs[m_currentContext];
+                visualizedValues = m_costs[m_currentContext];
+                break;
+            case SACValues.ParameterValues:
+                visualizedValues = m_samples;
                 break;
         }
-        m_sacs.SetValues(visualizedCosts);
+        m_sacs.SetValues(visualizedValues);
     } 
 
     private Texture2D CaptureView()
@@ -817,10 +817,11 @@ public class PolicyView : MonoBehaviour
                     outOfBoundsIndices.Add(si);
                 }
             }
+            Debug.Log($"Out of bound elements: {outOfBoundsIndices.Count}");
 
             // Remove out of bounds samples
             NDarray inBoundsMask = np.ones(m_numSamples).astype(np.bool_);
-            inBoundsMask[outOfBoundsIndices.ToArray()] = np.array(false);
+            inBoundsMask[np.array(outOfBoundsIndices.ToArray())] = np.array(false);
 
             m_samples = m_samples[inBoundsMask, ":"];
             m_costs = m_costs[":", inBoundsMask, ":"];
@@ -832,7 +833,7 @@ public class PolicyView : MonoBehaviour
                 int nsi = 0;
                 for (int si = 0; si < m_numSamples; si++)
                 {
-                    if (inBoundsMask[si].GetData<bool>()[0])
+                    if ((bool)inBoundsMask[si])
                     {
                         inBoundsSampleLayouts[nsi++] = layouts[si];
                     }
@@ -854,7 +855,7 @@ public class PolicyView : MonoBehaviour
             foreach (AUIT.AdaptationObjectives.LocalObjective objective in localObjectiveObj)
             {
                 // Get type of objective
-                obj.Add((objective.GetType().Name, new List<string>() { "Cost"}));
+                obj.Add((objective.GetType().Name, new List<string>() { ""}));
                 objName = objective.gameObject.name;
             }
             objectivesInfo.Add((objName, obj));
@@ -862,7 +863,7 @@ public class PolicyView : MonoBehaviour
         List<(string, List<string>)> multiObjInfo = new List<(string, List<string>)>();
         foreach (AUIT.AdaptationObjectives.MultiElementObjective objective in multiElementObjectives)
         {
-            multiObjInfo.Add((objective.GetType().Name, new List<string>() { "Cost" }));
+            multiObjInfo.Add((objective.GetType().Name, new List<string>() { "" }));
             
         }
         objectivesInfo.Add(("global", multiObjInfo));
