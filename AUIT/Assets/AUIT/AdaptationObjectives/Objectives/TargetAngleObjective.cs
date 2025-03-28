@@ -16,11 +16,13 @@ namespace AUIT.AdaptationObjectives
 
         [SerializeField]
         [Min(0)]
-        private float innerAngleDistance = 10f;
+        [Tooltip("Angle range (in degrees) deviation from the target angle that is considered fully acceptable or ideal — i.e., no penalty is applied.")]
+        private float optimalAngleRange = 10f;
 
         [SerializeField]
         [Min(0)]
-        private float outerAngleDistance = 45f;
+        [Tooltip("The outer limit after which range deviation incurs full cost. Cost ramps up between optimalAngleRange and this boundary.")]
+        private float maximumCostAngleRange = 45f;
 
         public override float CostFunction(Layout optimizationTarget, Layout initialLayout = null)
         {
@@ -41,7 +43,7 @@ namespace AUIT.AdaptationObjectives
             // float cost = Mathf.Max(Mathf.Abs(rotation - boundaryOrigin[index]), boundaryDifference[index]) - boundaryDifference[index];
             float angleDiff = Mathf.Abs(angle - targetAngle);
 
-            float cost = (angleDiff - innerAngleDistance) / outerAngleDistance;
+            float cost = (angleDiff - optimalAngleRange) / maximumCostAngleRange;
             cost = Mathf.Clamp01(cost);
             return cost;
         }

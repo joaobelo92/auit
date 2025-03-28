@@ -197,10 +197,54 @@ namespace AUIT.AdaptationObjectives.Objectives
 
         public override List<Layout> OptimizationRule(List<Layout> optimizationTarget, Layout initialLayout = null)
         {
-            Vector3 position = optimizationTarget[elementsColliding.Last()].Position;
-            optimizationTarget[elementsColliding.Last()].Position = position + Random.onUnitSphere * 
-                HelperMath.SampleNormalDistribution(1.0f, 0.5f) * 0.05f;
+            if (elementsColliding == null || elementsColliding.Count == 0)
+                return optimizationTarget;
+            
+            if (Random.value < 0.7f)
+            {
+                int targetIndex = elementsColliding.Last();
+                Vector3 originalPos = optimizationTarget[targetIndex].Position;
+                Vector3 moveDirection = Vector3.zero;
+
+                // Compute avoidance direction (away from colliders)
+                foreach (int collidingIndex in elementsColliding)
+                {
+                    if (collidingIndex == targetIndex) continue;
+                    Vector3 otherPos = optimizationTarget[collidingIndex].Position;
+                    moveDirection += (originalPos - otherPos).normalized;
+                }
+
+                // Fallback: random direction if overlap is directly centered
+                if (moveDirection == Vector3.zero)
+                    moveDirection = Random.onUnitSphere;
+
+                // Remove forward component (avoid moving into user view)
+                Camera userCam = userContextSource.GetValue();
+                Vector3 userForward = userCam.transform.forward;
+                float towardUserComponent = Vector3.Dot(moveDirection, userForward);
+    
+                // If there's a component in the direction of the user, subtract it out
+                if (towardUserComponent > 0)
+                {
+                    Vector3 projectionOntoUser = userForward * towardUserComponent;
+                    moveDirection -= projectionOntoUser;
+                }
+
+                // Normalize and apply displacement
+                moveDirection = moveDirection.normalized;
+                float displacement = HelperMath.SampleNormalDistribution(1.0f, 0.25f) * 0.1f;
+                optimizationTarget[targetIndex].Position += moveDirection * displacement;
+            }
+            else
+            {
+                Vector3 position = optimizationTarget[elementsColliding.Last()].Position;
+                optimizationTarget[elementsColliding.Last()].Position = position + Random.onUnitSphere * 
+                    (HelperMath.SampleNormalDistribution(1.0f, 0.5f) * 0.05f);
+                return optimizationTarget;
+            }
+
             return optimizationTarget;
+            
         }
 
         private List<Vector2> ComputeConvexHull(List<Vector2> points)
