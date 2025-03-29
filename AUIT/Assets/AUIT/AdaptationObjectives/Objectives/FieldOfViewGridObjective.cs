@@ -51,29 +51,30 @@ namespace AUIT.AdaptationObjectives.Objectives
         public override float CostFunction(Layout optimizationTarget, Layout initialLayout = null)
         {
             if (userContextSource == null || optimizationTarget == null)
+                return 1f;
+
+            Camera cam = userContextSource.GetValue();
+            if (cam == null)
+                return 1f;
+
+            Vector3 viewportPos = cam.WorldToViewportPoint(optimizationTarget.Position);
+
+            // Visibility check
+            if (viewportPos.z < 0 || viewportPos.x < 0f || viewportPos.x > 1f || viewportPos.y < 0f || viewportPos.y > 1f)
             {
-                Debug.LogError("CostFunction: Missing required data.");
                 return 1f;
             }
 
-            Vector3 screenPos = userContextSource.GetValue().WorldToScreenPoint(optimizationTarget.Position);
-            if (screenPos.z < 0)
-                return 1f;
+            // Map normalized viewport to grid cell
+            int cellX = Mathf.FloorToInt(viewportPos.x * width);
+            int cellY = Mathf.FloorToInt(viewportPos.y * height);
 
-            int cellX = Mathf.FloorToInt((screenPos.x / Screen.width) * width);
-            int cellY = Mathf.FloorToInt((screenPos.y / Screen.height) * height);
-
-            int flippedY = (height - 1) - cellY;
-
-            if (IsCellActive(cellX, flippedY))
-            {
+            if (IsCellActive(cellX, cellY))
                 return 0f;
-            }
 
-            float screenDiagonal = Mathf.Sqrt(Screen.width * Screen.width + Screen.height * Screen.height);
-            float distance = DistanceToClosestActiveCell(screenPos).Item1;
-
-            return Mathf.Clamp01(distance / (screenDiagonal / 3));
+            float distance = DistanceToClosestActiveCell(viewportPos).Item1;
+            float maxViewportDist = Mathf.Sqrt(1f * 1f + 1f * 1f); // Diagonal of viewport
+            return Mathf.Clamp01(distance / (maxViewportDist / 3f));
 
         }
 
@@ -105,11 +106,9 @@ namespace AUIT.AdaptationObjectives.Objectives
                 float cellWidth = Screen.width / (float)width;
                 float cellHeight = Screen.height / (float)height;
 
-                int flippedY = (height - 1) - selectedCell.y;
-
                 Vector3 screenCenter = new Vector3(
                     (selectedCell.x + 0.5f) * cellWidth,
-                    (flippedY + 0.5f) * cellHeight,
+                    (selectedCell.y + 0.5f) * cellHeight,
                     userContextSource.GetValue().WorldToScreenPoint(optimizationTarget.Position).z
                 );
 
@@ -160,12 +159,35 @@ namespace AUIT.AdaptationObjectives.Objectives
                     if (distSqr < closestDistanceSqr)
                     {
                         closestDistanceSqr = distSqr;
-                        closestCell = cellCenter;
+                        closestCell = new Vector2(x,y);
                     }
                 }
             }
+            
+            // print(closestCell);
+            // print(closestDistanceSqr);
 
             return (Mathf.Sqrt(closestDistanceSqr), closestCell);
+        }
+        
+        public void PrintGrid()
+        {
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+            sb.AppendLine($"Grid ({width} × {height}):");
+
+            for (int y = 0; y < height; y++)
+            {
+                int flippedY = (height - 1) - y; // Match top-to-bottom visual order
+                for (int x = 0; x < width; x++)
+                {
+                    int index = flippedY * width + x;
+                    bool cell = (index < grid.Count) ? grid[index] : false;
+                    sb.Append(cell ? "X " : ". ");
+                }
+                sb.AppendLine();
+            }
+
+            Debug.Log(sb.ToString());
         }
     }
     
