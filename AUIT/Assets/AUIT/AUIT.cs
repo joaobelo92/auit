@@ -57,6 +57,10 @@ namespace AUIT
 
         [SerializeField]
         private List<Constraint> constraints;
+        public List<Constraint> GetConstraints()
+        {
+            return constraints;
+        }
 
         // flag to signal that the manager has been initialized
         [NonSerialized]
