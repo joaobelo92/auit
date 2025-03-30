@@ -87,6 +87,8 @@ public class ParaHomeLoader : MonoBehaviour
 
     private Coroutine m_sequenceCoroutine;
 
+    private List<ParaHomeContext> m_contexts;
+
     #endregion
 
     #region Class Methods 
@@ -410,15 +412,15 @@ public class ParaHomeLoader : MonoBehaviour
         LoadSequencePoses();
         LoadSequenceSceneObjects();
 
+        m_contexts = new List<ParaHomeContext>();
+        for (int i = 0; i < m_poses.Length && i < m_sceneObjects.Length; i++)
+        {
+            ParaHomeContext context = new ParaHomeContext(m_poses[i], m_sceneObjects[i]);
+            m_contexts.Add(context);
+        }
         if (onScenesLoaded != null)
         {
-            List<ParaHomeContext> contexts = new List<ParaHomeContext>();
-            for (int i = 0; i < m_poses.Length && i < m_sceneObjects.Length; i++)
-            {
-                ParaHomeContext context = new ParaHomeContext(m_poses[i], m_sceneObjects[i]);
-                contexts.Add(context);
-            }
-            onScenesLoaded(contexts);
+            onScenesLoaded(m_contexts);
         }
     }
 
@@ -479,6 +481,11 @@ public class ParaHomeLoader : MonoBehaviour
     public bool PlayingSequence
     {
         get { return m_sequenceCoroutine != null; }
+    }
+
+    public List<ParaHomeContext> Contexts
+    {
+        get { return m_contexts; }
     }
 
     public void PlaySequence()
@@ -563,15 +570,16 @@ public class ParaHomeLoader : MonoBehaviour
             m_sceneObjects[i] = new ParaHomeScene(sceneInfo.environmentInfo);
         }
 
+        
+        m_contexts = new List<ParaHomeContext>();
+        for (int i = 0; i < m_poses.Length && i < m_sceneObjects.Length; i++)
+        {
+            ParaHomeContext context = new ParaHomeContext(m_poses[i], m_sceneObjects[i]);
+            m_contexts.Add(context);
+        }
         if (onScenesLoaded != null)
         {
-            List<ParaHomeContext> contexts = new List<ParaHomeContext>();
-            for (int i = 0; i < m_poses.Length && i < m_sceneObjects.Length; i++)
-            {
-                ParaHomeContext context = new ParaHomeContext(m_poses[i], m_sceneObjects[i]);
-                contexts.Add(context);
-            }
-            onScenesLoaded(contexts);
+            onScenesLoaded(m_contexts);
         }
     }
 

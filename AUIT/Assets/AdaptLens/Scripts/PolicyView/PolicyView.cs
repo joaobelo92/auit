@@ -75,7 +75,13 @@ public class PolicyView : MonoBehaviour
 
     public int NumContexts
     {
-        get { return m_contexts.Count; }
+        get { 
+            if (m_contexts == null)
+            {
+                return 0;
+            }
+            return m_contexts.Count; 
+        }
     }
 
     public int CurrentContext
@@ -86,10 +92,14 @@ public class PolicyView : MonoBehaviour
 
     private void SetContexts(List<ParaHomeContext> contexts)
     {
+        Debug.Log("Set Contexts" + contexts);
         m_contexts = contexts;
-        if (m_contexts.Count > 0)
+        if (m_contexts != null && m_contexts.Count > 0)
         {
             m_currentContext = 0;
+        } else
+        {
+            m_currentContext = -1;
         }
     }
 
@@ -1026,11 +1036,13 @@ public class PolicyView : MonoBehaviour
 
     private void OnEnable()
     {
+        SetContexts(m_paraHomeLoader.Contexts);
         m_paraHomeLoader.onScenesLoaded += SetContexts;
     }
 
     private void OnDisable()
     {
+        SetContexts(new List<ParaHomeContext>());
         m_paraHomeLoader.onScenesLoaded -= SetContexts;
     }
 }
