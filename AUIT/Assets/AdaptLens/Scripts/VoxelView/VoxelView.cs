@@ -24,7 +24,7 @@ public class VoxelView : MonoBehaviour
     public Gradient m_costGradient;
 
     [Range(0, 1)]
-    public float m_maxVisualizedCostPercentage = 1f;
+    public float m_maxVisualizedCostPercentage = 0.2f;
 
     public bool m_visualizePareto = false;
 
