@@ -11,6 +11,7 @@ using UnityEngine.Events;
 public class BoundingBox
 {
     public string name;
+    public string part;
     public float[] position;
     public float[] rotation;
     public float[] scale;
@@ -218,22 +219,29 @@ public class ParaHomeLoader : MonoBehaviour
         List<BoundingBox> boundingBoxes = new List<BoundingBox>();
         foreach (Transform obj in m_environment)
         {
-            string name = obj.name;
-            Transform bounds = obj.Find("bounds");
-            if (bounds != null)
+            string objName = obj.name;
+            foreach (Transform part in obj)
             {
-                BoundingBox boundingBox = new BoundingBox();
-                boundingBox.name = name;
-                boundingBox.position = new float[] { bounds.localPosition[0], bounds.localPosition[1], bounds.localPosition[2] };
-                boundingBox.rotation = new float[] { bounds.localRotation[0], bounds.localRotation[1], bounds.localRotation[2], bounds.localRotation[3] };
-                boundingBox.scale = new float[] { bounds.localScale[0], bounds.localScale[1], bounds.localScale[2] };
-                boundingBoxes.Add(boundingBox);
+                string partName = part.name;
+                Transform bounds = part.Find("bounds");
+                if (bounds != null)
+                {
+                    BoundingBox boundingBox = new BoundingBox();
+                    boundingBox.name = objName;
+                    boundingBox.part = partName;
+                    boundingBox.position = new float[] { bounds.localPosition[0], bounds.localPosition[1], bounds.localPosition[2] };
+                    boundingBox.rotation = new float[] { bounds.localRotation[0], bounds.localRotation[1], bounds.localRotation[2], bounds.localRotation[3] };
+                    boundingBox.scale = new float[] { bounds.localScale[0], bounds.localScale[1], bounds.localScale[2] };
+                    boundingBoxes.Add(boundingBox);
+                }
             }
+            
+            
         }
 
         string json = JsonConvert.SerializeObject(boundingBoxes, Formatting.Indented);
-        string path = Path.Combine(Application.streamingAssetsPath, m_rootDir, m_scanDir, "bounds.json");
-        File.WriteAllText(path, json);
+        //string path = Path.Combine(Application.streamingAssetsPath, m_rootDir, m_scanDir, "bounds.json");
+        File.WriteAllText("bounds.json", json);
     }
 
     #endregion
@@ -327,15 +335,19 @@ public class ParaHomeLoader : MonoBehaviour
             Transform obj = m_environment.Find(boundingBox.name);
             if (obj != null)
             {
-                Vector3 position = new Vector3(boundingBox.position[0], boundingBox.position[1], boundingBox.position[2]);
-                Quaternion rotation = new Quaternion(boundingBox.rotation[0], boundingBox.rotation[1], boundingBox.rotation[2], boundingBox.rotation[3]);
-                Vector3 scale = new Vector3(boundingBox.scale[0], boundingBox.scale[1], boundingBox.scale[2]);
-                GameObject boundsObj = Instantiate(m_boundingBoxPrefab);
-                boundsObj.name = "bounds";
-                boundsObj.transform.SetParent(obj);
-                boundsObj.transform.localPosition = position;
-                boundsObj.transform.localRotation = rotation;
-                boundsObj.transform.localScale = scale;
+                Transform part = obj.Find(boundingBox.part);
+                if (part != null)
+                {
+                    Vector3 position = new Vector3(boundingBox.position[0], boundingBox.position[1], boundingBox.position[2]);
+                    Quaternion rotation = new Quaternion(boundingBox.rotation[0], boundingBox.rotation[1], boundingBox.rotation[2], boundingBox.rotation[3]);
+                    Vector3 scale = new Vector3(boundingBox.scale[0], boundingBox.scale[1], boundingBox.scale[2]);
+                    GameObject boundsObj = Instantiate(m_boundingBoxPrefab);
+                    boundsObj.name = "bounds";
+                    boundsObj.transform.SetParent(part);
+                    boundsObj.transform.localPosition = position;
+                    boundsObj.transform.localRotation = rotation;
+                    boundsObj.transform.localScale = scale;
+                }
             }
         }
 

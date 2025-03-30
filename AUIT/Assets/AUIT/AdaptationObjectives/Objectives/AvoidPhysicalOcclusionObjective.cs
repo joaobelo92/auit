@@ -8,7 +8,7 @@ using static UnityEngine.GraphicsBuffer;
 
 namespace AUIT.AdaptationObjectives
 {
-    public class PhysicalOcclusionObjective : LocalObjective
+    public class AvoidPhysicalOcclusionObjective : LocalObjective
     {
         [SerializeField]
         private ContextSource<Transform> userContextSource;
