@@ -235,7 +235,13 @@ namespace AUIT
                         Vector3.one
                     );
                 Vector3 initPosition = anchorMatrix.MultiplyPoint3x4(m_initOffset);
-                Quaternion initRotation = Quaternion.LookRotation(m_initAnchor.position - initPosition);
+                Vector3 direction = m_initAnchor.position - initPosition;
+                Vector3 flatDirection = new Vector3(direction.x, 0, direction.z);
+                Quaternion initRotation = Quaternion.identity;
+                if (flatDirection.magnitude > 0.001f)
+                {
+                    initRotation = Quaternion.LookRotation(flatDirection);
+                }
                 foreach (GameObject obj in gameObjectsToOptimize)
                 {
                     obj.transform.position = initPosition;
