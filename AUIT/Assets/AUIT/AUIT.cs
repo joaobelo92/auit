@@ -118,10 +118,13 @@ namespace AUIT
                 AssignSolver();
         }
 
+        private void Awake()
+        {
+            Instance = this;
+        }
+
         private void Start()
         {
-            Instance = this; 
-
             AsyncIO.ForceDotNet.Force();
             // Start by gathering all the game objects to optimize
             int size = gameObjectsToOptimize.Count;

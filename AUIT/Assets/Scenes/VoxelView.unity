@@ -4151,7 +4151,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 477043159}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b87777693561432c8fffddd81a870919, type: 3}
   m_Name: 
@@ -4370,7 +4370,7 @@ MonoBehaviour:
     backend: 0
     solver: SimulatedAnnealing
   solverSettings:
-    rid: 2980885571425271915
+    rid: 2980885574040682560
   developmentMode: 1
   gameObjectsToOptimize:
   - {fileID: 720357813}
@@ -4394,7 +4394,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 2980885571425271915
+    - rid: 2980885574040682560
       type: {class: SimulatedAnnealingSolver, ns: AUIT.Solvers, asm: Assembly-CSharp}
       data:
         iterations: 1500
@@ -4462,7 +4462,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!65 &661520131
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -5145,7 +5145,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 720357813}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: be055729b4a0ca84686b2e0cfacd0fd7, type: 3}
   m_Name: 
@@ -5432,7 +5432,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &846422400
 Transform:
   m_ObjectHideFlags: 0
@@ -5469,10 +5469,12 @@ MonoBehaviour:
   m_supportCamera: {fileID: 1217115068}
   m_boundaries: {fileID: 661520134}
   m_samplingApproach: 0
-  m_numSamples: 30
+  m_numSamples: 10
   m_increment: 0.5
   m_enableHovering: 0
   m_excludeOutOfBounds: 1
+  m_debugProgress: 1
+  m_debugProgressPrintInterval: 10
   m_sacValues: 0
 --- !u!114 &846422402
 MonoBehaviour:
@@ -5988,7 +5990,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1217115067
 Transform:
   m_ObjectHideFlags: 0
@@ -6900,7 +6902,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1659167227}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: be055729b4a0ca84686b2e0cfacd0fd7, type: 3}
   m_Name: 

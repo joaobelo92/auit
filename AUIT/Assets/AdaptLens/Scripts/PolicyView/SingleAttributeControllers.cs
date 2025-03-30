@@ -49,6 +49,30 @@ public class SingleAttributeControllers : MonoBehaviour
         }
     }
 
+    public void SetValues(NDarray values, NDarray mask)
+    {
+        foreach ((string objNames, List<(string, List<SingleAttributeController>)> obj) in m_sacs)
+        {
+            foreach ((string objectiveName, List<SingleAttributeController> objectiveSACs) in obj)
+            {
+                foreach (SingleAttributeController sac in objectiveSACs)
+                {
+                    sac.SetValues(values[":", sac.Id], mask);
+
+                    /*
+                    sac.ClearValues();
+                    for (int i = 0; i < values.shape[0]; i++)
+                    {
+                        sac.AddValue((float)values[i, sac.Id]);
+                    }
+                    sac.CalculateMinMax();
+                    */
+                }
+            }
+        }
+    }
+
+    /*
     public void SetValues(NDarray values)
     {
         foreach ((string objNames, List<(string, List<SingleAttributeController>)> obj) in m_sacs)
@@ -67,6 +91,7 @@ public class SingleAttributeControllers : MonoBehaviour
             }
         }
     }
+    */
 
     public void SetSACMinMax(int pi, float min, float max)
     {

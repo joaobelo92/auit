@@ -19,21 +19,17 @@ namespace AUIT.AdaptationObjectives
 
         #region MonoBehaviour Implementation
 
-        protected virtual void Awake()
-        {
-            if (auit == null)
-                auit = AUIT.Instance;
-        }
-
         protected virtual void OnEnable()
         {
             if (auit == null)
-                auit = AUIT.Instance;
+                auit = FindFirstObjectByType<AUIT>();
             auit.RegisterMultiElementObjective(this);
         }
 
         protected virtual void Start() 
         {
+            if (auit == null)
+                auit = FindFirstObjectByType<AUIT>();
         }
 
         protected virtual void OnDisable()

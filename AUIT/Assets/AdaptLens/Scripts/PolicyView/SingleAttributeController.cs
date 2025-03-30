@@ -1,3 +1,4 @@
+using Numpy;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.TerrainTools;
@@ -27,11 +28,9 @@ public class SingleAttributeController
     private Color m_pointColor = new Color(0.6f, 0.6f, 0.6f, 0.4f);
     private float m_pointSize = 5;
 
-    private List<float> m_values = new List<float>();
-    private List<Vector2> m_points = new List<Vector2>();
-
-    private List<float> m_offsets = new List<float>();
-
+    private NDarray m_values;
+    private NDarray m_mask;
+    private NDarray m_offsets; 
 
     private float m_minValue = 0;
     private float m_maxValue = 1;
@@ -91,6 +90,7 @@ public class SingleAttributeController
         }
     }
 
+    /*
     public void ClearValues()
     {
         m_values.Clear();
@@ -106,6 +106,27 @@ public class SingleAttributeController
         if (value < m_minValue) m_minValue = value;
         if (value > m_maxValue) m_maxValue = value;
     }
+    */
+
+    public void SetValues(NDarray values, NDarray mask)
+    {
+        m_values = values;
+        m_mask = mask;
+
+        float min = (float)np.min(values);
+        float max = (float)np.max(values);
+
+        if (Mathf.Approximately(min, max))
+        {
+            min -= m_minMaxBuffer / 2;
+            max += m_minMaxBuffer / 2;
+        }
+
+        m_minValue = min;
+        m_maxValue = max;
+
+        m_offsets = np.random.uniform(np.array(-1.0f), np.array(1.0f), new int[] { values.shape[0] }).astype(np.float32);
+    }
 
     public void SetMinMax(float min, float max)
     {
@@ -113,6 +134,7 @@ public class SingleAttributeController
         m_maxValue = max;
     }
 
+    /*
     public void CalculateMinMax()
     {
         if (m_values.Count == 0)
@@ -138,6 +160,7 @@ public class SingleAttributeController
         m_minValue = min;
         m_maxValue = max;
     }
+    */
 
     private Vector2 ValueGraphPosition(float value, float min, float max, Rect cr)
     {
@@ -165,20 +188,21 @@ public class SingleAttributeController
         return m_minValue + (m_maxValue - m_minValue) * ratio;
     }
 
+    private void DrawPoint(float value, float offset, Rect cr, float min, float max, Color color) {
+        Vector2 point2 = ValueGraphPosition(value, min, max, cr) + OffsetGraphPosition(offset, cr);
+        Handles.color = color;
+        Handles.DrawSolidDisc(point2, Vector3.forward, m_pointSize);
+
+    }
+
     private void DrawPoints(Rect cr, float min, float max)
     {
-
-        m_points.Clear();
-
-        for (int i = 0; i < m_values.Count; i++)
+        for (int i = 0; i < m_values.shape[0]; i++)
         {
-            Handles.color = m_pointColor;
-            float value = m_values[i];
-            float offset = m_offsets[i];
-
-            Vector2 point = ValueGraphPosition(value, min, max, cr) + OffsetGraphPosition(offset, cr);
-            Handles.DrawSolidDisc(point, Vector3.forward, m_pointSize);
-            m_points.Add(point);
+            if ((bool)m_mask[i])
+            {
+                DrawPoint((float)m_values[i], (float)m_offsets[i], cr, min, max, m_pointColor);
+            }
         }
     }
 
@@ -187,8 +211,7 @@ public class SingleAttributeController
         Handles.color = m_hoverColor;
         if (m_hoverIndex >= 0)
         {
-            Vector2 point = m_points[m_hoverIndex];
-            Handles.DrawSolidDisc(point, Vector3.forward, m_pointSize);
+            DrawPoint((float)m_values[m_hoverIndex], (float)m_offsets[m_hoverIndex], cr, min, max, m_hoverColor);
         }
     }
 
@@ -197,8 +220,7 @@ public class SingleAttributeController
         Handles.color = m_selectedColor;
         if (m_selectedIndex >= 0)
         {
-            Vector2 point = m_points[m_selectedIndex];
-            Handles.DrawSolidDisc(point, Vector3.forward, m_pointSize);
+            DrawPoint((float)m_values[m_selectedIndex], (float)m_offsets[m_selectedIndex], cr, min, max, m_selectedColor);
         }
     }
 
@@ -218,11 +240,17 @@ public class SingleAttributeController
             return; 
         }
 
+        // TODO: Calculate hover index
         int hoverIndex = -1;
-        for (int i = 0; i < m_values.Count; i++)
+        for (int i = 0; i < m_values.shape[0]; i++)
         {
-            float value = m_values[i];
-            float offset = m_offsets[i];
+            if (!(bool)m_mask[i])
+            {
+                continue;
+            }
+
+            float value = (float)m_values[i];
+            float offset = (float)m_offsets[i];
             Vector2 valuePoint = ValueGraphPosition(value, min, max,cr) + OffsetGraphPosition(offset, cr);
             if (Vector2.Distance(mousePos, valuePoint) < m_pointSize)
             {
@@ -230,20 +258,6 @@ public class SingleAttributeController
                 break;
             }
         }
-
-        /*
-        float valueRadius = Mathf.Abs(GraphPositionValue(Vector2.zero, min, max, cr) - GraphPositionValue(new Vector2(m_pointSize, 0), min, max, cr));
-        float mouseValue = GraphPositionValue(mousePos, m_minValue, m_maxValue, cr);
-        for (int i = 0; i < m_values.Count; i++)
-        {
-            if (Mathf.Abs(value - mouseValue) < valueRadius)
-            {
-                hoverIndex = i;
-                break;
-            }
-        }
-        */
-
         if (m_hoverIndex != hoverIndex)
         {
             m_hoverIndex = hoverIndex;
@@ -366,14 +380,12 @@ public class SingleAttributeController
 
         float min = m_minValue;
         float max = m_maxValue;
-        //min -= m_minMaxBuffer / 2;
-        //max += m_minMaxBuffer / 2;
 
         DrawGridLines(cr, min, max);
 
         HandleMouseHover(cr, min, max);
-        HandleFiltering(cr, min, max);
         HandleSelection();
+        HandleFiltering(cr, min, max);
 
         DrawPoints(cr, min, max);
         DrawHover(cr, min, max);
