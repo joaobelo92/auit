@@ -22,13 +22,13 @@ namespace AUIT.AdaptationObjectives
         protected virtual void Awake()
         {
             if (auit == null)
-                auit = GetComponent<AUIT>();
+                auit = AUIT.Instance;
         }
 
         protected virtual void OnEnable()
         {
             if (auit == null)
-                auit = GetComponent<AUIT>();
+                auit = AUIT.Instance;
             auit.RegisterMultiElementObjective(this);
         }
 

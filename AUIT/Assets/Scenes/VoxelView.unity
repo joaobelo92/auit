@@ -4119,6 +4119,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 477043160}
+  - component: {fileID: 477043161}
   m_Layer: 0
   m_Name: Menu Applications
   m_TagString: Untagged
@@ -4143,6 +4144,20 @@ Transform:
   - {fileID: 1659167228}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &477043161
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 477043159}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b87777693561432c8fffddd81a870919, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  weight: 0.5
+  userContextSource: {fileID: 0}
 --- !u!1 &548624700 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 3395771713635671884, guid: bce0e41cde1b03b4f8de3e97ed47ec53, type: 3}
@@ -4332,7 +4347,6 @@ GameObject:
   - component: {fileID: 642232615}
   - component: {fileID: 642232617}
   - component: {fileID: 642232618}
-  - component: {fileID: 642232619}
   m_Layer: 0
   m_Name: AUIT
   m_TagString: Untagged
@@ -4356,7 +4370,7 @@ MonoBehaviour:
     backend: 0
     solver: SimulatedAnnealing
   solverSettings:
-    rid: 2980885571425271910
+    rid: 2980885571425271915
   developmentMode: 1
   gameObjectsToOptimize:
   - {fileID: 720357813}
@@ -4380,7 +4394,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 2980885571425271910
+    - rid: 2980885571425271915
       type: {class: SimulatedAnnealingSolver, ns: AUIT.Solvers, asm: Assembly-CSharp}
       data:
         iterations: 1500
@@ -4430,20 +4444,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   debugCost: 0
---- !u!114 &642232619
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 642232613}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b87777693561432c8fffddd81a870919, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  weight: 0.5
-  userContextSource: {fileID: 0}
 --- !u!1 &661520130
 GameObject:
   m_ObjectHideFlags: 0
@@ -4955,6 +4955,8 @@ GameObject:
   - component: {fileID: 720357815}
   - component: {fileID: 720357822}
   - component: {fileID: 720357823}
+  - component: {fileID: 720357825}
+  - component: {fileID: 720357824}
   m_Layer: 7
   m_Name: menu
   m_TagString: Untagged
@@ -5126,7 +5128,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 720357813}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a68f8cb2c36bdfc4eb6545e9c2b14096, type: 3}
   m_Name: 
@@ -5143,7 +5145,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 720357813}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: be055729b4a0ca84686b2e0cfacd0fd7, type: 3}
   m_Name: 
@@ -5153,6 +5155,39 @@ MonoBehaviour:
   targetAngle: 0
   optimalAngleRange: 10
   maximumCostAngleRange: 45
+--- !u!114 &720357824
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 720357813}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec5c8f9fb4d4d384aa043a32a465f174, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  weight: 0.5
+  userContextSource: {fileID: 0}
+  physicalLayerMask:
+    serializedVersion: 2
+    m_Bits: 0
+--- !u!114 &720357825
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 720357813}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1593a55e295ba5b41bd2aaf09a900401, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  weight: 0.5
+  targetContextSource: {fileID: 0}
+  offset: {x: 0, y: 0, z: 0}
+  distanceThreshold: 0.3
 --- !u!1 &808585599
 GameObject:
   m_ObjectHideFlags: 0
@@ -6674,6 +6709,10 @@ GameObject:
   - component: {fileID: 1659167231}
   - component: {fileID: 1659167230}
   - component: {fileID: 1659167229}
+  - component: {fileID: 1659167239}
+  - component: {fileID: 1659167238}
+  - component: {fileID: 1659167237}
+  - component: {fileID: 1659167240}
   m_Layer: 7
   m_Name: weather
   m_TagString: Untagged
@@ -6838,6 +6877,73 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1659167227}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1659167237
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1659167227}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1593a55e295ba5b41bd2aaf09a900401, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  weight: 0.5
+  targetContextSource: {fileID: 0}
+  offset: {x: 0, y: 0, z: 0}
+  distanceThreshold: 0.3
+--- !u!114 &1659167238
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1659167227}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: be055729b4a0ca84686b2e0cfacd0fd7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  weight: 0.5
+  userContextSource: {fileID: 0}
+  targetAngle: 0
+  optimalAngleRange: 10
+  maximumCostAngleRange: 45
+--- !u!114 &1659167239
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1659167227}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a68f8cb2c36bdfc4eb6545e9c2b14096, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  weight: 0.5
+  targetContextSource: {fileID: 0}
+  targetDistance: 0.3
+  optimalDistanceRange: 0.1
+  maximumCostDistanceRange: 0.5
+--- !u!114 &1659167240
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1659167227}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec5c8f9fb4d4d384aa043a32a465f174, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  weight: 0.5
+  userContextSource: {fileID: 0}
+  physicalLayerMask:
+    serializedVersion: 2
+    m_Bits: 0
 --- !u!1 &1712619382
 GameObject:
   m_ObjectHideFlags: 0
