@@ -4306,7 +4306,7 @@ MonoBehaviour:
     backend: 0
     solver: SimulatedAnnealing
   solverSettings:
-    rid: 2980885587934314549
+    rid: 2980885587934314555
   developmentMode: 1
   gameObjectsToOptimize:
   - {fileID: 720357813}
@@ -4330,7 +4330,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 2980885587934314549
+    - rid: 2980885587934314555
       type: {class: SimulatedAnnealingSolver, ns: AUIT.Solvers, asm: Assembly-CSharp}
       data:
         iterations: 1500
@@ -5172,7 +5172,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   weight: 0.5
   targetContextSource: {fileID: 0}
-  targetDistance: 1
+  targetDistance: 0.3
   optimalDistanceRange: 0.1
   maximumCostDistanceRange: 0.5
 --- !u!114 &720357823
@@ -7740,13 +7740,13 @@ SceneRoots:
   - {fileID: 718127021}
   - {fileID: 1367704171}
   - {fileID: 642232616}
+  - {fileID: 1639674289}
   - {fileID: 2064500392}
   - {fileID: 318291447}
   - {fileID: 346269842}
   - {fileID: 846422400}
   - {fileID: 1217115067}
   - {fileID: 661520134}
-  - {fileID: 1639674289}
   - {fileID: 1364245732}
   - {fileID: 441668349}
   - {fileID: 2122511928}
