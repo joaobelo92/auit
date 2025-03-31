@@ -2,13 +2,13 @@ using System;
 using System.IO;
 using UnityEngine;
 using AUIT.AdaptationObjectives;
+using AUIT.AdaptationTriggers;
 using System.Collections.Generic;
 using Numpy;
 
 public class StudyLogging : MonoBehaviour
 {
     public PolicyView m_policyView;
-
 
     [Serializable]
     private class Objective
@@ -44,6 +44,7 @@ public class StudyLogging : MonoBehaviour
     {
         m_policyView.onHover += LogHover;
         m_policyView.onSelect += LogSelect;
+        m_policyView.onFilter += LogFilter;
     }
 
     private void ResetLog()
@@ -53,6 +54,35 @@ public class StudyLogging : MonoBehaviour
             m_sw.Close();
         }
         m_sw = null;
+    }
+
+    private (string, string) GetObjective(int pi, List<List<LocalObjective>> localObjectives, List<MultiElementObjective> multiElementObjectives)
+    {
+        int vi = 0;
+        foreach (List<LocalObjective> objLocalObjectives in localObjectives)
+        {
+            foreach (LocalObjective localObjective in objLocalObjectives)
+            {
+                if (vi == pi)
+                {
+                    GameObject objectiveObj = localObjective.gameObject;
+                    Type objectiveType = localObjective.GetType();
+                    return (objectiveObj.name, objectiveType.ToString());
+                }
+                vi++;
+            }
+        }
+        foreach (MultiElementObjective multiElementObjective in multiElementObjectives)
+        {
+            if (vi == pi)
+            {
+                GameObject objectiveObj = multiElementObjective.gameObject;
+                Type objectiveType = multiElementObjective.GetType();
+                return (objectiveObj.name, objectiveType.ToString());
+            }
+            vi++;
+        }
+        return (null, null);
     }
 
     private string GetPolicyString(List<List<LocalObjective>> localObjectives, List<MultiElementObjective> multiElementObjectives, NDarray values)
@@ -99,6 +129,23 @@ public class StudyLogging : MonoBehaviour
     {
         string ts = GetDateString(DateTime.Now);
         string log = $"{ts},{LogEvent.PolicyViewerSelect},{selectIndex},{GetPolicyString(localObjectives, multiElementObjectives, values)}";
+        m_sw.WriteLine(log);
+    }
+
+    private void LogFilter(int pi, float min, float max, PolicyView.SACValues filterValue, List<List<LocalObjective>> localObjectives, List<MultiElementObjective> multiElementObjectives)
+    {
+        string ts = GetDateString(DateTime.Now);
+        var objectiveInfo = GetObjective(pi, localObjectives, multiElementObjectives);
+        if (objectiveInfo.Item1 == null)
+        {
+            return;
+        }
+        if (objectiveInfo.Item2 == null)
+        {
+            return;
+        }
+
+        string log = $"{ts},{LogEvent.PolicyViewerFilter},{pi},{min},{max},{filterValue},{objectiveInfo.Item1},{objectiveInfo.Item2}";
         m_sw.WriteLine(log);
     }
 

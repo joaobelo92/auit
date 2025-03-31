@@ -1,6 +1,7 @@
 using AUIT.AdaptationObjectives;
 using AUIT.AdaptationObjectives.Definitions;
 using AUIT.AdaptationObjectives.Extras;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
@@ -20,17 +21,21 @@ namespace AUIT.AdaptationObjectives
         {
             // Assuming x = width, y = height
             // Checking center and corners of the layout element
-            Vector3[] checkTargets = new Vector3[] {
-                new Vector3 (-0.5f, -0.5f, 0),
-                new Vector3 (-0.5f, 0.5f, 0),
-                new Vector3 (0.5f, -0.5f, 0),
-                new Vector3 (0.5f, 0.5f, 0),
-                new Vector3 (0, 0, 0),
-            };
-            Matrix4x4 trs = Matrix4x4.TRS(layout.Position, layout.Rotation, layout.Scale);
-            for (int i = 0; i < checkTargets.Length; i++)
+            List<Vector3> checkTargetsLocal = new List<Vector3>();
+            for (float x = -0.5f; x <= 0.5f; x += 0.25f)
             {
-                checkTargets[i] = trs.MultiplyPoint(checkTargets[i]);
+                for (float y = -0.5f; y <= 0.5f; y += 0.25f)
+                {
+                    checkTargetsLocal.Add(new Vector3(x, y, 0));
+                }
+            }
+            
+
+            Matrix4x4 trs = Matrix4x4.TRS(layout.Position, layout.Rotation, layout.Scale);
+            Vector3[] checkTargets = new Vector3[checkTargetsLocal.Count];
+            for (int i = 0; i < checkTargetsLocal.Count; i++)
+            {
+                checkTargets[i] = trs.MultiplyPoint(checkTargetsLocal[i]);
             }
 
             return checkTargets;
@@ -53,17 +58,15 @@ namespace AUIT.AdaptationObjectives
             {
                 Debug.LogError("PhysicalOcclusionObjective.CostFunction(): User context source is not set.");
             }
-            
-            float overlaps = 0;
             Vector3[] checkTargets = GetCheckPoints(optimizationTarget);
             foreach (Vector3 target in checkTargets)
             {
                 if (IsOccluding(target))
                 {
-                    overlaps += 1; 
+                    return 1;
                 }
             }
-            return overlaps / checkTargets.Length;
+            return 0; 
         }
 
         private Vector3 GetPlanarDirection(Layout optimizationTarget)

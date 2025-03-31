@@ -88,12 +88,13 @@ public class Element : MonoBehaviour
         List<float> multiObjectiveCosts;
         (objectiveCosts, multiObjectiveCosts) = AUIT.Solvers.Utils.ComputeCostsUnweighted(new List<Layout>() { layout }, localObjectives, globalObjectives);
         string debug = "";
-        for (int i = 0; i < localObjectives.Count; i++)
+
+        int index = AUIT.AUIT.Instance.gameObjectsToOptimize.IndexOf(gameObject);
+        List<LocalObjective> elementLocalObjectives = localObjectives[index];
+        List<float> elementLocalObjectiveCosts = objectiveCosts[0];
+        for (int i = 0; i < elementLocalObjectives.Count; i++)
         {
-            for (int j = 0; j < localObjectives[i].Count; j++)
-            {
-                debug += localObjectives[i][j].gameObject.name + ", " + localObjectives[i][j].GetType().Name + ": " + objectiveCosts[i][j] + "\n";
-            }
+            debug += elementLocalObjectives[i].GetType().Name + ": " + elementLocalObjectiveCosts[i] + "\n";
         }
         for (int i = 0; i < globalObjectives.Count; i++)
         {

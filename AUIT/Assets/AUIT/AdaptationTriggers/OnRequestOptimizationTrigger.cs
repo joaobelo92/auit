@@ -11,7 +11,6 @@ namespace AUIT.AdaptationTriggers
 {
     public class OnRequestOptimizationTrigger : AdaptationTrigger
     {
-        
         public bool debugCost;
         
         public override async void ApplyStrategy()

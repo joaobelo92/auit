@@ -9,14 +9,18 @@ using System.Collections;
 using System;
 using AUIT.Solvers;
 using Cysharp.Threading.Tasks;
+using AUIT.AdaptationObjectives;
 
 public class PolicyView : MonoBehaviour
 {
-    public delegate void OnHover(int si, List<List<AUIT.AdaptationObjectives.LocalObjective>> localObjectives, List<AUIT.AdaptationObjectives.MultiElementObjective> m_multiElementObjectives, NDarray weights); 
+    public delegate void OnHover(int si, List<List<LocalObjective>> localObjectives, List<MultiElementObjective> m_multiElementObjectives, NDarray weights); 
     public OnHover onHover;
 
-    public delegate void OnSelect(int si, List<List<AUIT.AdaptationObjectives.LocalObjective>> localObjectives, List<AUIT.AdaptationObjectives.MultiElementObjective> m_multiElementObjectives, NDarray weights);
+    public delegate void OnSelect(int si, List<List<LocalObjective>> localObjectives, List<MultiElementObjective> m_multiElementObjectives, NDarray weights);
     public OnSelect onSelect;
+
+    public delegate void OnFilter(int pi, float min, float max, PolicyView.SACValues filterValue, List<List<LocalObjective>> localObjectives, List<MultiElementObjective> multiElementObjectives);
+    public OnFilter onFilter;
 
     public ParaHomeLoader m_paraHomeLoader;
     public Parameters m_parameters;
@@ -111,7 +115,6 @@ public class PolicyView : MonoBehaviour
 
     private void SetContexts(List<ParaHomeContext> contexts)
     {
-        Debug.Log("Set Contexts" + contexts);
         m_contexts = contexts;
         if (m_contexts != null && m_contexts.Count > 0)
         {
@@ -326,6 +329,10 @@ public class PolicyView : MonoBehaviour
 
     public void ApplyFiltering(int pi, float min, float max)
     {
+        if (onFilter != null)
+        {
+            onFilter(pi, min, max, m_sacValues, m_localObjectives, m_multiElementObjectives);
+        }
         // Currently filtering based on average
         m_mask = GetUpdatedFilterMask(m_mask, m_sacValues, pi, min, max);
 
@@ -429,15 +436,20 @@ public class PolicyView : MonoBehaviour
         return snapshot;
     }
 
-    public IEnumerator GetLayoutView(int targetLayout, System.Action<Texture2D> callback)
+    public IEnumerator GetLayoutView(int targetLayoutIndex, System.Action<Texture2D> callback)
     {
+
         for (int li = 0; li < m_currentLayouts.Count; li++)
         {
             foreach (Element element in m_currentLayouts[li])
             {
-
-                element.gameObject.SetActive(li == targetLayout);
+                element.gameObject.SetActive(false);
             }
+        }
+        Element[] targetLayout = m_currentLayouts[targetLayoutIndex];
+        foreach (Element element in targetLayout)
+        {
+            element.gameObject.SetActive(true);
         }
 
         yield return new WaitForEndOfFrame();
@@ -446,11 +458,11 @@ public class PolicyView : MonoBehaviour
 
         for (int li = 0; li < m_currentLayouts.Count; li++)
         {
+            bool active = (bool)m_mask[li];
             foreach (Element element in m_currentLayouts[li])
             {
-                element.gameObject.SetActive(true);
+                element.gameObject.SetActive(active);
             }
-
         }
 
         callback(view);
