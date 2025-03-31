@@ -131,6 +131,16 @@ namespace AUIT.AdaptationObjectives
 
             physicalLayerMask = LayerMask.GetMask("Physical Environment");
         }
+
+        public override float[] GetParameters()
+        {
+            return new float[] { weight };
+        }
+
+        public override void SetParameters(float[] parameters)
+        {
+            weight = parameters[0];
+        }
     }
 
 }

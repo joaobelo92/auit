@@ -84,3 +84,7 @@ crashlytics-build.properties
 # OBJ Importer 
 /[Aa]ssets/OBJImport.meta
 /[Aa]ssets/OBJImport/*
+
+# Saved Policies
+/[Aa]ssets/AdaptLens/Study/Saved Policies/*
+/[Aa]ssets/AdaptLens/Study/Saved Policies.meta

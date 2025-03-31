@@ -75,5 +75,17 @@ namespace AUIT.AdaptationObjectives
         {
             throw new System.NotImplementedException();
         }
+
+        public override float[] GetParameters()
+        {
+            return new float[] { weight, offset.x, offset.y, offset.z, distanceThreshold };
+        }
+
+        public override void SetParameters(float[] parameters)
+        {
+            weight = parameters[0];
+            offset = new Vector3(parameters[1], parameters[2], parameters[3]);
+            distanceThreshold = parameters[4];
+        }
     }
 }

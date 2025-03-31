@@ -167,6 +167,16 @@ namespace AUIT.AdaptationObjectives.Objectives
 
             return (Mathf.Sqrt(closestDistanceSqr), closestCell);
         }
+
+        public override float[] GetParameters()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public override void SetParameters(float[] parameters)
+        {
+            throw new System.NotImplementedException();
+        }
     }
     
     [CustomEditor(typeof(FieldOfViewGridObjective))]
@@ -225,5 +235,6 @@ namespace AUIT.AdaptationObjectives.Objectives
 
             serializedObject.ApplyModifiedProperties();
         }
+
     }
 }

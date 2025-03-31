@@ -68,5 +68,15 @@ namespace AUIT.AdaptationObjectives
         {
             throw new NotImplementedException();
         }
+
+        public override float[] GetParameters()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public override void SetParameters(float[] parameters)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

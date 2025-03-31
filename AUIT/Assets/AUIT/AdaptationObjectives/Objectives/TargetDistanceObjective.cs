@@ -95,5 +95,17 @@ namespace AUIT.AdaptationObjectives
             }
         }
 
+        public override float[] GetParameters()
+        {
+            return new[] { weight, targetDistance, optimalDistanceRange, maximumCostDistanceRange };
+        }
+
+        public override void SetParameters(float[] parameters)
+        {
+            weight = parameters[0];
+            targetDistance = parameters[1];
+            optimalDistanceRange = parameters[2];
+            maximumCostDistanceRange = parameters[3];
+        }
     }
 }

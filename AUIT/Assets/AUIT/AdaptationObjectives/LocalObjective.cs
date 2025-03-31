@@ -55,6 +55,10 @@ namespace AUIT.AdaptationObjectives
             return userPoseContextSource;
         }
 
+        public abstract float[] GetParameters();
+
+        public abstract void SetParameters(float[] parameters);
+
 
 
         #endregion

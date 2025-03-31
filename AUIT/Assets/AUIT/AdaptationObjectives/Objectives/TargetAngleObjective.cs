@@ -96,5 +96,18 @@ namespace AUIT.AdaptationObjectives
                 userContextSource = GetUserPoseContextSource();
             }
         }
+
+        public override float[] GetParameters()
+        {
+            return new[] { weight, targetAngle, optimalAngleRange, maximumCostAngleRange };
+        }
+
+        public override void SetParameters(float[] parameters)
+        {
+            weight = parameters[0];
+            targetAngle = parameters[1];
+            optimalAngleRange = parameters[2];
+            maximumCostAngleRange = parameters[3];
+        }
     }
 }
