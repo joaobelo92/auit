@@ -46,12 +46,28 @@ public class PolicyView : MonoBehaviour
     }
     public SACValues m_sacValues = SACValues.AverageCost;
 
+    private class FilterOperation
+    {
+        public int pi;
+        public float min;
+        public float max;
+        public SACValues filterValue;
+        public FilterOperation(int pi, float min, float max, SACValues filterValue)
+        {
+            this.pi = pi;
+            this.min = min;
+            this.max = max;
+            this.filterValue = filterValue;
+        }
+    }
     private List<ParaHomeContext> m_contexts = new List<ParaHomeContext>();
 
     private NDarray m_samples;
     private NDarray m_mask;
     private List<Layout[][]> m_layouts = new List<Layout[][]>();
     private NDarray m_costs;
+    
+    private Stack<FilterOperation> m_filterStack = new Stack<FilterOperation>();
 
     private List<Element[]> m_currentLayouts = new List<Element[]>();
     
@@ -261,12 +277,11 @@ public class PolicyView : MonoBehaviour
         SetHover(hoverIndex);
 
     }
-
-    public void ApplyFiltering(int pi, float min, float max)
+    
+    private NDarray GetUpdatedFilterMask(NDarray mask, SACValues sacValue, int pi, float min, float max)
     {
         NDarray parameterValues;
-        // Currently filtering based on average
-        switch (m_sacValues)
+        switch (sacValue)
         {
             case SACValues.AverageCost:
             default:
@@ -282,22 +297,58 @@ public class PolicyView : MonoBehaviour
                 parameterValues = m_samples[":", pi];
                 break;
         }
-
         var sampleMask = (parameterValues >= min) & (parameterValues <= max);
-        m_mask = m_mask & sampleMask;
+        return mask & sampleMask;
+    }
+
+    public void ApplyFiltering(int pi, float min, float max)
+    {
+        // Currently filtering based on average
+        m_mask = GetUpdatedFilterMask(m_mask, m_sacValues, pi, min, max);
 
         // Update selected 
-        if (m_selected >= 0 && !(bool)sampleMask[m_selected])
+        if (m_selected >= 0 && !(bool)m_mask[m_selected])
         {
             m_selected = -1;
         }
 
         LoadContext();
         m_sacs.SetSACMinMax(pi, min, max);
+
+        // Save to filter stack 
+        m_filterStack.Push(new FilterOperation(pi, min, max, m_sacValues));
+    }
+
+    public void UndoFiltering()
+    {
+        if (m_filterStack.Count == 0)
+        {
+            return;
+        }
+        // Pop last operation
+        m_filterStack.Pop();
+
+        // Calculate mask without previous operation
+        FilterOperation[] filterOperations = m_filterStack.ToArray();
+        NDarray mask = np.ones(m_numSamples).astype(np.bool_);
+        foreach (FilterOperation filterOperation in filterOperations)
+        {
+            mask = GetUpdatedFilterMask(mask, filterOperation.filterValue, filterOperation.pi, filterOperation.min, filterOperation.max);
+        }
+        m_mask = mask;
+
+        // Update selected 
+        if (m_selected >= 0 && !(bool)m_mask[m_selected])
+        {
+            m_selected = -1;
+        }
+
+        LoadContext();
     }
 
     public void ResetFiltering()
     {
+        m_filterStack.Clear();
         m_mask = np.ones(m_numSamples).astype(np.bool_);
         LoadContext();
     }
@@ -497,12 +548,9 @@ public class PolicyView : MonoBehaviour
 
     public async void SamplePolicies()
     {
-
-        // TODO: Reset stuff 
         m_selected = -1;
         ClearSaved();
-
-
+        m_filterStack.Clear();
 
         if (m_numSamples <= 0)
         {
@@ -661,10 +709,11 @@ public class PolicyView : MonoBehaviour
         // Initialize context
         LoadContext();
 
-        m_sacs.onHover += SetHover;
-        m_sacs.onSelect += SetSelected;
-        m_sacs.onApplyFiltering += ApplyFiltering;
-
+        m_sacs.onHover = SetHover;
+        m_sacs.onSelect = SetSelected;
+        m_sacs.onApplyFiltering = ApplyFiltering;
+        m_sacs.onResetFiltering = ResetFiltering;
+        m_sacs.onUndoFiltering = UndoFiltering;
     }
 
 
@@ -714,13 +763,13 @@ public class PolicyView : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        m_gallery.onSaveSelected += SaveSelected;
-        m_gallery.onClearSelected += ResetSelected;
-        m_gallery.onClearSaved += ClearSaved;
-        m_gallery.onHoverSelected += SetHoverSelected;
-        m_gallery.onHoverSaved += SetHoverSaved;
-        m_gallery.onSelectedSaved += SetSelectedSaved;
-        m_gallery.onDeploySelected += DeploySelected;
+        m_gallery.onSaveSelected = SaveSelected;
+        m_gallery.onClearSelected = ResetSelected;
+        m_gallery.onClearSaved = ClearSaved;
+        m_gallery.onHoverSelected = SetHoverSelected;
+        m_gallery.onHoverSaved = SetHoverSaved;
+        m_gallery.onSelectedSaved = SetSelectedSaved;
+        m_gallery.onDeploySelected = DeploySelected;
     }
 
     // Update is called once per frame
@@ -801,10 +850,6 @@ public class PolicyViewEditor : Editor
         if (GUILayout.Button("Sample Policies"))
         {
             policyView.SamplePolicies();
-        }
-        if (GUILayout.Button("Reset Filtering"))
-        {
-            policyView.ResetFiltering();
         }
         EditorGUILayout.Space();
 

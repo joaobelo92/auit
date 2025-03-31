@@ -17,6 +17,12 @@ public class SingleAttributeControllers : MonoBehaviour
     public delegate void OnApplyFiltering(int pi, float min, float max);
     public OnApplyFiltering onApplyFiltering;
 
+    public delegate void OnResetFiltering();
+    public OnResetFiltering onResetFiltering;
+
+    public delegate void OnUndoFiltering(); 
+    public OnUndoFiltering onUndoFiltering;
+
     private List<(string, List<(string, List<SingleAttributeController>)>)> m_sacs = new List<(string, List<(string, List<SingleAttributeController>)>)>();
 
     public List<(string, List<(string, List<SingleAttributeController>)>)> SACS
@@ -132,6 +138,22 @@ public class SingleAttributeControllers : MonoBehaviour
             }
         }
     }
+
+    public void ResetFiltering()
+    {
+        if (onResetFiltering != null)
+        {
+            onResetFiltering();
+        }
+    }
+
+    public void UndoFiltering()
+    {
+        if (onUndoFiltering != null)
+        {
+            onUndoFiltering();
+        }
+    }
 }
 
 [CustomEditor(typeof(SingleAttributeControllers))]
@@ -144,6 +166,16 @@ public class SingleAttributeControllersEditor : Editor
         base.OnInspectorGUI();
 
         sacs = (SingleAttributeControllers)target;
+
+        if (GUILayout.Button("Reset Filtering"))
+        {
+            sacs.ResetFiltering();
+        }
+
+        if (GUILayout.Button("Undo Filtering"))
+        {
+            sacs.UndoFiltering();
+        }
 
         foreach (var objSAC in sacs.SACS)
         {

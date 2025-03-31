@@ -4377,7 +4377,7 @@ MonoBehaviour:
     backend: 0
     solver: SimulatedAnnealing
   solverSettings:
-    rid: 2980885586282545211
+    rid: 2980885587934314542
   developmentMode: 1
   gameObjectsToOptimize:
   - {fileID: 720357813}
@@ -4401,7 +4401,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 2980885586282545211
+    - rid: 2980885587934314542
       type: {class: SimulatedAnnealingSolver, ns: AUIT.Solvers, asm: Assembly-CSharp}
       data:
         iterations: 1500
