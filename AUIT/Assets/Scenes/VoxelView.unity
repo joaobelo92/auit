@@ -135,8 +135,6 @@ GameObject:
   - component: {fileID: 67399917}
   - component: {fileID: 67399916}
   - component: {fileID: 67399922}
-  - component: {fileID: 67399924}
-  - component: {fileID: 67399923}
   - component: {fileID: 67399928}
   - component: {fileID: 67399927}
   - component: {fileID: 67399926}
@@ -320,39 +318,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   userContextSource: {fileID: 1219749625}
---- !u!114 &67399923
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 67399913}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1593a55e295ba5b41bd2aaf09a900401, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  weight: 0.5
-  targetContextSource: {fileID: 1805893729}
-  offset: {x: 0, y: 0, z: 0}
-  distanceThreshold: 1.5
---- !u!114 &67399924
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 67399913}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ec5c8f9fb4d4d384aa043a32a465f174, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  weight: 0.5
-  userContextSource: {fileID: 0}
-  physicalLayerMask:
-    serializedVersion: 2
-    m_Bits: 0
 --- !u!114 &67399925
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -360,7 +325,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 67399913}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ec5c8f9fb4d4d384aa043a32a465f174, type: 3}
   m_Name: 
@@ -377,7 +342,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 67399913}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1593a55e295ba5b41bd2aaf09a900401, type: 3}
   m_Name: 
@@ -385,7 +350,7 @@ MonoBehaviour:
   weight: 0.5
   targetContextSource: {fileID: 0}
   offset: {x: 0, y: 0, z: 0}
-  distanceThreshold: 0.3
+  distanceThreshold: 2
 --- !u!114 &67399927
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -651,7 +616,7 @@ MonoBehaviour:
   weight: 0.5
   targetContextSource: {fileID: 0}
   offset: {x: 0, y: 0, z: 0}
-  distanceThreshold: 0.3
+  distanceThreshold: 2
 --- !u!114 &75007201
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -930,8 +895,8 @@ MonoBehaviour:
   m_bounds: {fileID: 346269842}
   m_distribution: {fileID: 318291449}
   m_element: {fileID: 720357813}
-  m_voxelSize: 0.2
-  m_voxelMargin: 0.15
+  m_voxelSize: 0.25
+  m_voxelMargin: 0.2
   m_costGradient:
     serializedVersion: 2
     key0: {r: 0.40392157, g: 0.6627451, b: 0.8117647, a: 1}
@@ -1105,8 +1070,6 @@ GameObject:
   - component: {fileID: 400364637}
   - component: {fileID: 400364645}
   - component: {fileID: 400364644}
-  - component: {fileID: 400364649}
-  - component: {fileID: 400364648}
   - component: {fileID: 400364647}
   - component: {fileID: 400364646}
   m_Layer: 7
@@ -1302,7 +1265,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   weight: 0.5
   userContextSource: {fileID: 0}
-  targetAngle: 50
+  targetAngle: 0
   optimalAngleRange: 10
   maximumCostAngleRange: 45
 --- !u!114 &400364645
@@ -1319,7 +1282,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   weight: 0.5
   targetContextSource: {fileID: 0}
-  targetDistance: 0.8
+  targetDistance: 0.3
   optimalDistanceRange: 0.1
   maximumCostDistanceRange: 0.5
 --- !u!114 &400364646
@@ -1354,41 +1317,7 @@ MonoBehaviour:
   weight: 0.5
   targetContextSource: {fileID: 0}
   offset: {x: 0, y: 0, z: 0}
-  distanceThreshold: 0.3
---- !u!114 &400364648
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 400364635}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: be055729b4a0ca84686b2e0cfacd0fd7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  weight: 0.5
-  userContextSource: {fileID: 0}
-  targetAngle: 0
-  optimalAngleRange: 10
-  maximumCostAngleRange: 45
---- !u!114 &400364649
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 400364635}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a68f8cb2c36bdfc4eb6545e9c2b14096, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  weight: 0.5
-  targetContextSource: {fileID: 0}
-  targetDistance: 0.3
-  optimalDistanceRange: 0.1
-  maximumCostDistanceRange: 0.5
+  distanceThreshold: 2
 --- !u!1001 &441668349
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4377,7 +4306,7 @@ MonoBehaviour:
     backend: 0
     solver: SimulatedAnnealing
   solverSettings:
-    rid: 2980885587934314542
+    rid: 2980885587934314549
   developmentMode: 1
   gameObjectsToOptimize:
   - {fileID: 720357813}
@@ -4401,7 +4330,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 2980885587934314542
+    - rid: 2980885587934314549
       type: {class: SimulatedAnnealingSolver, ns: AUIT.Solvers, asm: Assembly-CSharp}
       data:
         iterations: 1500
@@ -4898,7 +4827,7 @@ MonoBehaviour:
   weight: 0.5
   targetContextSource: {fileID: 0}
   offset: {x: 0, y: 0, z: 0}
-  distanceThreshold: 0.3
+  distanceThreshold: 2
 --- !u!114 &674239788
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5295,7 +5224,7 @@ MonoBehaviour:
   weight: 0.5
   targetContextSource: {fileID: 0}
   offset: {x: 0, y: 0, z: 0}
-  distanceThreshold: 0.3
+  distanceThreshold: 2
 --- !u!1 &808585599
 GameObject:
   m_ObjectHideFlags: 0
@@ -5527,7 +5456,7 @@ MonoBehaviour:
   weight: 0.5
   targetContextSource: {fileID: 0}
   offset: {x: 0, y: 0, z: 0}
-  distanceThreshold: 0.3
+  distanceThreshold: 2
 --- !u!114 &808585610
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5712,9 +5641,6 @@ GameObject:
   - component: {fileID: 939544987}
   - component: {fileID: 939544990}
   - component: {fileID: 939544989}
-  - component: {fileID: 939544988}
-  - component: {fileID: 939544994}
-  - component: {fileID: 939544993}
   - component: {fileID: 939544992}
   - component: {fileID: 939544991}
   m_Layer: 7
@@ -5896,23 +5822,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   userContextSource: {fileID: 1219749625}
---- !u!114 &939544988
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 939544978}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ec5c8f9fb4d4d384aa043a32a465f174, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  weight: 0.5
-  userContextSource: {fileID: 0}
-  physicalLayerMask:
-    serializedVersion: 2
-    m_Bits: 0
 --- !u!114 &939544989
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5927,7 +5836,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   weight: 0.5
   userContextSource: {fileID: 0}
-  targetAngle: 20
+  targetAngle: 0
   optimalAngleRange: 10
   maximumCostAngleRange: 45
 --- !u!114 &939544990
@@ -5944,7 +5853,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   weight: 0.5
   targetContextSource: {fileID: 0}
-  targetDistance: 1
+  targetDistance: 0.3
   optimalDistanceRange: 0.1
   maximumCostDistanceRange: 0.5
 --- !u!114 &939544991
@@ -5954,7 +5863,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 939544978}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ec5c8f9fb4d4d384aa043a32a465f174, type: 3}
   m_Name: 
@@ -5979,41 +5888,7 @@ MonoBehaviour:
   weight: 0.5
   targetContextSource: {fileID: 0}
   offset: {x: 0, y: 0, z: 0}
-  distanceThreshold: 0.3
---- !u!114 &939544993
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 939544978}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: be055729b4a0ca84686b2e0cfacd0fd7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  weight: 0.5
-  userContextSource: {fileID: 0}
-  targetAngle: 0
-  optimalAngleRange: 10
-  maximumCostAngleRange: 45
---- !u!114 &939544994
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 939544978}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a68f8cb2c36bdfc4eb6545e9c2b14096, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  weight: 0.5
-  targetContextSource: {fileID: 0}
-  targetDistance: 0.3
-  optimalDistanceRange: 0.1
-  maximumCostDistanceRange: 0.5
+  distanceThreshold: 2
 --- !u!1 &948486870
 GameObject:
   m_ObjectHideFlags: 0
@@ -7218,7 +7093,7 @@ MonoBehaviour:
   weight: 0.5
   targetContextSource: {fileID: 0}
   offset: {x: 0, y: 0, z: 0}
-  distanceThreshold: 0.3
+  distanceThreshold: 2
 --- !u!114 &1659167238
 MonoBehaviour:
   m_ObjectHideFlags: 0

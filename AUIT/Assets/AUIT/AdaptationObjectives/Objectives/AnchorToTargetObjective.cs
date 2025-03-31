@@ -13,7 +13,7 @@ namespace AUIT.AdaptationObjectives
         private Vector3 offset;
 
         [SerializeField]
-        private float distanceThreshold = 0.3f;
+        private float distanceThreshold = 2.0f;
 
         
         
