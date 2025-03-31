@@ -9,6 +9,8 @@ using Numpy;
 public class StudyLogging : MonoBehaviour
 {
     public PolicyView m_policyView;
+    public OnRequestOptimizationTrigger m_userOptimizationTrigger;
+    public ParaHomeLoader m_paraHomeLoader;
 
     [Serializable]
     private class Objective
@@ -23,7 +25,9 @@ public class StudyLogging : MonoBehaviour
         PolicyViewerHover, 
         PolicyViewerSelect, 
         PolicyViewerFilter,
-        TriggerAdaptation
+        PolicyViewerSave,
+        UserTriggerAdaptation,
+        SceneChange
     }
 
     private StreamWriter m_sw;
@@ -45,6 +49,11 @@ public class StudyLogging : MonoBehaviour
         m_policyView.onHover += LogHover;
         m_policyView.onSelect += LogSelect;
         m_policyView.onFilter += LogFilter;
+        m_policyView.onSave += LogSave;
+        m_policyView.onChangedScene += LogSceneChange;
+        m_userOptimizationTrigger.onUserOptimize += LogUserOptimize;
+        m_paraHomeLoader.onChangedScene += LogSceneChange;
+
     }
 
     private void ResetLog()
@@ -83,6 +92,39 @@ public class StudyLogging : MonoBehaviour
             vi++;
         }
         return (null, null);
+    }
+
+    private string GetPolicyString(List<List<LocalObjective>> localObjectives, List<MultiElementObjective> multiElementObjectives)
+    {
+        string log = "";
+        int vi = 0;
+        foreach (List<LocalObjective> objLocalObjectives in localObjectives)
+        {
+            foreach (LocalObjective localObjective in objLocalObjectives)
+            {
+                GameObject objectiveObj = localObjective.gameObject;
+                Type objectiveType = localObjective.GetType();
+                float[] parameters = localObjective.GetParameters();
+                log += $"{objectiveObj.name},{objectiveType.ToString()},";
+                for (int pi = 0; pi < parameters.Length; pi++)
+                {
+                    log += $"{parameters[pi]},";
+                }
+            }
+        }
+        foreach (MultiElementObjective multiElementObjective in multiElementObjectives)
+        {
+            GameObject objectiveObj = multiElementObjective.gameObject;
+            Type objectiveType = multiElementObjective.GetType();
+            float[] parameters = multiElementObjective.GetParameters();
+            log += $"{objectiveObj.name},{objectiveType.ToString()},";
+            for (int pi = 0; pi < parameters.Length; pi++)
+            {
+                log += $"{parameters[pi]},";
+            }
+        }
+
+        return log;
     }
 
     private string GetPolicyString(List<List<LocalObjective>> localObjectives, List<MultiElementObjective> multiElementObjectives, NDarray values)
@@ -132,6 +174,13 @@ public class StudyLogging : MonoBehaviour
         m_sw.WriteLine(log);
     }
 
+    private void LogSave(int saveIndex, List<List<LocalObjective>> localObjectives, List<MultiElementObjective> multiElementObjectives, NDarray values)
+    {
+        string ts = GetDateString(DateTime.Now);
+        string log = $"{ts},{LogEvent.PolicyViewerSave},{saveIndex},{GetPolicyString(localObjectives, multiElementObjectives, values)}";
+        m_sw.WriteLine(log);
+    }
+
     private void LogFilter(int pi, float min, float max, PolicyView.SACValues filterValue, List<List<LocalObjective>> localObjectives, List<MultiElementObjective> multiElementObjectives)
     {
         string ts = GetDateString(DateTime.Now);
@@ -146,6 +195,20 @@ public class StudyLogging : MonoBehaviour
         }
 
         string log = $"{ts},{LogEvent.PolicyViewerFilter},{pi},{min},{max},{filterValue},{objectiveInfo.Item1},{objectiveInfo.Item2}";
+        m_sw.WriteLine(log);
+    }
+
+    private void LogUserOptimize(List<List<LocalObjective>> localObjectives, List<MultiElementObjective> multiElementObjectives)
+    {
+        string ts = GetDateString(DateTime.Now);
+        string log = $"{ts},{LogEvent.UserTriggerAdaptation},{GetPolicyString(localObjectives, multiElementObjectives)}";
+        m_sw.WriteLine(log);
+    }
+
+    private void LogSceneChange(int i)
+    {
+        string ts = GetDateString(DateTime.Now);
+        string log = $"{ts},{LogEvent.SceneChange},{i}";
         m_sw.WriteLine(log);
     }
 

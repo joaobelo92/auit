@@ -24,6 +24,9 @@ public class ParaHomeLoader : MonoBehaviour
     public delegate void OnScenesLoaded(List<ParaHomeContext> contexts);
     public OnScenesLoaded onScenesLoaded;
 
+    public delegate void OnChangedScene(int i);
+    public OnChangedScene onChangedScene;
+
     #endregion
 
 
@@ -436,6 +439,11 @@ public class ParaHomeLoader : MonoBehaviour
 
     public void LoadScene(int i)
     {
+        if (onChangedScene != null)
+        {
+            onChangedScene(i);
+        }  
+        
         LoadSceneObjects(i);
         LoadScenePoses(i);
 

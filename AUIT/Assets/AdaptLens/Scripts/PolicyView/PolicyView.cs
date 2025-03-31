@@ -19,8 +19,14 @@ public class PolicyView : MonoBehaviour
     public delegate void OnSelect(int si, List<List<LocalObjective>> localObjectives, List<MultiElementObjective> m_multiElementObjectives, NDarray weights);
     public OnSelect onSelect;
 
+    public delegate void OnSave(int si, List<List<LocalObjective>> localObjectives, List<MultiElementObjective> m_multiElementObjectives, NDarray weights);
+    public OnSave onSave;
+
     public delegate void OnFilter(int pi, float min, float max, PolicyView.SACValues filterValue, List<List<LocalObjective>> localObjectives, List<MultiElementObjective> multiElementObjectives);
     public OnFilter onFilter;
+
+    public delegate void OnChangedScene(int i);
+    public OnChangedScene onChangedScene;
 
     public ParaHomeLoader m_paraHomeLoader;
     public Parameters m_parameters;
@@ -142,7 +148,16 @@ public class PolicyView : MonoBehaviour
         m_contexts.Add(new ParaHomeContext(pose, scene));
     }
 
-    public void LoadContext()
+    public void LoadContextUser()
+    {
+        if (onChangedScene != null)
+        {
+            onChangedScene(m_currentContext);
+        }
+        LoadContext();
+    }
+
+    private void LoadContext()
     {
         if (m_currentContext < 0 || m_currentContext >= m_contexts.Count)
         {
@@ -543,6 +558,11 @@ public class PolicyView : MonoBehaviour
         if (m_selected >= 0 && !m_saved.Contains(m_selected))
         {
             m_saved.Add(m_selected);
+
+            if (onSave != null)
+            {
+                onSave(m_selected, m_localObjectives, m_multiElementObjectives, m_samples[m_selected]);
+            }
         }
         UpdateGallerySaved();
     }
@@ -866,7 +886,7 @@ public class PolicyViewEditor : Editor
             policyView.CurrentContext = EditorGUILayout.IntSlider("Context", policyView.CurrentContext, 0, policyView.NumContexts - 1);
             if (EditorGUI.EndChangeCheck())
             {
-                policyView.LoadContext();
+                policyView.LoadContextUser();
             }
         } else
         {

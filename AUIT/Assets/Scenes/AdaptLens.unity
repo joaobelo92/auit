@@ -862,7 +862,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &318291447
 Transform:
   m_ObjectHideFlags: 0
@@ -962,7 +962,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &346269842
 Transform:
   m_ObjectHideFlags: 0
@@ -4306,7 +4306,7 @@ MonoBehaviour:
     backend: 0
     solver: SimulatedAnnealing
   solverSettings:
-    rid: 2980885594840760423
+    rid: 2980885598661247029
   developmentMode: 1
   gameObjectsToOptimize:
   - {fileID: 720357813}
@@ -4330,7 +4330,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 2980885594840760423
+    - rid: 2980885598661247029
       type: {class: SimulatedAnnealingSolver, ns: AUIT.Solvers, asm: Assembly-CSharp}
       data:
         iterations: 1500
@@ -6837,7 +6837,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   sceneLoadedEvent:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 642232618}
+        m_TargetAssemblyTypeName: AUIT.AdaptationTriggers.OnRequestOptimizationTrigger,
+          Assembly-CSharp
+        m_MethodName: ApplyStrategy
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   m_avatar: {fileID: 441668350}
   m_environment: {fileID: 1639674289}
   m_objMaterial: {fileID: 2100000, guid: e8d8cadac9d74914090d3023d7ab2170, type: 2}
@@ -6882,7 +6895,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1647603193
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6896,6 +6909,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_policyView: {fileID: 846422401}
+  m_userOptimizationTrigger: {fileID: 642232618}
+  m_paraHomeLoader: {fileID: 1639674288}
 --- !u!4 &1647603194
 Transform:
   m_ObjectHideFlags: 0
