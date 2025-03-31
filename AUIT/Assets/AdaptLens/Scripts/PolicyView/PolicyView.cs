@@ -708,12 +708,6 @@ public class PolicyView : MonoBehaviour
 
         // Initialize context
         LoadContext();
-
-        m_sacs.onHover = SetHover;
-        m_sacs.onSelect = SetSelected;
-        m_sacs.onApplyFiltering = ApplyFiltering;
-        m_sacs.onResetFiltering = ResetFiltering;
-        m_sacs.onUndoFiltering = UndoFiltering;
     }
 
 
@@ -763,13 +757,19 @@ public class PolicyView : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        m_gallery.onSaveSelected = SaveSelected;
-        m_gallery.onClearSelected = ResetSelected;
-        m_gallery.onClearSaved = ClearSaved;
-        m_gallery.onHoverSelected = SetHoverSelected;
-        m_gallery.onHoverSaved = SetHoverSaved;
-        m_gallery.onSelectedSaved = SetSelectedSaved;
-        m_gallery.onDeploySelected = DeploySelected;
+        m_gallery.onSaveSelected += SaveSelected;
+        m_gallery.onClearSelected += ResetSelected;
+        m_gallery.onClearSaved += ClearSaved;
+        m_gallery.onHoverSelected += SetHoverSelected;
+        m_gallery.onHoverSaved += SetHoverSaved;
+        m_gallery.onSelectedSaved += SetSelectedSaved;
+        m_gallery.onDeploySelected += DeploySelected;
+
+        m_sacs.onHover += SetHover;
+        m_sacs.onSelect += SetSelected;
+        m_sacs.onApplyFiltering += ApplyFiltering;
+        m_sacs.onResetFiltering += ResetFiltering;
+        m_sacs.onUndoFiltering += UndoFiltering;
     }
 
     // Update is called once per frame
