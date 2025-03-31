@@ -70,6 +70,13 @@ public class PolicyLogger : MonoBehaviour
         File.WriteAllText(path, json);
     }
 
+    public void LoadLayoutPolicy(string dir, string fname)
+    {
+        m_layoutPolicyDir = dir;
+        m_fname = fname;
+        LoadLayoutPolicy();
+    }
+
     public void LoadLayoutPolicy()
     {
         // Check if file exists

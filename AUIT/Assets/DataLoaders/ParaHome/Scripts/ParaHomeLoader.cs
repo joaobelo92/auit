@@ -88,6 +88,10 @@ public class ParaHomeLoader : MonoBehaviour
     private Coroutine m_sequenceCoroutine;
 
     private List<ParaHomeContext> m_contexts;
+    public List<ParaHomeContext> Contexts
+    {
+        get { return m_contexts; }
+    }
 
     #endregion
 
@@ -480,11 +484,6 @@ public class ParaHomeLoader : MonoBehaviour
     public bool PlayingSequence
     {
         get { return m_sequenceCoroutine != null; }
-    }
-
-    public List<ParaHomeContext> Contexts
-    {
-        get { return m_contexts; }
     }
 
     public void PlaySequence()

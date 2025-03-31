@@ -154,8 +154,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 67399913}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: -0, y: 0.47058153, z: -0, w: 0.8823565}
+  m_LocalPosition: {x: -0.79078656, y: 0.73721707, z: 0.8567888}
   m_LocalScale: {x: 0.15, y: 0.2, z: 0.01}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -868,8 +868,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 400364635}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: -0, y: 0.47058153, z: -0, w: 0.8823565}
+  m_LocalPosition: {x: -0.79078656, y: 0.73721707, z: 0.8567888}
   m_LocalScale: {x: 0.11, y: 0.07, z: 0.01}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -3903,7 +3903,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &477043160
 Transform:
   m_ObjectHideFlags: 0
@@ -3954,6 +3954,59 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 3395771713635671884, guid: bce0e41cde1b03b4f8de3e97ed47ec53, type: 3}
   m_PrefabInstance: {fileID: 441668349}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &598213241
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 598213243}
+  - component: {fileID: 598213242}
+  m_Layer: 0
+  m_Name: Evaluation
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &598213242
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 598213241}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 52aa6cc33b2c2f644a760ab1439e36b4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_auit: {fileID: 642232615}
+  m_environment: {fileID: 1639674288}
+  m_policy: {fileID: 2122511930}
+  m_dir: Assets/AdaptLens/Study/Saved Policies
+  m_fpathResults:
+  - p1-adaptlens-recipe.json
+  m_questions:
+  - The adaptive interface satisfied the design requirements.
+  - The adaptive interface adjusted its layout to suit the current contexts.
+--- !u!4 &598213243
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 598213241}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &606144732
 GameObject:
   m_ObjectHideFlags: 0
@@ -4075,7 +4128,7 @@ MonoBehaviour:
     backend: 0
     solver: SimulatedAnnealing
   solverSettings:
-    rid: 2980885594840760415
+    rid: 2980885594840760462
   developmentMode: 1
   gameObjectsToOptimize:
   - {fileID: 939544978}
@@ -4100,7 +4153,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 2980885594840760415
+    - rid: 2980885594840760462
       type: {class: SimulatedAnnealingSolver, ns: AUIT.Solvers, asm: Assembly-CSharp}
       data:
         iterations: 1500
@@ -5234,8 +5287,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 939544978}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: -0, y: 0.47058153, z: -0, w: 0.8823565}
+  m_LocalPosition: {x: -0.79078656, y: 0.73721707, z: 0.8567888}
   m_LocalScale: {x: 0.28, y: 0.28, z: 0.01}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -7094,3 +7147,4 @@ SceneRoots:
   - {fileID: 2122511928}
   - {fileID: 1565449396}
   - {fileID: 477043160}
+  - {fileID: 598213243}

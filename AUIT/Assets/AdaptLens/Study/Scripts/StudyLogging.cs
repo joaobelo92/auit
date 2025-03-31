@@ -37,7 +37,7 @@ public class StudyLogging : MonoBehaviour
     {
         DateTime t = DateTime.Now;
 
-        m_sw = new StreamWriter($"{t.ToString("MM_dd_yyyy_hh_mm_ss")}.csv", true);
+        m_sw = new StreamWriter($"study_{t.ToString("MM_dd_yyyy_hh_mm_ss")}.csv", true);
     }
 
     private void InitLoggingHooks()
