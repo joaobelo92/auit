@@ -4,10 +4,12 @@ using AUIT.AdaptationObjectives.Definitions;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Events;
 using static UnityEngine.GraphicsBuffer;
 
 public class Element : MonoBehaviour
 {
+    public UnityEvent inspectingElementEvent = new UnityEvent();
     private const string LAYER = "Element";
     private List<Material> m_mat;
     private List<Color> m_originalColors;
@@ -100,6 +102,14 @@ public class Element : MonoBehaviour
         Debug.Log(debug);
     }
 
+    public void SetInspectingElement()
+    {
+        if (gameObject.activeInHierarchy)
+        {
+            inspectingElementEvent?.Invoke();
+        }
+    }
+
     // Update is called once per frame
     void Update()
     {
@@ -119,5 +129,7 @@ public class ElementEditor : Editor
         {
             element.DebugCost();
         }
+        
+        element.SetInspectingElement();
     }
 }

@@ -227,6 +227,14 @@ public class VoxelView : MonoBehaviour
 
     #region Public Methods
 
+    public void SetElement(GameObject element)
+    {
+        if (m_element != element && m_auit.gameObjectsToOptimize.Contains(element))
+        {
+            m_element = element;
+        }
+    }
+
 
     public void VisualizePareto()
     {

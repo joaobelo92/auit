@@ -176,6 +176,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4991997583cd3ee43b6545b861888885, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  inspectingElementEvent:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 318291448}
+        m_TargetAssemblyTypeName: VoxelView, Assembly-CSharp
+        m_MethodName: SetElement
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 67399913}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &67399917
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -473,6 +488,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4991997583cd3ee43b6545b861888885, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  inspectingElementEvent:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 318291448}
+        m_TargetAssemblyTypeName: VoxelView, Assembly-CSharp
+        m_MethodName: SetElement
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 75007190}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &75007194
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -899,7 +929,7 @@ MonoBehaviour:
   m_auit: {fileID: 642232615}
   m_bounds: {fileID: 346269842}
   m_distribution: {fileID: 318291449}
-  m_element: {fileID: 939544978}
+  m_element: {fileID: 720357813}
   m_voxelSize: 0.2
   m_voxelMargin: 0.15
   m_costGradient:
@@ -1127,6 +1157,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4991997583cd3ee43b6545b861888885, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  inspectingElementEvent:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 318291448}
+        m_TargetAssemblyTypeName: VoxelView, Assembly-CSharp
+        m_MethodName: SetElement
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 400364635}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &400364639
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4330,10 +4375,11 @@ MonoBehaviour:
     backend: 0
     solver: SimulatedAnnealing
   solverSettings:
-    rid: 2980885574040682594
+    rid: 2980885580331876407
   developmentMode: 1
   gameObjectsToOptimize:
   - {fileID: 720357813}
+  - {fileID: 1659167227}
   m_initPlacement: 1
   m_initAnchor: {fileID: 1341102932}
   m_initOffset: {x: 0, y: 0, z: 0.3}
@@ -4353,7 +4399,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 2980885574040682594
+    - rid: 2980885580331876407
       type: {class: SimulatedAnnealingSolver, ns: AUIT.Solvers, asm: Assembly-CSharp}
       data:
         iterations: 1500
@@ -4687,6 +4733,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4991997583cd3ee43b6545b861888885, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  inspectingElementEvent:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 318291448}
+        m_TargetAssemblyTypeName: VoxelView, Assembly-CSharp
+        m_MethodName: SetElement
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 674239777}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &674239781
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5035,6 +5096,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4991997583cd3ee43b6545b861888885, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  inspectingElementEvent:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 318291448}
+        m_TargetAssemblyTypeName: VoxelView, Assembly-CSharp
+        m_MethodName: SetElement
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 720357813}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &720357817
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5286,6 +5362,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4991997583cd3ee43b6545b861888885, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  inspectingElementEvent:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 318291448}
+        m_TargetAssemblyTypeName: VoxelView, Assembly-CSharp
+        m_MethodName: SetElement
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 808585599}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &808585603
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5659,6 +5750,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4991997583cd3ee43b6545b861888885, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  inspectingElementEvent:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 318291448}
+        m_TargetAssemblyTypeName: VoxelView, Assembly-CSharp
+        m_MethodName: SetElement
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 939544978}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &939544982
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6949,6 +7055,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4991997583cd3ee43b6545b861888885, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  inspectingElementEvent:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 318291448}
+        m_TargetAssemblyTypeName: VoxelView, Assembly-CSharp
+        m_MethodName: SetElement
+        m_Mode: 2
+        m_Arguments:
+          m_ObjectArgument: {fileID: 1659167227}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1659167231
 MonoBehaviour:
   m_ObjectHideFlags: 0
