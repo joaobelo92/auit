@@ -4179,7 +4179,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_layoutPolicyDir: Assets/AdaptLens/Study/Saved Policies
-  m_fname: 03_31_2025_06_51_03.json
+  m_fname: 
 --- !u!1 &548624700 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 3395771713635671884, guid: bce0e41cde1b03b4f8de3e97ed47ec53, type: 3}
