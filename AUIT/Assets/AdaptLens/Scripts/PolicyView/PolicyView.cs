@@ -12,6 +12,12 @@ using Cysharp.Threading.Tasks;
 
 public class PolicyView : MonoBehaviour
 {
+    public delegate void OnHover(int si, List<List<AUIT.AdaptationObjectives.LocalObjective>> localObjectives, List<AUIT.AdaptationObjectives.MultiElementObjective> m_multiElementObjectives, NDarray weights); 
+    public OnHover onHover;
+
+    public delegate void OnSelect(int si, List<List<AUIT.AdaptationObjectives.LocalObjective>> localObjectives, List<AUIT.AdaptationObjectives.MultiElementObjective> m_multiElementObjectives, NDarray weights);
+    public OnSelect onSelect;
+
     public ParaHomeLoader m_paraHomeLoader;
     public Parameters m_parameters;
     public AUIT.AUIT auit;
@@ -70,7 +76,12 @@ public class PolicyView : MonoBehaviour
     private Stack<FilterOperation> m_filterStack = new Stack<FilterOperation>();
 
     private List<Element[]> m_currentLayouts = new List<Element[]>();
-    
+
+    // Cache for logging purposes
+    private List<List<AUIT.AdaptationObjectives.LocalObjective>> m_localObjectives;
+    private List<AUIT.AdaptationObjectives.MultiElementObjective> m_multiElementObjectives;
+
+
 
     private int m_currentContext = -1;
     private int m_hoverIndex = -1;
@@ -244,14 +255,22 @@ public class PolicyView : MonoBehaviour
     
     public void SetHoverSelected(bool hover)
     {
+        int hoverIndex = -1;    
         if (hover)
         {
-            m_hoverIndex = m_selected;
+            hoverIndex = m_selected;
         }
-        else
+        if (m_hoverIndex == hoverIndex)
         {
-             m_hoverIndex = -1; 
+            return;
         }
+
+        m_hoverIndex = hoverIndex;
+        if (onHover != null && m_hoverIndex >= 0)
+        {
+            onHover(m_hoverIndex, m_localObjectives, m_multiElementObjectives, m_samples[m_hoverIndex]);
+        }
+
         SetHover();
     }
 
@@ -263,6 +282,10 @@ public class PolicyView : MonoBehaviour
         }
 
         m_hoverIndex = hoverIndex;
+        if (onHover != null && m_hoverIndex >= 0)
+        {
+            onHover(m_hoverIndex, m_localObjectives, m_multiElementObjectives, m_samples[m_hoverIndex]);
+        }
 
         SetHover();
     }
@@ -461,6 +484,10 @@ public class PolicyView : MonoBehaviour
     public void SetSelected(int si)
     {
         m_selected = si;
+        if (onSelect != null && m_selected >= 0)
+        {
+            onSelect(m_selected, m_localObjectives, m_multiElementObjectives, m_samples[m_selected]);
+        }
         SetSelected();
     }
     private void ResetSelected()
@@ -604,15 +631,15 @@ public class PolicyView : MonoBehaviour
 
         int numContexts = m_contexts.Count;
 
-        List<List<AUIT.AdaptationObjectives.LocalObjective>> localObjectives = auit.gatherOptimizationData().objectives;
-        List<AUIT.AdaptationObjectives.MultiElementObjective> multiElementObjectives = auit.MultiElementObjectives;
+        m_localObjectives = auit.gatherOptimizationData().objectives;
+        m_multiElementObjectives = auit.MultiElementObjectives;
         int numLocalObjectives = 0;
-        foreach (List<AUIT.AdaptationObjectives.LocalObjective> objectives in localObjectives)
+        foreach (List<AUIT.AdaptationObjectives.LocalObjective> objectives in m_localObjectives)
         {
             numLocalObjectives += objectives.Count;
         }
 
-        int numMultiElementObjectives = multiElementObjectives.Count;
+        int numMultiElementObjectives = m_multiElementObjectives.Count;
         int numObjectives = numLocalObjectives + numMultiElementObjectives;
 
         //int numElements = auit.gameObjectsToOptimize.Count;
@@ -684,7 +711,7 @@ public class PolicyView : MonoBehaviour
         
         // Initialize sacs for costs 
         List<(string, List<(string, List<string>)>)> objectivesInfo = new List<(string, List<(string, List<string>)>)>();
-        foreach(List<AUIT.AdaptationObjectives.LocalObjective> localObjectiveObj in localObjectives)
+        foreach(List<AUIT.AdaptationObjectives.LocalObjective> localObjectiveObj in m_localObjectives)
         {
             string objName = "";
             List<(string, List<string>)> obj = new List<(string, List<string>)>();
@@ -697,7 +724,7 @@ public class PolicyView : MonoBehaviour
             objectivesInfo.Add((objName, obj));
         }
         List<(string, List<string>)> multiObjInfo = new List<(string, List<string>)>();
-        foreach (AUIT.AdaptationObjectives.MultiElementObjective objective in multiElementObjectives)
+        foreach (AUIT.AdaptationObjectives.MultiElementObjective objective in m_multiElementObjectives)
         {
             multiObjInfo.Add((objective.GetType().Name, new List<string>() { "" }));
             
