@@ -293,7 +293,6 @@ public class ParaHomeLoader : MonoBehaviour
             // replace all backslashes with forward slashes
             scanDir = scanDir.Replace('/', '\\');
             string objName = scanDir.Split(Path.DirectorySeparatorChar)[^1];
-            Debug.Log(objName);
 
             GameObject scanObj = new GameObject(objName);
 

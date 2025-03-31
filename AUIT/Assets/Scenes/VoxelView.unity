@@ -4370,7 +4370,7 @@ MonoBehaviour:
     backend: 0
     solver: SimulatedAnnealing
   solverSettings:
-    rid: 2980885574040682560
+    rid: 2980885574040682587
   developmentMode: 1
   gameObjectsToOptimize:
   - {fileID: 720357813}
@@ -4394,7 +4394,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 2980885574040682560
+    - rid: 2980885574040682587
       type: {class: SimulatedAnnealingSolver, ns: AUIT.Solvers, asm: Assembly-CSharp}
       data:
         iterations: 1500
@@ -4462,7 +4462,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!65 &661520131
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -5432,7 +5432,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &846422400
 Transform:
   m_ObjectHideFlags: 0
@@ -5990,7 +5990,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1217115067
 Transform:
   m_ObjectHideFlags: 0

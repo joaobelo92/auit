@@ -39,8 +39,8 @@ public class SingleAttributeControllers : MonoBehaviour
                 {
                     SingleAttributeController sac = new SingleAttributeController(parameter, pi++);
                     sac.onHover += SetHoverPolicyViewer;
-                    sac.onSelect += SetSelectedPolicyViewer;
                     sac.onApplyFiltering += ApplyFiltering;
+                    sac.onSelect += SetSelectedPolicyViewer;
                     sacs.Add(sac);
                 }
                 objectiveSACs.Add((objectiveName, sacs));
@@ -58,40 +58,10 @@ public class SingleAttributeControllers : MonoBehaviour
                 foreach (SingleAttributeController sac in objectiveSACs)
                 {
                     sac.SetValues(values[":", sac.Id], mask);
-
-                    /*
-                    sac.ClearValues();
-                    for (int i = 0; i < values.shape[0]; i++)
-                    {
-                        sac.AddValue((float)values[i, sac.Id]);
-                    }
-                    sac.CalculateMinMax();
-                    */
                 }
             }
         }
     }
-
-    /*
-    public void SetValues(NDarray values)
-    {
-        foreach ((string objNames, List<(string, List<SingleAttributeController>)> obj) in m_sacs)
-        {
-            foreach ((string objectiveName, List<SingleAttributeController> objectiveSACs) in obj)
-            {
-                foreach (SingleAttributeController sac in objectiveSACs)
-                {
-                    sac.ClearValues();
-                    for (int i = 0; i < values.shape[0]; i++)
-                    {
-                        sac.AddValue((float)values[i, sac.Id]);
-                    } 
-                    sac.CalculateMinMax();
-                }
-            }
-        }
-    }
-    */
 
     public void SetSACMinMax(int pi, float min, float max)
     {
@@ -132,6 +102,15 @@ public class SingleAttributeControllers : MonoBehaviour
         }
     }
 
+    public void ApplyFiltering(int pi, float min, float max)
+    {
+        if (onApplyFiltering != null)
+        {
+            onApplyFiltering(pi, min, max);
+        }
+    }
+
+    
     private void SetSelectedPolicyViewer(int selectedIndex)
     {
         if (onSelect != null)
@@ -151,14 +130,6 @@ public class SingleAttributeControllers : MonoBehaviour
                     sac.SetSelected(selectedIndex);
                 }
             }
-        }
-    }
-
-    public void ApplyFiltering(int pi, float min, float max)
-    {
-        if (onApplyFiltering != null)
-        {
-            onApplyFiltering(pi, min, max);
         }
     }
 }
