@@ -190,19 +190,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   movementBezier:
-    duration: 1
+    duration: 0
     transitionMode: 1
     transitionBezier:
       point1: {x: 0.25, y: 0.1}
       point2: {x: 0.25, y: 1}
   rotationBezier:
-    duration: 1
+    duration: 0
     transitionMode: 1
     transitionBezier:
       point1: {x: 0.25, y: 0.1}
       point2: {x: 0.25, y: 1}
   scalingBezier:
-    duration: 1
+    duration: 0
     transitionMode: 1
     transitionBezier:
       point1: {x: 0.25, y: 0.1}
@@ -917,19 +917,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   movementBezier:
-    duration: 1
+    duration: 0
     transitionMode: 1
     transitionBezier:
       point1: {x: 0.25, y: 0.1}
       point2: {x: 0.25, y: 1}
   rotationBezier:
-    duration: 1
+    duration: 0
     transitionMode: 1
     transitionBezier:
       point1: {x: 0.25, y: 0.1}
       point2: {x: 0.25, y: 1}
   scalingBezier:
-    duration: 1
+    duration: 0
     transitionMode: 1
     transitionBezier:
       point1: {x: 0.25, y: 0.1}
@@ -3989,7 +3989,10 @@ MonoBehaviour:
   m_dir: Assets/AdaptLens/Study/Saved Policies
   m_fpathResults:
   - p1-auit-video.json
-  - p2-policy-video.json
+  - p2-adaptlens-video.json
+  - p3-auit-video.json
+  - p4-adaptlens-video.json
+  - p5-adaptlens-video.json
   m_questions:
   - The video feed centered in the user's field of view and positioned at a comfortable
     viewing distance
@@ -4000,6 +4003,7 @@ MonoBehaviour:
   - Elements generally do not overlap with each other.
   - The adaptive interface as a whole satisfied the design requirements.
   - The adaptive interface as a whole adjusted its layout to suit the context.
+  m_numSamples: 10
 --- !u!4 &598213243
 Transform:
   m_ObjectHideFlags: 0
@@ -4136,7 +4140,7 @@ MonoBehaviour:
     backend: 0
     solver: SimulatedAnnealing
   solverSettings:
-    rid: 200611419865219122
+    rid: 200611434658529351
   developmentMode: 1
   gameObjectsToOptimize:
   - {fileID: 75007190}
@@ -4161,7 +4165,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 200611419865219122
+    - rid: 200611434658529351
       type: {class: SimulatedAnnealingSolver, ns: AUIT.Solvers, asm: Assembly-CSharp}
       data:
         iterations: 1500
@@ -4778,19 +4782,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   movementBezier:
-    duration: 1
+    duration: 0
     transitionMode: 1
     transitionBezier:
       point1: {x: 0.25, y: 0.1}
       point2: {x: 0.25, y: 1}
   rotationBezier:
-    duration: 1
+    duration: 0
     transitionMode: 1
     transitionBezier:
       point1: {x: 0.25, y: 0.1}
       point2: {x: 0.25, y: 1}
   scalingBezier:
-    duration: 1
+    duration: 0
     transitionMode: 1
     transitionBezier:
       point1: {x: 0.25, y: 0.1}
@@ -5331,19 +5335,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   movementBezier:
-    duration: 1
+    duration: 0
     transitionMode: 1
     transitionBezier:
       point1: {x: 0.25, y: 0.1}
       point2: {x: 0.25, y: 1}
   rotationBezier:
-    duration: 1
+    duration: 0
     transitionMode: 1
     transitionBezier:
       point1: {x: 0.25, y: 0.1}
       point2: {x: 0.25, y: 1}
   scalingBezier:
-    duration: 1
+    duration: 0
     transitionMode: 1
     transitionBezier:
       point1: {x: 0.25, y: 0.1}
@@ -6383,19 +6387,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   movementBezier:
-    duration: 1
+    duration: 0
     transitionMode: 1
     transitionBezier:
       point1: {x: 0.25, y: 0.1}
       point2: {x: 0.25, y: 1}
   rotationBezier:
-    duration: 1
+    duration: 0
     transitionMode: 1
     transitionBezier:
       point1: {x: 0.25, y: 0.1}
       point2: {x: 0.25, y: 1}
   scalingBezier:
-    duration: 1
+    duration: 0
     transitionMode: 1
     transitionBezier:
       point1: {x: 0.25, y: 0.1}

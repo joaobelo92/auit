@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using AUIT.AdaptationObjectives;
 using AUIT.AdaptationObjectives.Definitions;
 using NUnit.Framework;
@@ -52,6 +53,23 @@ namespace AUIT.Solvers
             }
 
             return (objectiveCosts, multiObjectiveCosts);
+        }
+
+        public static float ComputeCost(Layout[] layout, List<List<LocalObjective>> objectives,
+            List<MultiElementObjective> multiElementObjectives)
+        {
+            float cost = 0;
+            float weight = 0;
+            for (int li = 0; li < layout.Length; li++)
+            {
+                List<LocalObjective> localObjectives = objectives[li];
+                Layout layoutElement = layout[li];
+                cost += localObjectives.Sum(objective => objective.Weight * objective.CostFunction(layoutElement));
+                weight += localObjectives.Sum(objective => objective.Weight);
+            }
+            cost += multiElementObjectives.Sum(objective => objective.Weight * objective.CostFunction(layout));
+            weight += multiElementObjectives.Sum(objective => objective.Weight);
+            return cost / weight; 
         }
 
         public static (List<List<float>>, List<float>) ComputeCostsUnweighted(List<Layout> currentLayout, List<List<LocalObjective>> objectives,

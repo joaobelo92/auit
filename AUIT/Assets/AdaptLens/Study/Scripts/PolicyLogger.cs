@@ -10,7 +10,7 @@ using System.Runtime.Serialization;
 public class PolicyLogger : MonoBehaviour
 {
     [Serializable]
-    private class Objective
+    public class Objective
     {
         public string obj;
         public string objective;
@@ -70,31 +70,16 @@ public class PolicyLogger : MonoBehaviour
         File.WriteAllText(path, json);
     }
 
-    public void LoadLayoutPolicy(string dir, string fname)
+    public void LoadLayoutPolicy(List<Objective> objectives)
     {
-        m_layoutPolicyDir = dir;
-        m_fname = fname;
-        LoadLayoutPolicy();
-    }
-
-    public void LoadLayoutPolicy()
-    {
-        // Check if file exists
-        string path = Path.Combine(m_layoutPolicyDir, m_fname);
-        if (!File.Exists(path))
-        {
-            Debug.LogError($"File {path} does not exist.");
-            return;
-        }
-        string objectivesJson = File.ReadAllText(path);
-        List<Objective> objectives = JsonConvert.DeserializeObject<List<Objective>>(objectivesJson);
         foreach (Objective objective in objectives)
         {
             GameObject obj;
             if (objective.obj == "")
             {
                 obj = gameObject;
-            } else
+            }
+            else
             {
                 obj = transform.Find(objective.obj)?.gameObject;
             }
@@ -121,6 +106,39 @@ public class PolicyLogger : MonoBehaviour
                 (targetObjective as MultiElementObjective).enabled = true;
             }
         }
+    }
+
+    public void LoadLayoutPolicy(string dir, string fname)
+    {
+        List<Objective> objectives = GetObjectives(dir, fname);
+        LoadLayoutPolicy(objectives);
+    }
+
+    public List<Objective> GetObjectives(string dir, string fname)
+    {
+        List<Objective> objectives;
+        string path = Path.Combine(dir, fname);
+        if (File.Exists(path))
+        {
+            string objectivesJson = File.ReadAllText(path);
+            objectives = JsonConvert.DeserializeObject<List<Objective>>(objectivesJson);
+        } else
+        {
+            Debug.LogError($"File {path} does not exist.");
+            objectives = new List<Objective>();
+        }
+
+        return objectives;
+    }
+
+    public List<Objective> GetObjectives(string fname)
+    {
+        return GetObjectives(m_layoutPolicyDir, fname);
+    }
+
+    public void LoadLayoutPolicy()
+    {
+        LoadLayoutPolicy(m_layoutPolicyDir, m_fname);
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created

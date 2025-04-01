@@ -202,19 +202,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   movementBezier:
-    duration: 1
+    duration: 0
     transitionMode: 1
     transitionBezier:
       point1: {x: 0.25, y: 0.1}
       point2: {x: 0.25, y: 1}
   rotationBezier:
-    duration: 1
+    duration: 0
     transitionMode: 1
     transitionBezier:
       point1: {x: 0.25, y: 0.1}
       point2: {x: 0.25, y: 1}
   scalingBezier:
-    duration: 1
+    duration: 0
     transitionMode: 1
     transitionBezier:
       point1: {x: 0.25, y: 0.1}
@@ -481,19 +481,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   movementBezier:
-    duration: 1
+    duration: 0
     transitionMode: 1
     transitionBezier:
       point1: {x: 0.25, y: 0.1}
       point2: {x: 0.25, y: 1}
   rotationBezier:
-    duration: 1
+    duration: 0
     transitionMode: 1
     transitionBezier:
       point1: {x: 0.25, y: 0.1}
       point2: {x: 0.25, y: 1}
   scalingBezier:
-    duration: 1
+    duration: 0
     transitionMode: 1
     transitionBezier:
       point1: {x: 0.25, y: 0.1}
@@ -1148,19 +1148,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   movementBezier:
-    duration: 1
+    duration: 0
     transitionMode: 1
     transitionBezier:
       point1: {x: 0.25, y: 0.1}
       point2: {x: 0.25, y: 1}
   rotationBezier:
-    duration: 1
+    duration: 0
     transitionMode: 1
     transitionBezier:
       point1: {x: 0.25, y: 0.1}
       point2: {x: 0.25, y: 1}
   scalingBezier:
-    duration: 1
+    duration: 0
     transitionMode: 1
     transitionBezier:
       point1: {x: 0.25, y: 0.1}
@@ -4134,7 +4134,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &477043160
 Transform:
   m_ObjectHideFlags: 0
@@ -4306,12 +4306,11 @@ MonoBehaviour:
     backend: 0
     solver: SimulatedAnnealing
   solverSettings:
-    rid: 200611424192954419
+    rid: 200611434658529339
   developmentMode: 1
   gameObjectsToOptimize:
-  - {fileID: 75007190}
-  - {fileID: 674239777}
-  - {fileID: 808585599}
+  - {fileID: 720357813}
+  - {fileID: 1659167227}
   m_initPlacement: 1
   m_initAnchor: {fileID: 1341102932}
   m_initOffset: {x: 0, y: 0, z: 0.3}
@@ -4331,7 +4330,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 200611424192954419
+    - rid: 200611434658529339
       type: {class: SimulatedAnnealingSolver, ns: AUIT.Solvers, asm: Assembly-CSharp}
       data:
         iterations: 1500
@@ -4693,19 +4692,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   movementBezier:
-    duration: 1
+    duration: 0
     transitionMode: 1
     transitionBezier:
       point1: {x: 0.25, y: 0.1}
       point2: {x: 0.25, y: 1}
   rotationBezier:
-    duration: 1
+    duration: 0
     transitionMode: 1
     transitionBezier:
       point1: {x: 0.25, y: 0.1}
       point2: {x: 0.25, y: 1}
   scalingBezier:
-    duration: 1
+    duration: 0
     transitionMode: 1
     transitionBezier:
       point1: {x: 0.25, y: 0.1}
@@ -4996,7 +4995,7 @@ Transform:
   m_GameObject: {fileID: 720357813}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: -0.0311, y: 0, z: 0}
   m_LocalScale: {x: 0.15, y: 0.15, z: 0.01}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -5056,19 +5055,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   movementBezier:
-    duration: 1
+    duration: 0
     transitionMode: 1
     transitionBezier:
       point1: {x: 0.25, y: 0.1}
       point2: {x: 0.25, y: 1}
   rotationBezier:
-    duration: 1
+    duration: 0
     transitionMode: 1
     transitionBezier:
       point1: {x: 0.25, y: 0.1}
       point2: {x: 0.25, y: 1}
   scalingBezier:
-    duration: 1
+    duration: 0
     transitionMode: 1
     transitionBezier:
       point1: {x: 0.25, y: 0.1}
@@ -5190,7 +5189,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   weight: 0.5
   userContextSource: {fileID: 0}
-  targetAngle: 0
+  targetAngle: 20
   optimalAngleRange: 10
   maximumCostAngleRange: 45
 --- !u!114 &720357824
@@ -5223,7 +5222,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   weight: 0.5
-  targetContextSource: {fileID: 0}
+  targetContextSource: {fileID: 1805893729}
   offset: {x: 0, y: 0, z: 0}
   distanceThreshold: 2
 --- !u!1 &808585599
@@ -5322,19 +5321,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   movementBezier:
-    duration: 1
+    duration: 0
     transitionMode: 1
     transitionBezier:
       point1: {x: 0.25, y: 0.1}
       point2: {x: 0.25, y: 1}
   rotationBezier:
-    duration: 1
+    duration: 0
     transitionMode: 1
     transitionBezier:
       point1: {x: 0.25, y: 0.1}
       point2: {x: 0.25, y: 1}
   scalingBezier:
-    duration: 1
+    duration: 0
     transitionMode: 1
     transitionBezier:
       point1: {x: 0.25, y: 0.1}
@@ -5707,19 +5706,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   movementBezier:
-    duration: 1
+    duration: 0
     transitionMode: 1
     transitionBezier:
       point1: {x: 0.25, y: 0.1}
       point2: {x: 0.25, y: 1}
   rotationBezier:
-    duration: 1
+    duration: 0
     transitionMode: 1
     transitionBezier:
       point1: {x: 0.25, y: 0.1}
       point2: {x: 0.25, y: 1}
   scalingBezier:
-    duration: 1
+    duration: 0
     transitionMode: 1
     transitionBezier:
       point1: {x: 0.25, y: 0.1}
@@ -6963,7 +6962,7 @@ Transform:
   m_GameObject: {fileID: 1659167227}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0.1784, y: 0, z: 0}
   m_LocalScale: {x: 0.15, y: 0.0975, z: 0.01}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -7023,19 +7022,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   movementBezier:
-    duration: 1
+    duration: 0
     transitionMode: 1
     transitionBezier:
       point1: {x: 0.25, y: 0.1}
       point2: {x: 0.25, y: 1}
   rotationBezier:
-    duration: 1
+    duration: 0
     transitionMode: 1
     transitionBezier:
       point1: {x: 0.25, y: 0.1}
       point2: {x: 0.25, y: 1}
   scalingBezier:
-    duration: 1
+    duration: 0
     transitionMode: 1
     transitionBezier:
       point1: {x: 0.25, y: 0.1}
