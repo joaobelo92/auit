@@ -3985,13 +3985,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_auit: {fileID: 642232615}
   m_environment: {fileID: 1639674288}
-  m_policy: {fileID: 2122511930}
+  m_policy: {fileID: 1565449398}
   m_dir: Assets/AdaptLens/Study/Saved Policies
   m_fpathResults:
-  - p1-adaptlens-recipe.json
+  - p1-auit-video.json
+  - p2-policy-video.json
   m_questions:
-  - The adaptive interface satisfied the design requirements.
-  - The adaptive interface adjusted its layout to suit the current contexts.
+  - The video feed centered in the user's field of view and positioned at a comfortable
+    viewing distance
+  - 'The call controls are visible and within reach. '
+  - The chat window is placed in the periphery and at a greater distance than the
+    video feed and call controls.
+  - 'Elements are generally not occluded by their physical surroundings. '
+  - Elements generally do not overlap with each other.
+  - The adaptive interface as a whole satisfied the design requirements.
+  - The adaptive interface as a whole adjusted its layout to suit the context.
 --- !u!4 &598213243
 Transform:
   m_ObjectHideFlags: 0
@@ -4128,12 +4136,12 @@ MonoBehaviour:
     backend: 0
     solver: SimulatedAnnealing
   solverSettings:
-    rid: 2980885594840760467
+    rid: 200611419865219122
   developmentMode: 1
   gameObjectsToOptimize:
-  - {fileID: 939544978}
-  - {fileID: 67399913}
-  - {fileID: 400364635}
+  - {fileID: 75007190}
+  - {fileID: 674239777}
+  - {fileID: 808585599}
   m_initPlacement: 1
   m_initAnchor: {fileID: 1341102932}
   m_initOffset: {x: 0, y: 0, z: 0.3}
@@ -4153,7 +4161,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 2980885594840760467
+    - rid: 200611419865219122
       type: {class: SimulatedAnnealingSolver, ns: AUIT.Solvers, asm: Assembly-CSharp}
       data:
         iterations: 1500
@@ -6172,7 +6180,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1565449396
 Transform:
   m_ObjectHideFlags: 0
@@ -7086,7 +7094,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &2122511928
 Transform:
   m_ObjectHideFlags: 0
