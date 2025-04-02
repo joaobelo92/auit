@@ -4134,7 +4134,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &477043160
 Transform:
   m_ObjectHideFlags: 0
@@ -4306,11 +4306,12 @@ MonoBehaviour:
     backend: 0
     solver: SimulatedAnnealing
   solverSettings:
-    rid: 200611434658529339
+    rid: 200611458889547823
   developmentMode: 1
   gameObjectsToOptimize:
-  - {fileID: 720357813}
-  - {fileID: 1659167227}
+  - {fileID: 939544978}
+  - {fileID: 67399913}
+  - {fileID: 400364635}
   m_initPlacement: 1
   m_initAnchor: {fileID: 1341102932}
   m_initOffset: {x: 0, y: 0, z: 0.3}
@@ -4330,7 +4331,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 200611434658529339
+    - rid: 200611458889547823
       type: {class: SimulatedAnnealingSolver, ns: AUIT.Solvers, asm: Assembly-CSharp}
       data:
         iterations: 1500
@@ -4398,7 +4399,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!65 &661520131
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -5555,7 +5556,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &846422400
 Transform:
   m_ObjectHideFlags: 0
@@ -6145,7 +6146,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1217115067
 Transform:
   m_ObjectHideFlags: 0
@@ -6895,7 +6896,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1647603193
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7733,7 +7734,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &2122511928
 Transform:
   m_ObjectHideFlags: 0

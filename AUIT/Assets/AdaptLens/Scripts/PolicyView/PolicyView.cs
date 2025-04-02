@@ -40,7 +40,8 @@ public class PolicyView : MonoBehaviour
     public enum SamplingApproach
     {
         Random,
-        Interval
+        Interval,
+        Uniform
     }
     public SamplingApproach m_samplingApproach = SamplingApproach.Interval;
     public int m_numSamples = 10;
@@ -656,6 +657,9 @@ public class PolicyView : MonoBehaviour
             case SamplingApproach.Random:
                 m_samples = RandomSample.UniformSampleSimplex(m_numSamples, m_numParameters);
                 break;
+            case SamplingApproach.Uniform:
+                m_samples = np.ones(new int[] { m_numSamples, m_numParameters }).astype(np.float32);
+                break;
         }
 
         // Initialize mask 
@@ -899,6 +903,7 @@ public class PolicyViewEditor : Editor
         switch (policyView.m_samplingApproach)
         {
             case PolicyView.SamplingApproach.Random:
+            case PolicyView.SamplingApproach.Uniform:
                 policyView.m_numSamples = EditorGUILayout.IntField("Number of Samples", policyView.m_numSamples);
                 break;
             case PolicyView.SamplingApproach.Interval:
