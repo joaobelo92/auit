@@ -72,6 +72,15 @@ public class PolicyLogger : MonoBehaviour
 
     public void LoadLayoutPolicy(List<Objective> objectives)
     {
+        foreach (MultiElementObjective multiElementObjective in GetComponents<MultiElementObjective>())
+        {
+            multiElementObjective.enabled = false;
+        }
+        foreach (LocalObjective localObjective in GetComponentsInChildren<LocalObjective>())
+        {
+            localObjective.enabled = false;
+        }
+
         foreach (Objective objective in objectives)
         {
             GameObject obj;

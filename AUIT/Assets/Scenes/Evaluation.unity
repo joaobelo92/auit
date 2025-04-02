@@ -313,12 +313,12 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 67399913}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ec5c8f9fb4d4d384aa043a32a465f174, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  weight: 0.05019737
+  weight: 0.5
   userContextSource: {fileID: 0}
   physicalLayerMask:
     serializedVersion: 2
@@ -330,14 +330,14 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 67399913}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1593a55e295ba5b41bd2aaf09a900401, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  weight: 0.25707853
+  weight: 0.5
   targetContextSource: {fileID: 1805893729}
-  offset: {x: 0, y: 0.2, z: 0}
+  offset: {x: 0, y: 0, z: 0}
   distanceThreshold: 2
 --- !u!114 &67399927
 MonoBehaviour:
@@ -579,7 +579,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 75007190}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ec5c8f9fb4d4d384aa043a32a465f174, type: 3}
   m_Name: 
@@ -612,16 +612,16 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 75007190}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: be055729b4a0ca84686b2e0cfacd0fd7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   weight: 0.5
   userContextSource: {fileID: 0}
-  targetAngle: 75
+  targetAngle: 0
   optimalAngleRange: 10
-  maximumCostAngleRange: 20
+  maximumCostAngleRange: 45
 --- !u!114 &75007202
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -629,16 +629,16 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 75007190}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a68f8cb2c36bdfc4eb6545e9c2b14096, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   weight: 0.5
   targetContextSource: {fileID: 0}
-  targetDistance: 1
+  targetDistance: 0.3
   optimalDistanceRange: 0.1
-  maximumCostDistanceRange: 0.2
+  maximumCostDistanceRange: 0.5
 --- !u!1 &94737070
 GameObject:
   m_ObjectHideFlags: 0
@@ -1027,16 +1027,16 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 400364635}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: be055729b4a0ca84686b2e0cfacd0fd7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  weight: 0.2559295
+  weight: 0.5
   userContextSource: {fileID: 0}
-  targetAngle: 50
+  targetAngle: 0
   optimalAngleRange: 10
-  maximumCostAngleRange: 10
+  maximumCostAngleRange: 45
 --- !u!114 &400364645
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1044,16 +1044,16 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 400364635}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a68f8cb2c36bdfc4eb6545e9c2b14096, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  weight: 0.01432117
+  weight: 0.5
   targetContextSource: {fileID: 0}
   targetDistance: 0.3
   optimalDistanceRange: 0.1
-  maximumCostDistanceRange: 0.1
+  maximumCostDistanceRange: 0.5
 --- !u!114 &400364646
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1061,12 +1061,12 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 400364635}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ec5c8f9fb4d4d384aa043a32a465f174, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  weight: 0.037905607
+  weight: 0.5
   userContextSource: {fileID: 0}
   physicalLayerMask:
     serializedVersion: 2
@@ -3985,24 +3985,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_auit: {fileID: 642232615}
   m_environment: {fileID: 1639674288}
-  m_policy: {fileID: 1565449398}
+  m_policy: {fileID: 2122511930}
   m_dir: Assets/AdaptLens/Study/Saved Policies
   m_fpathResults:
-  - p1-auit-video.json
-  - p2-adaptlens-video.json
-  - p3-auit-video.json
-  - p4-adaptlens-video.json
-  - p5-adaptlens-video.json
+  - p1-equal-recipe.json
+  - p1-finetuned-recipe.json
+  - p4-equal-recipe.json
+  - p4-finetuned-recipe.json
   m_questions:
-  - The video feed centered in the user's field of view and positioned at a comfortable
-    viewing distance
-  - 'The call controls are visible and within reach. '
-  - The chat window is placed in the periphery and at a greater distance than the
-    video feed and call controls.
+  - The instruction panel is placed in the user's field of view, at a comfortable
+    viewing distance, but out of the way of the user's  placed within their real-world
+    cooking activities.
+  - 'The ingredient list is placed on top of the user''s dining table. '
+  - 'The timer is placed in the periphery of the user''s field of view and within
+    reach. '
   - 'Elements are generally not occluded by their physical surroundings. '
   - Elements generally do not overlap with each other.
-  - The adaptive interface as a whole satisfied the design requirements.
-  - The adaptive interface as a whole adjusted its layout to suit the context.
+  - Overall, this is a high quality interface.
   m_numSamples: 10
 --- !u!4 &598213243
 Transform:
@@ -4140,12 +4139,12 @@ MonoBehaviour:
     backend: 0
     solver: SimulatedAnnealing
   solverSettings:
-    rid: 200611434658529351
+    rid: 200611456670236734
   developmentMode: 1
   gameObjectsToOptimize:
-  - {fileID: 75007190}
-  - {fileID: 674239777}
-  - {fileID: 808585599}
+  - {fileID: 939544978}
+  - {fileID: 67399913}
+  - {fileID: 400364635}
   m_initPlacement: 1
   m_initAnchor: {fileID: 1341102932}
   m_initOffset: {x: 0, y: 0, z: 0.3}
@@ -4165,7 +4164,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 200611434658529351
+    - rid: 200611456670236734
       type: {class: SimulatedAnnealingSolver, ns: AUIT.Solvers, asm: Assembly-CSharp}
       data:
         iterations: 1500
@@ -4529,7 +4528,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 674239777}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ec5c8f9fb4d4d384aa043a32a465f174, type: 3}
   m_Name: 
@@ -4562,16 +4561,16 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 674239777}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: be055729b4a0ca84686b2e0cfacd0fd7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  weight: 0.278
+  weight: 0.5
   userContextSource: {fileID: 0}
-  targetAngle: 45
+  targetAngle: 0
   optimalAngleRange: 10
-  maximumCostAngleRange: 10
+  maximumCostAngleRange: 45
 --- !u!114 &674239789
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4579,7 +4578,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 674239777}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a68f8cb2c36bdfc4eb6545e9c2b14096, type: 3}
   m_Name: 
@@ -4588,7 +4587,7 @@ MonoBehaviour:
   targetContextSource: {fileID: 0}
   targetDistance: 0.3
   optimalDistanceRange: 0.1
-  maximumCostDistanceRange: 0.2
+  maximumCostDistanceRange: 0.5
 --- !u!1 &718127019
 GameObject:
   m_ObjectHideFlags: 0
@@ -5158,7 +5157,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 808585599}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ec5c8f9fb4d4d384aa043a32a465f174, type: 3}
   m_Name: 
@@ -5191,16 +5190,16 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 808585599}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: be055729b4a0ca84686b2e0cfacd0fd7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  weight: 0.682
+  weight: 0.5
   userContextSource: {fileID: 0}
   targetAngle: 0
-  optimalAngleRange: 0
-  maximumCostAngleRange: 0
+  optimalAngleRange: 10
+  maximumCostAngleRange: 45
 --- !u!114 &808585611
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5208,16 +5207,16 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 808585599}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a68f8cb2c36bdfc4eb6545e9c2b14096, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  weight: 0.669
+  weight: 0.5
   targetContextSource: {fileID: 0}
   targetDistance: 0.3
   optimalDistanceRange: 0.1
-  maximumCostDistanceRange: 0.1
+  maximumCostDistanceRange: 0.5
 --- !u!1 &813001055
 GameObject:
   m_ObjectHideFlags: 0
@@ -5458,16 +5457,16 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 939544978}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: be055729b4a0ca84686b2e0cfacd0fd7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  weight: 0.211938
+  weight: 0.5
   userContextSource: {fileID: 0}
-  targetAngle: 30
+  targetAngle: 0
   optimalAngleRange: 10
-  maximumCostAngleRange: 10
+  maximumCostAngleRange: 45
 --- !u!114 &939544990
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5475,16 +5474,16 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 939544978}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a68f8cb2c36bdfc4eb6545e9c2b14096, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  weight: 0.11748401
+  weight: 0.5
   targetContextSource: {fileID: 0}
-  targetDistance: 0.5
+  targetDistance: 0.3
   optimalDistanceRange: 0.1
-  maximumCostDistanceRange: 0.1
+  maximumCostDistanceRange: 0.5
 --- !u!114 &939544991
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5492,12 +5491,12 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 939544978}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ec5c8f9fb4d4d384aa043a32a465f174, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  weight: 0.044929165
+  weight: 0.5
   userContextSource: {fileID: 0}
   physicalLayerMask:
     serializedVersion: 2
@@ -6184,7 +6183,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1565449396
 Transform:
   m_ObjectHideFlags: 0
@@ -6210,12 +6209,12 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1565449395}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b87777693561432c8fffddd81a870919, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  weight: 1
+  weight: 0.5
   userContextSource: {fileID: 0}
 --- !u!114 &1565449398
 MonoBehaviour:
@@ -6230,7 +6229,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_layoutPolicyDir: Assets/AdaptLens/Study/Saved Policies
-  m_fname: 
+  m_fname: p4-adaptlens-video.json
 --- !u!1 &1639674287
 GameObject:
   m_ObjectHideFlags: 0
@@ -6272,7 +6271,7 @@ MonoBehaviour:
   m_scanDir: data/scan
   m_seqDir: data/seq
   m_seq: s1
-  m_savedDir: data/eval
+  m_savedDir: data/study
   m_loadOnStart: 1
   m_offsetPos: {x: 0.1, y: 0, z: -0.1}
   m_offsetRot: {x: 0, y: 14, z: 0}
@@ -7098,7 +7097,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &2122511928
 Transform:
   m_ObjectHideFlags: 0
@@ -7124,12 +7123,12 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2122511927}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b87777693561432c8fffddd81a870919, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  weight: 0.010216655
+  weight: 0.5
   userContextSource: {fileID: 0}
 --- !u!114 &2122511930
 MonoBehaviour:
