@@ -39,19 +39,15 @@ namespace AUIT.AdaptationObjectives
         private float negativeAssociationWeight = 0.625f;
         [SerializeField]
         private List<GameObjectAssociation> associations = new List<GameObjectAssociation>();
+        
 
         public void Reset()
         {
-            ContextSource = ContextSource.PlayerPose;
         }
 
         protected override void Start()
         {
             base.Start();
-            if (ContextSource == ContextSource.Gaze)
-            {
-                ContextSource = ContextSource.PlayerPose;
-            }
         }
 
         private float GetSemanticAgreement(float[] positiveAssociations, float[] negativeAssociations, float[] distances, float positiveWeight, float negativeWeight)
@@ -112,6 +108,16 @@ namespace AUIT.AdaptationObjectives
         {
             // Do nothing for now.
             return optimizationTarget;
+        }
+
+        public override float[] GetParameters()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public override void SetParameters(float[] parameters)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

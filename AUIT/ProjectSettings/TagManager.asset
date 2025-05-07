@@ -2,7 +2,7 @@
 %TAG !u! tag:unity3d.com,2011:
 --- !u!78 &1
 TagManager:
-  serializedVersion: 2
+  serializedVersion: 3
   tags: []
   layers:
   - Default
@@ -12,18 +12,18 @@ TagManager:
   - Water
   - UI
   - Occlusion
+  - Element
+  - Physical Environment
   - 
   - 
-  - Adaptive UI 1
-  - Adaptive UI 2
-  - Adaptive UI 3
-  - Adaptive UI 4
-  - Adaptive UI 5
-  - Adaptive UI 6
-  - Adaptive UI 7
-  - Adaptive UI 8
-  - Adaptive UI 9
-  - Adaptive UI 10
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
   - 
   - 
   - 
@@ -41,3 +41,5 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  m_RenderingLayers:
+  - Default

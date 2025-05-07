@@ -6,6 +6,7 @@ using AUIT.AdaptationObjectives;
 using AUIT.AdaptationObjectives.Definitions;
 using AUIT.Constraints;
 using Cysharp.Threading.Tasks;
+using Numpy;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -25,9 +26,34 @@ namespace AUIT.Solvers
         public float earlyStopping = 0.02f;
         public int iterationsPerFrame = 50;
 
-        public override async UniTask<OptimizationResponse> OptimizeCoroutine(
+        // TODO: Absolutely disgusting approach to constrain position. Probably should change.
+        private Vector3 ConstrainPosition(Vector3 position)
+        {
+            Vector3 constrainedPosition = position;
+            List<Constraints.Constraint> constraints = AUIT.Instance.GetConstraints();
+            foreach (Constraints.Constraint constraint in constraints)
+            {
+                switch (constraint.type)
+                {
+                    case Constraints.ConstraintType.SpatialXAxis:
+                        constrainedPosition.x = Mathf.Clamp(constrainedPosition.x, constraint.minimum, constraint.maximum);
+                        break;
+                    case Constraints.ConstraintType.SpatialYAxis:
+                        constrainedPosition.y = Mathf.Clamp(constrainedPosition.y, constraint.minimum, constraint.maximum);
+                        break;
+                    case Constraints.ConstraintType.SpatialZAxis:
+                        constrainedPosition.z = Mathf.Clamp(constrainedPosition.z, constraint.minimum, constraint.maximum);
+                        break;
+                }
+            }
+            return constrainedPosition;
+        }
+
+        public override async UniTask<(OptimizationResponse, NDarray, NDarray)> OptimizeCoroutine(
             List<Layout> initialLayouts, 
-            List<List<LocalObjective>> objectives
+            List<List<LocalObjective>> objectives,
+            List<MultiElementObjective> multiElementObjectives,
+            bool saveCosts=false
             )
         {
             float cost = float.PositiveInfinity;
@@ -35,6 +61,7 @@ namespace AUIT.Solvers
 
             List<List<float>> objectiveCosts = new List<List<float>>();
             List<float> totalObjectiveCosts = new List<float>();
+            List<float> multiObjectiveCosts = new List<float>();
             for (int i = 0; i < bestLayout.Count; i++)
             {
                 List<float> costs = new List<float>();
@@ -47,6 +74,13 @@ namespace AUIT.Solvers
                 }
                 objectiveCosts.Add(costs);
                 totalObjectiveCosts.Add(totalCost);
+                
+                for (int j = 0; j < multiElementObjectives.Count; j++)
+                {
+                    // Yi Fei: Updating to include conderation of weight
+                    float objectiveCost = multiElementObjectives[j].Weight * multiElementObjectives[j].CostFunction(bestLayout.ToArray());
+                    multiObjectiveCosts.Add(objectiveCost);
+                }
             }
 
             for (int i = 0; i < iterations; i++)
@@ -56,31 +90,88 @@ namespace AUIT.Solvers
 
                 // get highest objective and use its optimization rule
                 // A lot of possible optimizations here (e.g. iterating multiple times through costs)... for now this will do.
-                float maxCostElement = totalObjectiveCosts.Max();
-                int maxCostElementIndex = totalObjectiveCosts.IndexOf(maxCostElement);
-                float maxCostObjective = objectiveCosts[maxCostElementIndex].Max();
-                int maxCostObjectiveIndex = objectiveCosts[maxCostElementIndex].IndexOf(maxCostObjective);
 
-                
-                currentLayout[maxCostElementIndex] = objectives[maxCostElementIndex][maxCostObjectiveIndex].OptimizationRule(currentLayout[maxCostElementIndex]);
+                int maxCostElementIndex = -1;
+                int maxCostObjectiveIndex = -1;
+                int maxMultiObjectiveIndex = -1;
+                float maxCostElement = 0f;
+                float maxCostObjective = 0f;
+                float maxCostMultiObjective = 0f;
 
-                objectiveCosts = new List<List<float>>();
-                totalObjectiveCosts = new List<float>();
-                for (int j = 0; j < currentLayout.Count; j++)
+                if (objectives.Count > 0)
                 {
-                    List<float> costs = new List<float>();
-                    float totalCost = 0;
-                    for (int k = 0; k < objectives[j].Count; k++)
+                    maxCostElement = totalObjectiveCosts.Max();
+                    maxCostElementIndex = totalObjectiveCosts.IndexOf(maxCostElement);
+                    if (objectiveCosts[maxCostElementIndex].Count > 0)
                     {
-                        float objectiveCost = objectives[j][k].Weight * objectives[j][k].CostFunction(currentLayout[j]) / objectives[j].Count;
-                        totalCost += objectiveCost;
-                        costs.Add(objectiveCost);
+                        maxCostObjective = objectiveCosts[maxCostElementIndex].Max();
+                        maxCostObjectiveIndex = objectiveCosts[maxCostElementIndex].IndexOf(maxCostObjective);
                     }
-                    objectiveCosts.Add(costs);
-                    totalObjectiveCosts.Add(totalCost);
                 }
 
-                float currentCost = totalObjectiveCosts.Sum() / totalObjectiveCosts.Count;
+                if (multiElementObjectives.Count > 0)
+                {
+                    maxCostMultiObjective = multiObjectiveCosts.Max();
+                    maxMultiObjectiveIndex = multiObjectiveCosts.IndexOf(maxCostMultiObjective);
+                }
+                
+                // Optimal solution found 
+                if (maxCostMultiObjective <= 0 && maxCostElement <= 0)
+                {
+                    bestLayout = currentLayout;
+                    break;
+                }
+
+                if (maxCostObjective > maxCostMultiObjective)
+                {
+                    Layout maxCostLayout = objectives[maxCostElementIndex][maxCostObjectiveIndex].OptimizationRule(currentLayout[maxCostElementIndex]);
+                    // TODO: Absolutely disgusting approach to constrain position. Probably should change.
+                    maxCostLayout.Position = ConstrainPosition(maxCostLayout.Position); // Constrain the position of the layout
+                    currentLayout[maxCostElementIndex] = maxCostLayout;
+                }
+                else
+                {
+                    currentLayout = multiElementObjectives[maxMultiObjectiveIndex].OptimizationRule(currentLayout);
+                    // TODO: Absolutely disgusting approach to constrain position. Probably should change.
+                    for (int j = 0; j < currentLayout.Count; j++)
+                    {
+                        if (currentLayout[j] != null)
+                        {
+                            currentLayout[j].Position = ConstrainPosition(currentLayout[j].Position); // Constrain the position of the layout
+                        }
+                    }
+                }
+                
+                // objectiveCosts = new List<List<float>>();
+                // totalObjectiveCosts = new List<float>();
+                // multiObjectiveCosts = new List<float>();
+                // for (int j = 0; j < currentLayout.Count; j++)
+                // {
+                //     List<float> costs = new List<float>();
+                //     float totalCost = 0;
+                //     for (int k = 0; k < objectives[j].Count; k++)
+                //     {
+                //         float objectiveCost = objectives[j][k].Weight * objectives[j][k].CostFunction(currentLayout[j]) / objectives[j].Count;
+                //         totalCost += objectiveCost;
+                //         costs.Add(objectiveCost);
+                //     }
+                //     objectiveCosts.Add(costs);
+                //     totalObjectiveCosts.Add(totalCost);
+                // }
+                //
+                // // Here is where we compute the multi-element objectives
+                // for (int j = 0; j < multiElementObjectives.Count; j++)
+                // {
+                //     // Yi Fei: Updating to include conderation of weight
+                //     float objectiveCost = multiElementObjectives[j].Weight * multiElementObjectives[j].CostFunction(currentLayout.ToArray());
+                //     multiObjectiveCosts.Add(objectiveCost);
+                // }
+                (objectiveCosts, multiObjectiveCosts) = Utils.ComputeCosts(currentLayout, objectives, multiElementObjectives);
+                
+                totalObjectiveCosts = objectiveCosts.Select(item => item.Sum()).ToList();
+                
+                float currentCost = (totalObjectiveCosts.Sum() + multiObjectiveCosts.Sum()) / 
+                                    (totalObjectiveCosts.Count + multiObjectiveCosts.Count);
 
                 // Early stopping 
                 if (currentCost <= earlyStopping)
@@ -103,7 +194,7 @@ namespace AUIT.Solvers
             }
             
             UIConfiguration best = new UIConfiguration(bestLayout.ToArray());
-            return new OptimizationResponse(best);
+            return (new OptimizationResponse(best), null, null);
             // return (new List<List<Layout>> { bestLayout }, cost);
         }
     }

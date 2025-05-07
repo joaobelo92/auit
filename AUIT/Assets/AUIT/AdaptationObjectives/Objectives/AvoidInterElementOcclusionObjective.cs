@@ -2,189 +2,262 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using AUIT.AdaptationObjectives.Definitions;
+using AUIT.AdaptationObjectives.Extras;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace AUIT.AdaptationObjectives.Objectives
 {
     public class AvoidInterElementOcclusionObjective : MultiElementObjective
     {
-        private Camera _occlusionObjectiveCamera;
+        [SerializeField]
+        private ContextSource<Camera> userContextSource;
 
-        private MeshFilter _meshFilter;
-        public Vector3 minBounds;
-        public Vector3 maxBounds;
+        private List<(Vector3, Vector3)> _bounds = new List<(Vector3, Vector3)>();
+        private bool _boundsInitialized = false;
+        private List<int> elementsColliding = new List<int>();
 
-        public GameObject[] gameObjectsToAvoid;
-        
-        public void Reset()
+        private bool GetMeshBounds(GameObject go, out Vector3 boundsMin, out Vector3 boundsMax)
         {
-            ContextSource = ContextSource.PlayerPose;
-        }
-        
-        protected override void Start()
-        {
-            _meshFilter = GetComponent<MeshFilter>();
-            ComputeMeshBounds();
+            boundsMin = Vector3.zero;
+            boundsMax = Vector3.zero;
 
-            GameObject cameraObject = GameObject.Find("OcclusionObjectiveCamera");
-            if (cameraObject == null)
+            MeshFilter meshFilter = go.GetComponent<MeshFilter>();
+            if (meshFilter == null || !meshFilter.mesh)
             {
-                cameraObject = new GameObject("OcclusionObjectiveCamera");
-                _occlusionObjectiveCamera = cameraObject.AddComponent<Camera>();
-                _occlusionObjectiveCamera.fieldOfView = 120f;
-                _occlusionObjectiveCamera.nearClipPlane = 0.01f;
-                _occlusionObjectiveCamera.targetDisplay = 0;
-            }
-            else
-            {
-                _occlusionObjectiveCamera = cameraObject.GetComponent<Camera>();
-            }
-            base.Start();
-            
-            if(gameObjectsToAvoid.Length > 0) {
-                CostFunction(new Layout[]
-                {
-                    new(ObjectiveHandler.Id, transform),
-                    new(GameObject.Find("Cube (1)").GetComponent<LocalObjectiveHandler>().Id,
-                        GameObject.Find("Cube (1)").transform)
-                });}
-        }
-
-        private void ComputeMeshBounds()
-        {
-            if (_meshFilter == null || _meshFilter.sharedMesh == null)
-            {
-                Debug.LogError($"Mesh or MeshFilter is missing in {transform.name} with an " +
-                               "avoid inter element occlusion objective");
-                return;
+                Debug.LogError($"Mesh or MeshFilter is missing in {go.name}" +
+                               $"This is required for the AvoidInterElementOcclusionObjective component.");
+                return false;
             }
 
-            Mesh mesh = _meshFilter.sharedMesh;
+            Mesh mesh = meshFilter.mesh;
             Vector3[] vertices = mesh.vertices;
 
-            minBounds = vertices[0];
-            maxBounds = vertices[0];
-
+            float minX = vertices[0].x, minY = vertices[0].y, minZ = vertices[0].z;
+            float maxX = vertices[0].x, maxY = vertices[0].y, maxZ = vertices[0].z;
             for (int i = 1; i < vertices.Length; i++)
             {
-                minBounds = Vector3.Min(minBounds, vertices[i]);
-                maxBounds = Vector3.Max(maxBounds, vertices[i]);
+                Vector3 v = vertices[i];
+
+                if (v.x < minX) minX = v.x;
+                if (v.y < minY) minY = v.y;
+                if (v.z < minZ) minZ = v.z;
+
+                if (v.x > maxX) maxX = v.x;
+                if (v.y > maxY) maxY = v.y;
+                if (v.z > maxZ) maxZ = v.z;
+            }
+
+            boundsMin = new Vector3(minX, minY, minZ);
+            boundsMax = new Vector3(maxX, maxY, maxZ);
+
+
+            return true;
+        }
+        
+        private void InitializeMeshBounds(Layout[] layouts)
+        {
+            foreach (var layout in layouts)
+            {
+                GameObject go = auit.gameObjectsToOptimize
+                    .First(l => layout.Id == l.GetComponent<LocalObjectiveHandler>().Id);
+            
+                if (GetMeshBounds(go, out Vector3 boundsMin, out Vector3 boundsMax))
+                {
+                    _bounds.Add((boundsMin, boundsMax));
+                }
             }
         }
 
-        public override float CostFunction(Layout[] optimizationTarget, Layout initialLayout = null)
+        private bool CalcPolygonScreenSpace(Layout layout, (Vector3, Vector3) bounds, out List<Vector2> pointsScreenSpace)
         {
-            Layout thisLayout = optimizationTarget.First(l => l.Id == ObjectiveHandler.Id);
-            Matrix4x4 trs = Matrix4x4.TRS(thisLayout.Position, thisLayout.Rotation, thisLayout.Scale);
+            // GameObject go = auit.gameObjectsToOptimize
+            //     .First(l => layout.Id == l.GetComponent<LocalObjectiveHandler>().Id);
+            Matrix4x4 trs = Matrix4x4.TRS(layout.Position, layout.Rotation, layout.Scale);
+            // Debug.Log($"Layout: {layout.Position} {layout.Rotation.eulerAngles} {layout.Scale}");
 
             // multiply bounds by proposal's TRS (need to check 8x, for screen bounds)
-            Vector3[] bounds =
+            Vector3[] trsBounds =
             {
-                trs.MultiplyPoint3x4(new Vector3(minBounds.x, minBounds.y, minBounds.z)),
-                trs.MultiplyPoint3x4(new Vector3(maxBounds.x, minBounds.y, minBounds.z)),
-                trs.MultiplyPoint3x4(new Vector3(maxBounds.x, maxBounds.y, minBounds.z)),
-                trs.MultiplyPoint3x4(new Vector3(minBounds.x, minBounds.y, maxBounds.z)),
-                trs.MultiplyPoint3x4(new Vector3(minBounds.x, maxBounds.y, maxBounds.z)),
-                trs.MultiplyPoint3x4(new Vector3(minBounds.x, maxBounds.y, minBounds.z)),
-                trs.MultiplyPoint3x4(new Vector3(maxBounds.x, minBounds.y, maxBounds.z)),
-                trs.MultiplyPoint3x4(new Vector3(maxBounds.x, maxBounds.y, maxBounds.z))
-            };
-            
-            // here we will use the user's head position to determine occlusion
-            var cameraTransform = _occlusionObjectiveCamera.transform;
-            cameraTransform.position = (Vector3)ContextSourceTransformTarget;
-            cameraTransform.rotation = Quaternion.LookRotation(thisLayout.Position - cameraTransform.position);
-
-            List<Vector2> pointsScreenSpace = new ();
-            foreach (Vector3 bound in bounds)
-            {
-                pointsScreenSpace.Add(_occlusionObjectiveCamera.WorldToScreenPoint(bound));
-            }
-            
-            // convex hull is probably overkill as the min/max x/y would be sufficient for basic functionality
-            // now its implemented so let's use it
-            List<Vector2> hull = ComputeConvexHull(pointsScreenSpace);
-
-            foreach (var point in hull)
-            {
-                Debug.Log(point);
-            }
-
-            int cost = 0;
-
-            foreach (var go in gameObjectsToAvoid)
-            {
-                Layout goLayout = optimizationTarget.First(l => l.Id == go.GetComponent<AvoidInterElementOcclusionObjective>().ObjectiveHandler.Id);
-                trs = Matrix4x4.TRS(goLayout.Position, goLayout.Rotation, goLayout.Scale);
-
-                AvoidInterElementOcclusionObjective goObj = go.GetComponent<AvoidInterElementOcclusionObjective>();
-
-                // multiply bounds by proposal's TRS (need to check 8x, for screen bounds)
-                bounds = new []
-                {
-                    trs.MultiplyPoint3x4(new Vector3(goObj.minBounds.x, goObj.minBounds.y, goObj.minBounds.z)),
-                    trs.MultiplyPoint3x4(new Vector3(goObj.maxBounds.x, goObj.minBounds.y, goObj.minBounds.z)),
-                    trs.MultiplyPoint3x4(new Vector3(goObj.maxBounds.x, goObj.maxBounds.y, goObj.minBounds.z)),
-                    trs.MultiplyPoint3x4(new Vector3(goObj.minBounds.x, goObj.minBounds.y, goObj.maxBounds.z)),
-                    trs.MultiplyPoint3x4(new Vector3(goObj.minBounds.x, goObj.maxBounds.y, goObj.maxBounds.z)),
-                    trs.MultiplyPoint3x4(new Vector3(goObj.minBounds.x, goObj.maxBounds.y, goObj.minBounds.z)),
-                    trs.MultiplyPoint3x4(new Vector3(goObj.maxBounds.x, goObj.minBounds.y, goObj.maxBounds.z)),
-                    trs.MultiplyPoint3x4(new Vector3(goObj.maxBounds.x, goObj.maxBounds.y, goObj.maxBounds.z))
+                    trs.MultiplyPoint3x4(new Vector3(bounds.Item1.x, bounds.Item1.y, bounds.Item1.z)),
+                    trs.MultiplyPoint3x4(new Vector3(bounds.Item2.x, bounds.Item1.y, bounds.Item1.z)),
+                    trs.MultiplyPoint3x4(new Vector3(bounds.Item2.x, bounds.Item2.y, bounds.Item1.z)),
+                    trs.MultiplyPoint3x4(new Vector3(bounds.Item1.x, bounds.Item1.y, bounds.Item2.z)),
+                    trs.MultiplyPoint3x4(new Vector3(bounds.Item1.x, bounds.Item2.y, bounds.Item2.z)),
+                    trs.MultiplyPoint3x4(new Vector3(bounds.Item1.x, bounds.Item2.y, bounds.Item1.z)),
+                    trs.MultiplyPoint3x4(new Vector3(bounds.Item2.x, bounds.Item1.y, bounds.Item2.z)),
+                    trs.MultiplyPoint3x4(new Vector3(bounds.Item2.x, bounds.Item2.y, bounds.Item2.z))
                 };
-            
-                List<Vector2> pointsScreenSpace2 = new ();
-                foreach (Vector3 bound in bounds)
+
+            pointsScreenSpace = new();
+            foreach (Vector3 bound in trsBounds)
+            {
+                Vector3 boundToScreenPoint = userContextSource.GetValue().WorldToScreenPoint(bound);
+                if (boundToScreenPoint.z > 0)
                 {
-                    Vector3 boundToScreenPoint = _occlusionObjectiveCamera.WorldToScreenPoint(bound);
-                    if (boundToScreenPoint.z > 0)
+                    pointsScreenSpace.Add(new Vector2(boundToScreenPoint.x, boundToScreenPoint.y));
+                }
+            }
+
+            if (pointsScreenSpace.Count >= 3)
+            {
+
+                pointsScreenSpace = ComputeConvexHull(pointsScreenSpace);
+                if (pointsScreenSpace.Count >= 3)
+                    return true; 
+            }
+            return false;
+        }
+
+        private List<List<Vector2>> CalcPolygonsScreenSpace(Layout[] optimizationTarget) 
+        {
+            List<List<Vector2>> polygonsScreenSpace = new();
+
+            for (int i = 0; i < optimizationTarget.Length; i++)
+            {
+                Layout layout = optimizationTarget[i];
+                (Vector3, Vector3) bounds = _bounds[i];
+                if (CalcPolygonScreenSpace(layout, bounds, out List<Vector2> pointsScreenSpace))
+                {
+                    polygonsScreenSpace.Add(pointsScreenSpace);
+                }
+            }
+
+            return polygonsScreenSpace;
+        }
+
+        public override float CostFunction(Layout optimizationTarget, Layout[] optimizationTargets, Layout initialLayout = null)
+        {
+            elementsColliding = new List<int>();
+
+            // Occlusion requires two elements, cost = 0 if only one element
+            if (optimizationTargets.Length < 2)
+            {
+                return 0;
+            }
+
+            int overlaps = 0;
+
+            if (!_boundsInitialized)
+            {
+                InitializeMeshBounds(optimizationTargets);
+                _boundsInitialized = true;
+            }
+
+            int targetIndex = Array.IndexOf(optimizationTargets, initialLayout);
+            //Debug.Log(targetIndex);
+
+            List<List<Vector2>> polygonsScreenSpace = CalcPolygonsScreenSpace(optimizationTargets);
+
+            if (CalcPolygonScreenSpace(optimizationTarget, _bounds[targetIndex], out List<Vector2> targetScreenSpace)) {
+                for (int i = 0; i < polygonsScreenSpace.Count; i++)
+                {
+                    if (i != targetIndex && PolygonsOverlap(targetScreenSpace, polygonsScreenSpace[i]))
                     {
-                        pointsScreenSpace2.Add(_occlusionObjectiveCamera.WorldToScreenPoint(bound));
+                        elementsColliding.Add(i);
+                        overlaps += 1;
                     }
                 }
+            }
 
-                if (pointsScreenSpace2.Count >= 3)
+            // Exclude overlaps with self 
+            //int maxOverlaps = Mathf.Max(polygonsScreenSpace.Count - 1, 1);
+            float cost = (overlaps > 0) ? 1 : 0;
+            //Debug.Log("Cost: " + cost);
+            return cost;
+        }
+
+
+        public override float CostFunction(Layout[] optimizationTargets, Layout initialLayout = null)
+        {
+            float cost = 0f;
+            elementsColliding = new List<int>();
+
+            // Occlusion requires two elements, cost = 0 if only one element
+            if (optimizationTargets.Length < 2)
+            {
+                return cost;
+            }
+
+            if (!_boundsInitialized)
+            {
+                InitializeMeshBounds(optimizationTargets);
+                _boundsInitialized = true;
+            }
+
+            List<List<Vector2>> polygonsScreenSpace = CalcPolygonsScreenSpace(optimizationTargets);
+
+            for (int i = 0; i < polygonsScreenSpace.Count; i++)
+            {
+                for (int j = i + 1; j < polygonsScreenSpace.Count; j++)
                 {
-                    List<Vector2> hull2 = ComputeConvexHull(pointsScreenSpace2);
-                    Debug.Log("obj2");
-                    foreach (var point in hull2)
+                    // Debug.Log($"checking {i} {j} {PolygonsOverlap(polygonsScreenSpace[i], polygonsScreenSpace[j])}");
+                    if (PolygonsOverlap(polygonsScreenSpace[i], polygonsScreenSpace[j]))
                     {
-                        Debug.Log(point);
-                    }
-
-
-                    if (CheckPolygonOverlap(hull.ToArray(), hull2.ToArray()))
-                    {
+                        elementsColliding.Add(i);
+                        elementsColliding.Add(j);
                         cost += 1;
                     }
                 }
-                
-                
             }
 
-            Debug.Log("Cost: " + cost);
-            return cost / gameObjectsToAvoid.Length;
+            float combinations = auit.gameObjectsToOptimize.Count * (auit.gameObjectsToOptimize.Count - 1) / 2;
+            
+            return cost / combinations;
         }
 
-        public override Layout OptimizationRule(Layout[] optimizationTarget, Layout initialLayout = null)
+        public override List<Layout> OptimizationRule(List<Layout> optimizationTarget, Layout initialLayout = null)
         {
-            throw new System.NotImplementedException();
+            if (elementsColliding == null || elementsColliding.Count == 0)
+                return optimizationTarget;
+            
+            if (Random.value < 0.7f)
+            {
+                int targetIndex = elementsColliding.Last();
+                Vector3 originalPos = optimizationTarget[targetIndex].Position;
+                Vector3 moveDirection = Vector3.zero;
+
+                // Compute avoidance direction (away from colliders)
+                foreach (int collidingIndex in elementsColliding)
+                {
+                    if (collidingIndex == targetIndex) continue;
+                    Vector3 otherPos = optimizationTarget[collidingIndex].Position;
+                    moveDirection += (originalPos - otherPos).normalized;
+                }
+
+                // Fallback: random direction if overlap is directly centered
+                if (moveDirection == Vector3.zero)
+                    moveDirection = Random.onUnitSphere;
+
+                // Remove forward component (avoid moving into user view)
+                Camera userCam = userContextSource.GetValue();
+                Vector3 userForward = userCam.transform.forward;
+                float towardUserComponent = Vector3.Dot(moveDirection, userForward);
+    
+                // If there's a component in the direction of the user, subtract it out
+                if (towardUserComponent > 0)
+                {
+                    Vector3 projectionOntoUser = userForward * towardUserComponent;
+                    moveDirection -= projectionOntoUser;
+                }
+
+                // Normalize and apply displacement
+                moveDirection = moveDirection.normalized;
+                float displacement = HelperMath.SampleNormalDistribution(1.0f, 0.25f) * 0.1f;
+                optimizationTarget[targetIndex].Position += moveDirection * displacement;
+            }
+            else
+            {
+                Vector3 position = optimizationTarget[elementsColliding.Last()].Position;
+                optimizationTarget[elementsColliding.Last()].Position = position + Random.onUnitSphere * 
+                    (HelperMath.SampleNormalDistribution(1.0f, 0.5f) * 0.05f);
+                return optimizationTarget;
+            }
+
+            return optimizationTarget;
+            
         }
 
-        public override float CostFunction(Layout optimizationTarget, Layout initialLayout = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override Layout OptimizationRule(Layout optimizationTarget, Layout initialLayout = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override Layout DirectRule(Layout optimizationTarget)
-        {
-            throw new System.NotImplementedException();
-        }
-        
         private List<Vector2> ComputeConvexHull(List<Vector2> points)
         {
             // Find the pivot point (lowest y-coordinate and leftmost if tie)
@@ -224,54 +297,61 @@ namespace AUIT.AdaptationObjectives.Objectives
             return convexHull;
         }
         
-        private bool CheckPolygonOverlap(Vector2[] polygon1, Vector2[] polygon2)
+        private static bool PolygonsOverlap(List<Vector2> poly1, List<Vector2> poly2)
         {
-
-            for (int i = 0; i < polygon1.Length; i++)
-            {
-                Vector2 edge = polygon1[(i + 1) % polygon1.Length] - polygon1[i];
-                Vector2 axis = new Vector2(-edge.y, edge.x).normalized;
-
-                if (!OverlapOnAxis(axis, polygon1, polygon2))
-                {
-                    return false;
-                }
-            }
-
-            for (int i = 0; i < polygon2.Length; i++)
-            {
-                Vector2 edge = polygon2[(i + 1) % polygon2.Length] - polygon2[i];
-                Vector2 axis = new Vector2(-edge.y, edge.x).normalized;
-
-                if (!OverlapOnAxis(axis, polygon1, polygon2))
-                {
-                    return false;
-                }
-            }
-
-            return true;
+            return !HasSeparatingAxis(poly1, poly2) && !HasSeparatingAxis(poly2, poly1);
         }
 
-        private bool OverlapOnAxis(Vector2 axis, Vector2[] vertices1, Vector2[] vertices2)
+        private static bool HasSeparatingAxis(List<Vector2> poly1, List<Vector2> poly2)
         {
-            float min1 = float.MaxValue, max1 = float.MinValue;
-            float min2 = float.MaxValue, max2 = float.MinValue;
-
-            foreach (Vector2 vertex in vertices1)
+            for (int i = 0; i < poly1.Count; i++)
             {
-                float projection = Vector2.Dot(axis, vertex);
-                min1 = Mathf.Min(min1, projection);
-                max1 = Mathf.Max(max1, projection);
+                Vector2 p1 = poly1[i];
+                Vector2 p2 = poly1[(i + 1) % poly1.Count];
+
+                Vector2 edge = p2 - p1;
+                Vector2 axis = new Vector2(-edge.y, edge.x).normalized;
+
+                // Project both polygons onto the axis
+                ProjectPolygon(axis, poly1, out float min1, out float max1);
+                ProjectPolygon(axis, poly2, out float min2, out float max2);
+
+                // Check for overlap
+                if (max1 < min2 || max2 < min1)
+                    return true; // Found a separating axis
             }
 
-            foreach (Vector2 vertex in vertices2)
-            {
-                float projection = Vector2.Dot(axis, vertex);
-                min2 = Mathf.Min(min2, projection);
-                max2 = Mathf.Max(max2, projection);
-            }
+            return false; // No separating axis found
+        }
 
-            return !(max1 < min2 || max2 < min1);
+        private static void ProjectPolygon(Vector2 axis, List<Vector2> polygon, out float min, out float max)
+        {
+            float dot = Vector2.Dot(axis, polygon[0]);
+            min = max = dot;
+
+            for (int i = 1; i < polygon.Count; i++)
+            {
+                dot = Vector2.Dot(axis, polygon[i]);
+                if (dot < min) min = dot;
+                if (dot > max) max = dot;
+            }
+        }
+
+        private new void OnEnable()
+        {
+            base.OnEnable();
+
+            userContextSource = GetUserCameraContextSource();
+        }
+
+        public override float[] GetParameters()
+        {
+            return new float[] { weight };
+        }
+
+        public override void SetParameters(float[] parameters)
+        {
+            weight = parameters[0];
         }
     }
 }

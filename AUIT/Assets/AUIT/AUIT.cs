@@ -12,11 +12,14 @@ using AUIT.Constraints;
 using AUIT.Extras;
 using Cysharp.Threading.Tasks;
 using UnityEditor;
+using Numpy;
 
 namespace AUIT
 {
     public sealed class AUIT : MonoBehaviour
     {
+        public static AUIT Instance;
+
         public string Id { get; } = Guid.NewGuid().ToString();
 
         private LocalObjectiveHandler _localObjectiveHandler;
@@ -44,14 +47,27 @@ namespace AUIT
 
         public List<GameObject> gameObjectsToOptimize;
 
+        public bool m_initPlacement = true;
+        public Transform m_initAnchor;
+        public Vector3 m_initOffset;
+
         private (GameObject, LocalObjectiveHandler)[] _gameObjects;
+
         
+
         [SerializeField]
         private List<Constraint> constraints;
+        public List<Constraint> GetConstraints()
+        {
+            return constraints;
+        }
 
         // flag to signal that the manager has been initialized
         [NonSerialized]
         public bool initialized = false;
+
+        // NOTE: This is where all the multi-element objectives are stored
+        public List<MultiElementObjective> MultiElementObjectives { get; } = new ();
         
         #region MonoBehaviour Implementation
         
@@ -102,6 +118,11 @@ namespace AUIT
                 AssignSolver();
         }
 
+        private void Awake()
+        {
+            Instance = this;
+        }
+
         private void Start()
         {
             AsyncIO.ForceDotNet.Force();
@@ -116,7 +137,7 @@ namespace AUIT
                     .GetComponent<LocalObjectiveHandler>();
                 if (goLocalObjectiveHandler == null)
                 {
-                    Debug.LogError("No handler found in " +
+                    Debug.LogWarning("No objectives / objective handler found in " +
                                    $"{gameObjectsArray[i].name}!");
                 }
                 _gameObjects[i] = (gameObjectsArray[i],
@@ -162,6 +183,41 @@ namespace AUIT
         {
             _propertyTransitions.Remove(propertyTransition);
         }
+        
+        public (List<List<LocalObjective>> objectives, List<Layout> layouts) gatherOptimizationData()
+        {
+            // The adaptation manager is responsible for knowing the layout 
+            // (e.g. what to optimize). The properties to be optimized should 
+            // be obtained dynamically in the future, but for now we hardcode 
+            // the properties we want to optimize.
+            List<List<LocalObjective>> objectives = new List<List<LocalObjective>>();
+            List<Layout> layouts = gatherLayouts();
+
+            for (int i = 0; i < _gameObjects.Length; i++)
+            {
+                if (_gameObjects[i].Item2 != null)
+                    objectives.Add(_gameObjects[i].Item2.Objectives);
+                
+            }
+            return (objectives, layouts);
+        }
+
+        public List<Layout> gatherLayouts()
+        {
+            List<Layout> layouts = new List<Layout>();
+            for (int i = 0; i < _gameObjects.Length; i++)
+            {
+                if (_gameObjects[i].Item2 != null)
+                {
+                    layouts.Add(new
+                        Layout(
+                            _gameObjects[i].Item2.Id,
+                            _gameObjects[i].Item1.transform
+                        ));
+                }
+            }
+            return layouts;
+        }
 
         public async UniTask<OptimizationResponse> OptimizeLayout()
         {
@@ -172,24 +228,32 @@ namespace AUIT
                                $"{gameObject.name} is disabled!");
                 return null;
             }
-            
-            // The adaptation manager is responsible for knowing the layout 
-            // (e.g. what to optimize). The properties to be optimized should 
-            // be obtained dynamically in the future, but for now we hardcode 
-            // the properties we want to optimize.
-            List<List<LocalObjective>> objectives = new List<List<LocalObjective>>();
-            List<Layout> currentLayouts = new List<Layout>();
 
-            for (int i = 0; i < _gameObjects.Length; i++)
+            // Initialize placement to in front of user camera
+            if (m_initPlacement && m_initAnchor != null)
             {
-                objectives.Add(_gameObjects[i].Item2.Objectives);
-                currentLayouts.Add(new 
-                    Layout(
-                        _gameObjects[i].Item2.Id, 
-                        _gameObjects[i].Item1.transform
-                        ));
+                Matrix4x4 anchorMatrix = Matrix4x4.TRS(
+                        m_initAnchor.position,
+                        m_initAnchor.rotation,
+                        Vector3.one
+                    );
+                Vector3 initPosition = anchorMatrix.MultiplyPoint3x4(m_initOffset);
+                Vector3 direction = m_initAnchor.position - initPosition;
+                Vector3 flatDirection = new Vector3(direction.x, 0, direction.z);
+                Quaternion initRotation = Quaternion.identity;
+                if (flatDirection.magnitude > 0.001f)
+                {
+                    initRotation = Quaternion.LookRotation(flatDirection);
+                }
+                foreach (GameObject obj in gameObjectsToOptimize)
+                {
+                    obj.transform.position = initPosition;
+                    obj.transform.rotation = initRotation;
+                }
             }
-            
+
+            (List<List<LocalObjective>> objectives, List<Layout> layouts) = gatherOptimizationData();
+
             if (objectives.Count == 0)
             {
                 Debug.LogWarning($"[AdaptationManager.OptimizeLayout()]: " +
@@ -198,12 +262,200 @@ namespace AUIT
                 return null;
             }
 
-            Debug.Log($"Invoking solver: {backendSolver.solver}");
-            OptimizationResponse response = await _asyncSolver.
-                OptimizeCoroutine(currentLayouts, objectives);
-            
-            Debug.Log($"First res: {response.suggested.elements[0].Position}");
+            //Debug.Log($"Invoking solver: {backendSolver.solver}");
+            (OptimizationResponse response, _, _) = await _asyncSolver.
+                OptimizeCoroutine(layouts, objectives, MultiElementObjectives);
+
+            //Debug.Log($"First res: {response.suggested.elements[0].Position}");
             return response;
+        }
+
+        public int NumObjectives
+        {
+            get
+            {
+                if (!isActiveAndEnabled)
+                {
+                    Debug.LogError($"[AdaptationManager.ComputeCost()]: " +
+                                   $"AdaptationManager on " +
+                                   $"{gameObject.name} is disabled!");
+                    return 0;
+                }
+
+                int numObjectives = 0;
+                foreach (var element in gameObjectsToOptimize)
+                {
+                    LocalObjectiveHandler currentHandler = element.GetComponent<LocalObjectiveHandler>();
+                    numObjectives += currentHandler.Objectives.Count;
+                }
+
+                return numObjectives;
+
+            }
+        }
+
+        public List<(string, List<LocalObjective>)> GetLocalObjectives()
+        {
+            List<(string, List<LocalObjective>)> objectives = new List<(string, List<LocalObjective>)>();
+            foreach (var element in gameObjectsToOptimize)
+            {
+                List<LocalObjective> objObjectives = new List<LocalObjective>();
+                LocalObjectiveHandler currentHandler = element.GetComponent<LocalObjectiveHandler>();
+                objObjectives.AddRange(currentHandler.Objectives);
+                objectives.Add((element.name, objObjectives));
+            }
+            return objectives;
+        }
+
+        public GameObject[] GetObjectsCopy()
+        {
+            GameObject[] copy = new GameObject[gameObjectsToOptimize.Count];
+            for (int i = 0; i < gameObjectsToOptimize.Count; i++)
+            {
+                copy[i] = Instantiate(gameObjectsToOptimize[i]);
+            }
+            return copy;
+        }
+
+        public NDarray IsParetoDominated(NDarray scores)
+        {
+            // Get number of points
+            int nPoints = scores.shape[0];
+
+            // Initialize array of indices of efficient points
+            NDarray isEfficient = np.arange(nPoints);
+
+            
+
+            // Next index in the isEfficient array to search for
+            int nextPointIndex = 0;
+
+            while (nextPointIndex < scores.shape[0])
+            {
+                // Create mask for non-dominated points
+                // Check if any dimension is less than the current point (which would mean it's not dominated)
+                NDarray nondominatedPointMask = np.any(scores < scores[nextPointIndex], 1);
+
+                // Set the current point as non-dominated
+                nondominatedPointMask[nextPointIndex] = np.array(true);
+
+                // Remove dominated points
+                isEfficient = isEfficient[nondominatedPointMask];
+                scores = scores[nondominatedPointMask];
+
+                // Update next point index
+                nextPointIndex = (int)np.sum(nondominatedPointMask[":" + nextPointIndex.ToString()]) + 1;
+            }
+
+            return isEfficient;
+        }
+
+        // Find pareto-efficient layouts
+        public int[] ComputePareto(Layout[] ls)
+        {
+            int numSamples = ls.Length;
+            int numObjectives = NumObjectives;
+            NDarray scores = np.zeros((numSamples, numObjectives));
+            Debug.Log($"{numSamples} samples, {numObjectives} objectives");
+
+            for (int si = 0; si < numSamples; si++)
+            {
+                Layout l = ls[si];
+                int oi = 0;
+                foreach (var element in gameObjectsToOptimize)
+                {
+                    LocalObjectiveHandler currentHandler = element.GetComponent<LocalObjectiveHandler>();
+                    foreach (var objective in currentHandler.Objectives)
+                    {
+                        scores[si, oi++] = np.array(objective.CostFunction(l));
+                    }
+                }
+            }
+
+            NDarray isEfficient = IsParetoDominated(scores);
+            return isEfficient.GetData<int>();
+        }
+
+        public int[] ComputeElementPareto(GameObject element, Layout[] ls)
+        {
+            int numSamples = ls.Length;
+            int numObjectives = NumObjectives;
+            NDarray scores = np.zeros((numSamples, numObjectives));
+            Debug.Log($"{numSamples} samples, {numObjectives} objectives");
+
+            // Get layout of all elements 
+            Layout[] lAll = gatherLayouts().ToArray();
+
+            // Get layout of target element
+            Layout lElement = lAll[gameObjectsToOptimize.IndexOf(element)];
+
+            LocalObjectiveHandler currentHandler = element.GetComponent<LocalObjectiveHandler>();
+            for (int si = 0; si < numSamples; si++)
+            {
+                Layout l = ls[si];
+                int oi = 0;
+                foreach (var objective in currentHandler.Objectives)
+                {
+                    scores[si, oi++] = np.array(objective.CostFunction(l));
+                }
+                foreach (var objective in MultiElementObjectives)
+                {
+                    scores[si, oi++] = np.array(objective.CostFunction(l, lAll, lElement));
+                }
+            }
+
+            NDarray isEfficient = IsParetoDominated(scores);
+            return isEfficient.GetData<int>();
+        }
+
+        public float ComputeElementCost(GameObject element, Layout l = null)
+        {
+            l ??= _layout;
+
+
+            if (!isActiveAndEnabled)
+            {
+                Debug.LogError($"[AdaptationManager.ComputeCost()]: " +
+                               $"AdaptationManager on " +
+                               $"{gameObject.name} is disabled!");
+                return 0.0f;
+            }
+
+            LocalObjectiveHandler currentHandler = element.GetComponent<LocalObjectiveHandler>();
+            if (currentHandler.Objectives.Count == 0)
+            {
+                /*
+                Debug.LogWarning($"[AdaptationManager.ComputeCost()]: " +
+                                 $"Unable to find any objectives on " +
+                                 $"{element.name}...");
+                */
+                return 0.0f;
+            }
+
+
+            // Get layout of all elements 
+            Layout[] lAll = gatherLayouts().ToArray();
+            // Get layout of target element
+            Layout lElement = lAll[gameObjectsToOptimize.IndexOf(element)];
+            
+
+            float cost = currentHandler.Objectives.Sum(
+                objective => objective.Weight * objective.CostFunction(l));
+            float elementWeightSum = currentHandler.Objectives.Sum(objective => objective.Weight);
+
+            // Accounting for global objectives
+            cost += MultiElementObjectives.Sum(
+                objective => objective.Weight * objective.CostFunction(l, lAll, lElement));
+            elementWeightSum += MultiElementObjectives.Sum(objective => objective.Weight);
+
+            if (elementWeightSum >= 0)
+            {
+                cost /= elementWeightSum;
+            }
+
+            
+
+            return cost;
         }
 
         public float ComputeCost(Layout l = null, bool verbose = false)
@@ -217,24 +469,35 @@ namespace AUIT
                                $"{gameObject.name} is disabled!");
                 return 0.0f;
             }
-
-            List<List<LocalObjective>> globalObjectives = new List<List<LocalObjective>>();
-            List<Layout> layouts = new List<Layout>();
+            
+            // List<List<LocalObjective>> objectives = new List<List<LocalObjective>>();
+            // List<Layout> layouts = new List<Layout>();
+            
+            // TODO: Decide global objectives
+            // foreach (var element in gameObjectsToOptimize)
+            // {
+            //     AUIT auit = element.GetComponent<AUIT>();
+            //     globalObjectives.Add(auit._localObjectiveHandler.Objectives);
+            //     layouts.Add(auit._layout);
+            // }
+            
+            float cost = 0;
             foreach (var element in gameObjectsToOptimize)
             {
-                AUIT auit = element.GetComponent<AUIT>();
-                globalObjectives.Add(auit._localObjectiveHandler.Objectives);
-                layouts.Add(auit._layout);
+                LocalObjectiveHandler currentHandler = element.GetComponent<LocalObjectiveHandler>();
+                float elementCostSum = currentHandler.Objectives.Sum(
+                    objective => objective.Weight * objective.CostFunction(l));
+                float elementWeightSum = currentHandler.Objectives.Sum(objective => objective.Weight);
+                if (elementWeightSum >= 0)
+                {
+                    elementCostSum /= elementWeightSum;
+                }
+                cost += elementCostSum;
             }
 
-            float cost = 0;
-            for (int i = 0; i < gameObjectsToOptimize.Count; i++)
-            {
-                cost += globalObjectives[i].Sum(objective =>
-                            objective.Weight * objective.CostFunction(layouts[i])) /
-                        globalObjectives[i].Count;
-            }
-            cost /= globalObjectives.Count;
+            // TODO: Global objective cost
+            
+            cost /= gameObjectsToOptimize.Count;
             return cost;
         }
         
@@ -271,7 +534,8 @@ namespace AUIT
                 GameObject[] elementArray = gameObjectsToOptimize.ToArray();
                 for (int i = 0; i < layoutArray.Length; i++)
                 {
-                    elementArray[i].GetComponent<LocalObjectiveHandler>().Transition(layoutArray[i]);
+                    Layout result = layoutArray[i];
+                    elementArray[i].GetComponent<LocalObjectiveHandler>().Transition(result);
                 }
             }
         }
@@ -362,12 +626,18 @@ namespace AUIT
 
         public void RegisterMultiElementObjective(MultiElementObjective multiElementObjective)
         {
-            throw new NotImplementedException();
+            if (MultiElementObjectives.Contains(multiElementObjective))
+                return;
+
+            MultiElementObjectives.Add(multiElementObjective);
         }
 
         public void UnregisterMultiElementObjective(MultiElementObjective multiElementObjective)
         {
-            throw new NotImplementedException();
+            if (!MultiElementObjectives.Contains(multiElementObjective))
+                return;
+
+            MultiElementObjectives.Remove(multiElementObjective);
         }
     }
     
