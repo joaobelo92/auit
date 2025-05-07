@@ -118,10 +118,13 @@ namespace AUIT
                 AssignSolver();
         }
 
+        private void Awake()
+        {
+            Instance = this;
+        }
+
         private void Start()
         {
-            Instance = this; 
-
             AsyncIO.ForceDotNet.Force();
             // Start by gathering all the game objects to optimize
             int size = gameObjectsToOptimize.Count;
@@ -235,7 +238,13 @@ namespace AUIT
                         Vector3.one
                     );
                 Vector3 initPosition = anchorMatrix.MultiplyPoint3x4(m_initOffset);
-                Quaternion initRotation = Quaternion.LookRotation(m_initAnchor.position - initPosition);
+                Vector3 direction = m_initAnchor.position - initPosition;
+                Vector3 flatDirection = new Vector3(direction.x, 0, direction.z);
+                Quaternion initRotation = Quaternion.identity;
+                if (flatDirection.magnitude > 0.001f)
+                {
+                    initRotation = Quaternion.LookRotation(flatDirection);
+                }
                 foreach (GameObject obj in gameObjectsToOptimize)
                 {
                     obj.transform.position = initPosition;
@@ -415,9 +424,11 @@ namespace AUIT
             LocalObjectiveHandler currentHandler = element.GetComponent<LocalObjectiveHandler>();
             if (currentHandler.Objectives.Count == 0)
             {
+                /*
                 Debug.LogWarning($"[AdaptationManager.ComputeCost()]: " +
                                  $"Unable to find any objectives on " +
                                  $"{element.name}...");
+                */
                 return 0.0f;
             }
 

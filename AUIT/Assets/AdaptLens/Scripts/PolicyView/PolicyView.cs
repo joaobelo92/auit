@@ -8,9 +8,26 @@ using System.Linq;
 using System.Collections;
 using System;
 using AUIT.Solvers;
+using Cysharp.Threading.Tasks;
+using AUIT.AdaptationObjectives;
 
 public class PolicyView : MonoBehaviour
 {
+    public delegate void OnHover(int si, List<List<LocalObjective>> localObjectives, List<MultiElementObjective> m_multiElementObjectives, NDarray weights); 
+    public OnHover onHover;
+
+    public delegate void OnSelect(int si, List<List<LocalObjective>> localObjectives, List<MultiElementObjective> m_multiElementObjectives, NDarray weights);
+    public OnSelect onSelect;
+
+    public delegate void OnSave(int si, List<List<LocalObjective>> localObjectives, List<MultiElementObjective> m_multiElementObjectives, NDarray weights);
+    public OnSave onSave;
+
+    public delegate void OnFilter(int pi, float min, float max, PolicyView.SACValues filterValue, List<List<LocalObjective>> localObjectives, List<MultiElementObjective> multiElementObjectives);
+    public OnFilter onFilter;
+
+    public delegate void OnChangedScene(int i);
+    public OnChangedScene onChangedScene;
+
     public ParaHomeLoader m_paraHomeLoader;
     public Parameters m_parameters;
     public AUIT.AUIT auit;
@@ -23,7 +40,8 @@ public class PolicyView : MonoBehaviour
     public enum SamplingApproach
     {
         Random,
-        Interval
+        Interval,
+        Uniform
     }
     public SamplingApproach m_samplingApproach = SamplingApproach.Interval;
     public int m_numSamples = 10;
@@ -32,6 +50,9 @@ public class PolicyView : MonoBehaviour
     public bool m_enableHovering = false;
 
     public bool m_excludeOutOfBounds = true;
+
+    public bool m_debugProgress = true;
+    public int m_debugProgressPrintInterval = 10;
 
     public enum SACValues
     {
@@ -42,40 +63,55 @@ public class PolicyView : MonoBehaviour
     }
     public SACValues m_sacValues = SACValues.AverageCost;
 
-    //public int m_numSamples = 4;
-    //public float m_solver_interval = 0.1f; // todo: use ref
-
-
-    //private IAsyncSolver solver = new ExhaustiveSearchSolver();
-
-    //[SerializeField]
-    //private List<Constraint> constraints;
+    private class FilterOperation
+    {
+        public int pi;
+        public float min;
+        public float max;
+        public SACValues filterValue;
+        public FilterOperation(int pi, float min, float max, SACValues filterValue)
+        {
+            this.pi = pi;
+            this.min = min;
+            this.max = max;
+            this.filterValue = filterValue;
+        }
+    }
+    private List<ParaHomeContext> m_contexts = new List<ParaHomeContext>();
 
     private NDarray m_samples;
-    private List<ParaHomeContext> m_contexts = new List<ParaHomeContext>();
-    private int m_currentContext = -1;
+    private NDarray m_mask;
     private List<Layout[][]> m_layouts = new List<Layout[][]>();
-    private List<Element[]> m_currentLayouts = new List<Element[]>();
-    private int m_hoverIndex = -1;
-
-    private NDarray m_filteredSamples; 
-    private List<Layout[][]> m_filteredLayouts = new List<Layout[][]>();
-    private List<Element[]> m_filteredElements = new List<Element[]>();
-
     private NDarray m_costs;
-    private NDarray m_filteredCosts; 
+    
+    private Stack<FilterOperation> m_filterStack = new Stack<FilterOperation>();
 
+    private List<Element[]> m_currentLayouts = new List<Element[]>();
+
+    // Cache for logging purposes
+    private List<List<AUIT.AdaptationObjectives.LocalObjective>> m_localObjectives;
+    private List<AUIT.AdaptationObjectives.MultiElementObjective> m_multiElementObjectives;
+
+
+
+    private int m_currentContext = -1;
+    private int m_hoverIndex = -1;
     private int m_selected = -1;
 
     private List<int> m_saved = new List<int>();
-    private List<int> m_filteredSaved = new List<int>();
 
     private int m_numParameters;
 
 
     public int NumContexts
     {
-        get { return m_contexts.Count; }
+        get { 
+            if (m_contexts == null)
+            {
+                return 0;
+            }
+            return m_contexts.Count; 
+        }
     }
 
     public int CurrentContext
@@ -87,9 +123,12 @@ public class PolicyView : MonoBehaviour
     private void SetContexts(List<ParaHomeContext> contexts)
     {
         m_contexts = contexts;
-        if (m_contexts.Count > 0)
+        if (m_contexts != null && m_contexts.Count > 0)
         {
             m_currentContext = 0;
+        } else
+        {
+            m_currentContext = -1;
         }
     }
 
@@ -110,7 +149,16 @@ public class PolicyView : MonoBehaviour
         m_contexts.Add(new ParaHomeContext(pose, scene));
     }
 
-    public void LoadContext()
+    public void LoadContextUser()
+    {
+        if (onChangedScene != null)
+        {
+            onChangedScene(m_currentContext);
+        }
+        LoadContext();
+    }
+
+    private void LoadContext()
     {
         if (m_currentContext < 0 || m_currentContext >= m_contexts.Count)
         {
@@ -120,10 +168,9 @@ public class PolicyView : MonoBehaviour
         ParaHomeContext context = m_contexts[m_currentContext];
         m_paraHomeLoader.LoadSceneObjects(context.scene);
         m_paraHomeLoader.LoadScenePoses(context.pose);
-        
-        // Update costs based on context 
-        UpdateSACs();
+
         LoadSampledResults();
+        UpdateSACs();
         SetSelected();
         UpdateGallerySaved();
     }
@@ -137,7 +184,6 @@ public class PolicyView : MonoBehaviour
 
     private void ClearSampledResults()
     {
-        m_currentLayouts.Clear();
         foreach (Transform child in transform)
         {
             Destroy(child.gameObject);
@@ -153,34 +199,41 @@ public class PolicyView : MonoBehaviour
             return;
         }
 
-        Layout[][] layouts = m_layouts[m_currentContext];
-        int numSamples = layouts.Length;
-        for (int si = 0; si < numSamples; si++)
+        m_currentLayouts.Clear();
+        for (int si = 0; si < m_numSamples; si++)
         {
-            GameObject[] optimizedResult = auit.GetObjectsCopy();
-            foreach (GameObject obj in optimizedResult)
+            Layout[][] sampleLayouts = m_layouts[si];
+            GameObject[] optimizedObjs = auit.GetObjectsCopy();
+            foreach (GameObject obj in optimizedObjs)
             {
                 obj.transform.SetParent(transform);
             }
-            Layout[] elements = layouts[si];
-            int numElements = elements.Length;
+            Layout[] sampleLayout = sampleLayouts[m_currentContext];
+            int numElements = sampleLayout.Length;
             Element[] optimizedElements = new Element[numElements];
             for (int ei = 0; ei < numElements; ei++)
             {
-                Layout element = elements[ei];
-                GameObject resultObj = optimizedResult[ei];
-                resultObj.SetActive(true);
-                resultObj.transform.position = element.Position;
-                resultObj.transform.rotation = element.Rotation;
-                resultObj.transform.localScale = element.Scale;
-                Element resultElement = resultObj.GetComponent<Element>();
-                resultElement.Init();
-                optimizedElements[ei] = resultElement;
+                Layout layoutElement = sampleLayout[ei];
+                GameObject obj = optimizedObjs[ei];
+                obj.SetActive(true);
+                obj.transform.position = layoutElement.Position;
+                obj.transform.rotation = layoutElement.Rotation;
+                obj.transform.localScale = layoutElement.Scale;
+                Element element = obj.GetComponent<Element>();
+                element.Init();
+                optimizedElements[ei] = element;
+            }
+            if (!(bool)m_mask[si])
+            {
+                foreach (Element element in optimizedElements)
+                {
+                    element.gameObject.SetActive(false);
+                }
             }
             m_currentLayouts.Add(optimizedElements);
         }
 
-        //SetHover();
+        SetHover();
     }
 
     private void SetHover()
@@ -218,16 +271,25 @@ public class PolicyView : MonoBehaviour
         }
     }
 
+    
     public void SetHoverSelected(bool hover)
     {
+        int hoverIndex = -1;    
         if (hover)
         {
-            m_hoverIndex = m_selected;
+            hoverIndex = m_selected;
         }
-        else
+        if (m_hoverIndex == hoverIndex)
         {
-             m_hoverIndex = -1; 
+            return;
         }
+
+        m_hoverIndex = hoverIndex;
+        if (onHover != null && m_hoverIndex >= 0)
+        {
+            onHover(m_hoverIndex, m_localObjectives, m_multiElementObjectives, m_samples[m_hoverIndex]);
+        }
+
         SetHover();
     }
 
@@ -239,6 +301,10 @@ public class PolicyView : MonoBehaviour
         }
 
         m_hoverIndex = hoverIndex;
+        if (onHover != null && m_hoverIndex >= 0)
+        {
+            onHover(m_hoverIndex, m_localObjectives, m_multiElementObjectives, m_samples[m_hoverIndex]);
+        }
 
         SetHover();
     }
@@ -253,182 +319,89 @@ public class PolicyView : MonoBehaviour
         SetHover(hoverIndex);
 
     }
-
-    public void ApplyFiltering(int pi, float min, float max)
+    
+    private NDarray GetUpdatedFilterMask(NDarray mask, SACValues sacValue, int pi, float min, float max)
     {
-        // Filtering based on parameter values
-        // var parameterValues = m_samples[":", pi];
-
-        // Filtering based on costs 
         NDarray parameterValues;
-        // Currently filtering based on average
-        switch (m_sacValues)
+        switch (sacValue)
         {
             case SACValues.AverageCost:
             default:
-                parameterValues = np.mean(m_costs, axis: 0)[":", pi];
+                parameterValues = np.mean(m_costs, axis: 1)[":", pi];
                 break;
             case SACValues.MaxCost:
-                parameterValues = np.max(m_costs, axis: new int[] { 0 })[":", pi];
+                parameterValues = np.max(m_costs, axis: new int[] { 1 })[":", pi];
                 break;
             case SACValues.PerContextCost:
-                parameterValues = m_costs[m_currentContext, ":", pi];
+                parameterValues = m_costs[":", m_currentContext, pi];
                 break;
             case SACValues.ParameterValues:
                 parameterValues = m_samples[":", pi];
                 break;
         }
-
         var sampleMask = (parameterValues >= min) & (parameterValues <= max);
-        var filteredMask = ~sampleMask;
-        // Identify sample versus filtered out indices 
-        int[] sampleIndices = np.nonzero(sampleMask)[0].astype(np.int32).GetData<int>();
-        int[] filteredIndices = np.nonzero(filteredMask)[0].astype(np.int32).GetData<int>();
+        return mask & sampleMask;
+    }
 
-        // Identify samples versus filtered out values
-        var samples = m_samples[sampleMask, ":"];
-        var filteredSamples = m_samples[filteredMask, ":"];
-        // Identify costs versus filtered out values
-        var costs = m_costs[":", sampleMask, ":"];
-        var filteredCosts = m_costs[":", filteredMask, ":"];
+    public void ApplyFiltering(int pi, float min, float max)
+    {
+        if (onFilter != null)
+        {
+            onFilter(pi, min, max, m_sacValues, m_localObjectives, m_multiElementObjectives);
+        }
+        // Currently filtering based on average
+        m_mask = GetUpdatedFilterMask(m_mask, m_sacValues, pi, min, max);
 
-        int numFilteredCurrent = 0;
-        int numFilteredNew = filteredIndices.Length;
-        // Apply filtering to samples
-        if (m_filteredSamples == null)
+        // Update selected 
+        if (m_selected >= 0 && !(bool)m_mask[m_selected])
         {
-            m_filteredSamples = filteredSamples;
-        } else
-        {
-            numFilteredCurrent = m_filteredSamples.shape[0];
-            m_filteredSamples = np.concatenate(new NDarray[] { m_filteredSamples, filteredSamples });
+            m_selected = -1;
         }
-        // Apply filtering to costs
-        if (m_filteredCosts == null)
-        {
-            m_filteredCosts = filteredCosts;
-        } else
-        {
-            m_filteredCosts = np.concatenate(new NDarray[] { m_filteredCosts, filteredCosts }, axis: 1);
-        }
-        int numFiltered = numFilteredCurrent + numFilteredNew;
-        m_samples = samples;
-        m_costs = costs; 
-
-        // Identify sample versus filtered out layouts
-        List<Layout[][]> sampleLayouts = new List<Layout[][]>();
-        foreach (Layout[][] layout in m_layouts)
-        {
-            Layout[][] contextSampleLayouts = new Layout[sampleIndices.Length][];
-            int si = 0;
-            foreach (int sampleIndex in sampleIndices)
-            {
-                contextSampleLayouts[si++] = layout[sampleIndex];
-            }
-            sampleLayouts.Add(contextSampleLayouts);
-        }
-        List<Layout[][]> filteredLayouts = new List<Layout[][]>();
-        for (int ci = 0; ci < m_layouts.Count; ci++)
-        {
-            Layout[][] contextfilteredLayouts = new Layout[numFiltered][];
-            int si = 0;
-            if (m_filteredLayouts.Count > ci)
-            {
-                for (si = 0; si < m_filteredLayouts[ci].Length; si++)
-                {
-                    contextfilteredLayouts[si] = m_filteredLayouts[ci][si];
-                }
-            }
-            foreach (int filteredIndx in filteredIndices)
-            {
-                contextfilteredLayouts[si++] = m_layouts[ci][filteredIndx];
-            }
-            filteredLayouts.Add(contextfilteredLayouts);
-        }
-        m_filteredLayouts = filteredLayouts;
-        m_layouts = sampleLayouts;
-
-        // Update selected
-        m_selected = Array.IndexOf(sampleIndices, m_selected);
-
-        // Update saved
-        List<int> saved = new List<int>();
-        foreach (int savedIndex in m_saved)
-        {
-            if (Array.IndexOf(sampleIndices, savedIndex) >= 0)
-            {
-                saved.Add(Array.IndexOf(sampleIndices, savedIndex));
-            } else
-            {
-                m_filteredSaved.Add(Array.IndexOf(filteredIndices, savedIndex) + numFilteredCurrent);
-            }
-        }
-        m_saved = saved;
 
         LoadContext();
-
-        // Update SACs with samples
-        //m_sacs.SetValues(m_samples);
-        // Update SACs with costs 
-        UpdateSACs();
         m_sacs.SetSACMinMax(pi, min, max);
+
+        // Save to filter stack 
+        m_filterStack.Push(new FilterOperation(pi, min, max, m_sacValues));
+    }
+
+    public void UndoFiltering()
+    {
+        if (m_filterStack.Count == 0)
+        {
+            return;
+        }
+        // Pop last operation
+        m_filterStack.Pop();
+
+        // Calculate mask without previous operation
+        FilterOperation[] filterOperations = m_filterStack.ToArray();
+        NDarray mask = np.ones(m_numSamples).astype(np.bool_);
+        foreach (FilterOperation filterOperation in filterOperations)
+        {
+            mask = GetUpdatedFilterMask(mask, filterOperation.filterValue, filterOperation.pi, filterOperation.min, filterOperation.max);
+        }
+        m_mask = mask;
+
+        // Update selected 
+        if (m_selected >= 0 && !(bool)m_mask[m_selected])
+        {
+            m_selected = -1;
+        }
+
+        LoadContext();
     }
 
     public void ResetFiltering()
     {
-        int numSamples = m_samples.shape[0];
-        if (m_filteredSamples != null)
-        {
-            m_samples = np.concatenate(new NDarray[] { m_samples, m_filteredSamples }, axis: 0);
-        }
-        m_filteredSamples = null;
-        if (m_filteredCosts != null)
-        {
-            m_costs = np.concatenate(new NDarray[] { m_costs, m_filteredCosts }, axis: 1);
-        }
-        m_filteredCosts = null;
-
-        for (int ci = 0; ci < m_layouts.Count; ci++)
-        {
-            if (m_filteredLayouts.Count > ci)
-            {
-                Layout[][] layouts = m_layouts[ci];
-                Layout[][] filteredLayouts = m_filteredLayouts[ci];   
-                int numLayouts = layouts.Length + filteredLayouts.Length;
-                Layout[][] combined = new Layout[numLayouts][];
-                int si = 0;
-                for (int i = 0; i < layouts.Length; i++)
-                {
-                    combined[si++] = layouts[i];
-                }
-                for (int i = 0; i < filteredLayouts.Length; i++)
-                {
-                    combined[si++] = filteredLayouts[i];
-                }
-                m_layouts[ci] = combined;
-            }
-        }
-        m_filteredLayouts.Clear();
-
-        foreach (int savedIndex in m_filteredSaved)
-        {
-            m_saved.Add(savedIndex + numSamples);
-        }
-        m_filteredSaved.Clear();
-
-
+        m_filterStack.Clear();
+        m_mask = np.ones(m_numSamples).astype(np.bool_);
         LoadContext();
-
-        // Update SACs with samples
-        //m_sacs.SetValues(m_samples);
-
-        // Update SACs with costs
-        UpdateSACs();
     }
 
     public void UpdateSACs()
     {
-        if (m_costs == null)
+        if (m_samples == null || m_costs == null)
         {
             return;
         }
@@ -438,25 +411,26 @@ public class PolicyView : MonoBehaviour
         {
             case SACValues.AverageCost:
             default:
-                visualizedValues = np.mean(m_costs, axis: 0);
+                visualizedValues = np.mean(m_costs, axis: 1);
                 break;
             case SACValues.MaxCost:
-                visualizedValues = np.max(m_costs, axis: new int[] { 0 });
+                visualizedValues = np.max(m_costs, axis: new int[] { 1 });
                 break;
             case SACValues.PerContextCost:
                 if (m_currentContext < 0 || m_currentContext >= m_contexts.Count)
                 {
                     return;
                 }
-                visualizedValues = m_costs[m_currentContext];
+                visualizedValues = m_costs[":", m_currentContext];
                 break;
             case SACValues.ParameterValues:
                 visualizedValues = m_samples;
                 break;
         }
-        m_sacs.SetValues(visualizedValues);
-    } 
+        m_sacs.SetValues(visualizedValues, m_mask);
+    }
 
+    
     private Texture2D CaptureView()
     {
         m_supportCamera.gameObject.SetActive(true);
@@ -478,15 +452,20 @@ public class PolicyView : MonoBehaviour
         return snapshot;
     }
 
-    public IEnumerator GetLayoutView(int targetLayout, System.Action<Texture2D> callback)
+    public IEnumerator GetLayoutView(int targetLayoutIndex, System.Action<Texture2D> callback)
     {
+
         for (int li = 0; li < m_currentLayouts.Count; li++)
         {
             foreach (Element element in m_currentLayouts[li])
             {
-                
-                element.gameObject.SetActive(li == targetLayout);
+                element.gameObject.SetActive(false);
             }
+        }
+        Element[] targetLayout = m_currentLayouts[targetLayoutIndex];
+        foreach (Element element in targetLayout)
+        {
+            element.gameObject.SetActive(true);
         }
 
         yield return new WaitForEndOfFrame();
@@ -495,14 +474,54 @@ public class PolicyView : MonoBehaviour
 
         for (int li = 0; li < m_currentLayouts.Count; li++)
         {
+            bool active = (bool)m_mask[li];
             foreach (Element element in m_currentLayouts[li])
             {
-                element.gameObject.SetActive(true);
+                element.gameObject.SetActive(active);
             }
-            
         }
 
         callback(view);
+    }
+
+    private void SetSelected()
+    {
+        // Update SACs 
+        m_sacs.SetSelectedSACS(m_selected);
+
+        // Update Gallery view
+        if (m_selected < 0)
+        {
+            m_gallery.ResetSelected();
+            return;
+        }
+        string[] selectedParams = m_parameters.GetParametersInfoFlat().ToArray();
+
+        string info = "Selected:\n";
+        for (int pi = 0; pi < selectedParams.Length; pi++)
+        {
+            info += $"{selectedParams[pi]}: {(float)m_samples[m_selected, pi]}\n";
+        }
+
+        StartCoroutine(GetLayoutView(m_selected, (view) =>
+        {
+            m_gallery.SetSelected(view, info);
+        }));
+    }
+
+    public void SetSelected(int si)
+    {
+        m_selected = si;
+        if (onSelect != null && m_selected >= 0)
+        {
+            onSelect(m_selected, m_localObjectives, m_multiElementObjectives, m_samples[m_selected]);
+        }
+        SetSelected();
+    }
+    private void ResetSelected()
+    {
+        m_selected = -1;
+        SetSelected();
     }
 
     public IEnumerator GetLayoutViews(System.Action<List<Texture2D>> callback)
@@ -513,6 +532,11 @@ public class PolicyView : MonoBehaviour
 
         foreach (int saved in m_saved)
         {
+            if (!(bool)m_mask[saved])
+            {
+                continue;
+            }
+
             bool captured = false;
             Texture2D capturedView = null; 
 
@@ -530,42 +554,16 @@ public class PolicyView : MonoBehaviour
         callback(views);
     }
 
-    private void SetSelected()
-    {
-        // Update SACs 
-        m_sacs.SetSelectedSACS(m_selected);
-
-        // Update Gallery view
-        if (m_selected < 0)
-        {
-            m_gallery.ResetSelected();
-            return; 
-        }
-        string[] selectedParams = m_parameters.GetParametersInfoFlat().ToArray();
-
-        string info = "Selected:\n";
-        for (int pi = 0; pi < selectedParams.Length; pi++)
-        {
-            info += $"{selectedParams[pi]}: {(float)m_samples[m_selected, pi]}\n";
-        }
-
-        StartCoroutine(GetLayoutView(m_selected, (view) =>
-        {
-            m_gallery.SetSelected(view, info);
-        }));
-    }
-
-    private void ResetSelected()
-    {
-        m_selected = -1;
-        SetSelected();
-    }
-
     private void SaveSelected()
     {
         if (m_selected >= 0 && !m_saved.Contains(m_selected))
         {
             m_saved.Add(m_selected);
+
+            if (onSave != null)
+            {
+                onSave(m_selected, m_localObjectives, m_multiElementObjectives, m_samples[m_selected]);
+            }
         }
         UpdateGallerySaved();
     }
@@ -582,12 +580,6 @@ public class PolicyView : MonoBehaviour
         {
             m_gallery.SetSaved(views);
         }));
-    }
-
-    public void SetSelected(int si)
-    {
-        m_selected = si;
-        SetSelected();
     }
 
     public void SetSelectedSaved(int savedIndex)
@@ -616,13 +608,9 @@ public class PolicyView : MonoBehaviour
 
     public async void SamplePolicies()
     {
-        DateTime tsStart = DateTime.Now;
-        ClearSaved();
-        ClearSampledResults();
-        m_layouts.Clear();
-        m_filteredSamples = null;
-        m_filteredLayouts.Clear();
         m_selected = -1;
+        ClearSaved();
+        m_filterStack.Clear();
 
         if (m_numSamples <= 0)
         {
@@ -640,6 +628,7 @@ public class PolicyView : MonoBehaviour
             return;
         }
 
+        // Get sampling parameters 
         m_parameters.GetParameters();
         List<Parameters.ParamReference<float>> parameters = m_parameters.GetParametersAll();
         m_numParameters = parameters.Count;
@@ -649,15 +638,16 @@ public class PolicyView : MonoBehaviour
             return;
         }
 
+        // Get sampling parameter values
         switch (m_samplingApproach)
         {
             case SamplingApproach.Interval:
                 m_samples = IntervalSampling.GenerateSamples(m_increment, m_numParameters);
-                // m_samples = np.concatenate(new NDarray[] { m_samples, m_samples }, axis: 0);
+
+                // Apply random noise
                 m_numSamples = m_samples.shape[0];
                 m_samples -= m_increment * np.random.rand(m_numSamples, m_numParameters);
                 m_samples = np.clip(m_samples, np.array(0), np.array(1));
-
                 if (m_numParameters > 1)
                 {
                     var row_sums = np.sum(m_samples, axis: 1, keepdims: true);
@@ -666,55 +656,42 @@ public class PolicyView : MonoBehaviour
                 break;
             case SamplingApproach.Random:
                 m_samples = RandomSample.UniformSampleSimplex(m_numSamples, m_numParameters);
-                for (int i = 0; i < m_numParameters; i++)
-                {
-                    Parameters.ParamReference<float> parameter = parameters[i];
-                    float min = 0;
-                    float max = 1;
-                    min = ((Parameters.FloatParamReference)parameter).min;
-                    max = ((Parameters.FloatParamReference)parameter).max;
-
-                    m_samples[":", i] = min + (max - min) * m_samples[":", i];
-                }
-
-                /*
-                m_samples = np.random.rand(m_numSamples, m_numParameters);
-                for (int i = 0; i < m_numParameters; i++)
-                {
-                    Parameters.ParamReference<float> parameter = parameters[i];
-                    float min = 0;
-                    float max = 1;
-                    min = ((Parameters.FloatParamReference)parameter).min;
-                    max = ((Parameters.FloatParamReference)parameter).max;
-
-                    m_samples[":", i] = min + (max - min) * m_samples[":", i];
-                }
-                */
-
+                break;
+            case SamplingApproach.Uniform:
+                m_samples = np.ones(new int[] { m_numSamples, m_numParameters }).astype(np.float32);
                 break;
         }
 
-        
-
-        Debug.Log($"Sampling Approach: {m_samplingApproach}\n" +
-                    $"Increment: {m_increment}\n" +
-                    $"Num parameters {m_numParameters}\n" +
-                    $"Shape: {m_samples.shape}");
+        // Initialize mask 
+        m_mask = np.ones(m_numSamples).astype(np.bool_);
 
         int numContexts = m_contexts.Count;
 
-        List<List<AUIT.AdaptationObjectives.LocalObjective>> localObjectives = auit.gatherOptimizationData().objectives;
-        List<AUIT.AdaptationObjectives.MultiElementObjective> multiElementObjectives = auit.MultiElementObjectives;
-        int numObjectives = 0;
-        foreach (List<AUIT.AdaptationObjectives.LocalObjective> objectives in localObjectives)
+        m_localObjectives = auit.gatherOptimizationData().objectives;
+        m_multiElementObjectives = auit.MultiElementObjectives;
+        int numLocalObjectives = 0;
+        foreach (List<AUIT.AdaptationObjectives.LocalObjective> objectives in m_localObjectives)
         {
-            numObjectives += objectives.Count;
+            numLocalObjectives += objectives.Count;
         }
-        numObjectives += multiElementObjectives.Count;
 
-        m_costs = np.zeros(numContexts, m_numSamples, numObjectives).astype(np.float32);
+        int numMultiElementObjectives = m_multiElementObjectives.Count;
+        int numObjectives = numLocalObjectives + numMultiElementObjectives;
 
-        int debugPrintInterval = 10;
+        //int numElements = auit.gameObjectsToOptimize.Count;
+
+        // Initialize layouts 
+        m_layouts.Clear();
+        for (int si = 0; si < m_numSamples; si++)
+        {
+            Layout[][] layouts = new Layout[numContexts][];
+            m_layouts.Add(layouts);
+        }
+
+        // Initialize costs
+        m_costs = np.zeros(m_numSamples, numContexts, numObjectives).astype(np.float32);
+        
+        // Iterate through contexts
         for (int ci = 0; ci < numContexts; ci++)
         {
             ParaHomeContext context = m_contexts[ci];
@@ -723,10 +700,10 @@ public class PolicyView : MonoBehaviour
             m_paraHomeLoader.LoadSceneObjects(scene);
             m_paraHomeLoader.LoadScenePoses(pose);
 
-
-            Layout[][] layouts = new Layout[m_numSamples][];
+            // Iterate through samples 
             for (int si = 0; si < m_numSamples; si++)
             {
+                // Set parameters
                 for (int pi = 0; pi < m_numParameters; pi++)
                 {
                     Parameters.ParamReference<float> parameter = parameters[pi];
@@ -736,132 +713,54 @@ public class PolicyView : MonoBehaviour
 
                 // Call to solver
                 OptimizationResponse response = await auit.OptimizeLayout();
-                
-                
-                List<List<float>> objectiveCosts;
-                List<float> multiObjectiveCosts;
-                (objectiveCosts, multiObjectiveCosts) = Utils.ComputeCostsUnweighted(response.suggested.elements.ToList(), 
-                    auit.gatherOptimizationData().objectives, auit.MultiElementObjectives);
 
-                int oi = 0;
-                string debugCosts = "";
-                for (int loi = 0; loi < localObjectives.Count; loi++)
+                // Calculate costs
+                List<List<float>> localObjectiveCosts;
+                List<float> multiObjectiveCosts;
+                (localObjectiveCosts, multiObjectiveCosts) = Utils.ComputeCostsUnweighted(response.suggested.elements.ToList(), 
+                    auit.gatherOptimizationData().objectives, auit.MultiElementObjectives);
+                // si = sample 
+                // ci = context 
+                // costi = objective index
+                int costi = 0;
+                foreach (List<float> costs in localObjectiveCosts)
                 {
-                    List<AUIT.AdaptationObjectives.LocalObjective> objectives = localObjectives[loi];
-                    List<float> costs = objectiveCosts[loi];
-                    for (int oci = 0; oci < costs.Count; oci++)
+                    foreach (float cost in costs)
                     {
-                        AUIT.AdaptationObjectives.LocalObjective objective = objectives[oci];
-                        float cost = costs[oci];
-                        m_costs[ci, si, oi++] = np.array(cost);
-                        debugCosts += $"{objective.gameObject.name}.{objective.GetType().Name}: {cost}\n";
+                        m_costs[si, ci, costi++] = np.array(cost);
                     }
                 }
-                for (int moi = 0; moi < multiElementObjectives.Count; moi++)
+                foreach (float cost in multiObjectiveCosts)
                 {
-                    AUIT.AdaptationObjectives.MultiElementObjective objective = multiElementObjectives[moi];
-                    float cost = multiObjectiveCosts[moi];
-                    m_costs[ci, si, oi++] = np.array(cost);
-                    debugCosts += $"global.{objective.GetType().Name}: {cost}\n";
+                    m_costs[si, ci, costi++] = np.array(cost);
                 }
 
-                //Debug.Log(debugCosts);
+                // Store layouts
+                m_layouts[si][ci] = response.suggested.elements;
 
-                
-                Layout[] elements = response.suggested.elements;
-                int numElements = elements.Length;
-                layouts[si] = new Layout[numElements];
-                for (int ei = 0; ei < numElements; ei++)
-                {
-                    Layout element = elements[ei];
-                    layouts[si][ei] = element;
-                }
-
-                if (si % debugPrintInterval == 0)
+                if (m_debugProgress && si % m_debugProgressPrintInterval == 0)
                 {
                     Debug.Log($"Context {ci + 1}/{numContexts}, Sample {si + 1}/{m_numSamples}");
                 }
             }
-            m_layouts.Add(layouts);
         }
-
-        // Filter out of bounds layouts
-        if (m_excludeOutOfBounds && m_boundaries != null)
-        {
-            List<int> outOfBoundsIndices = new List<int>();
-            for (int si = 0; si < m_numSamples; si++)
-            {
-                bool isOutOfBounds = false;
-                for (int ci = 0; ci < numContexts; ci++)
-                {
-                    Layout[] layouts = m_layouts[ci][si];
-                    foreach (Layout layout in layouts)
-                    {
-                        Vector3 position = m_boundaries.InverseTransformPoint(layout.Position);
-                        // within (-0.5, 0.5) in local space
-                        if (position.x < -0.5f || position.x > 0.5f ||
-                            position.y < -0.5f || position.y > 0.5f ||
-                            position.z < -0.5f || position.z > 0.5f)
-                        {
-                            isOutOfBounds = true;
-                            break;
-                        }
-                    }
-                    if (isOutOfBounds)
-                    {
-                        break;
-                    }
-                }
-                if (isOutOfBounds)
-                {
-                    outOfBoundsIndices.Add(si);
-                }
-            }
-            Debug.Log($"Out of bound elements: {outOfBoundsIndices.Count}");
-
-            // Remove out of bounds samples
-            NDarray inBoundsMask = np.ones(m_numSamples).astype(np.bool_);
-            inBoundsMask[np.array(outOfBoundsIndices.ToArray())] = np.array(false);
-
-            m_samples = m_samples[inBoundsMask, ":"];
-            m_costs = m_costs[":", inBoundsMask, ":"];
-            List<Layout[][]> inBoundsLayouts = new List<Layout[][]>();
-            int numInBounds = m_numSamples - outOfBoundsIndices.Count;
-            foreach (Layout[][] layouts in m_layouts)
-            {
-                Layout[][] inBoundsSampleLayouts = new Layout[numInBounds][];
-                int nsi = 0;
-                for (int si = 0; si < m_numSamples; si++)
-                {
-                    if ((bool)inBoundsMask[si])
-                    {
-                        inBoundsSampleLayouts[nsi++] = layouts[si];
-                    }
-                }
-                inBoundsLayouts.Add(inBoundsSampleLayouts);
-            }
-            m_layouts = inBoundsLayouts;
-        }
-
-
-        LoadContext();
-
+        
         // Initialize sacs for costs 
         List<(string, List<(string, List<string>)>)> objectivesInfo = new List<(string, List<(string, List<string>)>)>();
-        foreach(List<AUIT.AdaptationObjectives.LocalObjective> localObjectiveObj in localObjectives)
+        foreach(List<AUIT.AdaptationObjectives.LocalObjective> localObjectiveObj in m_localObjectives)
         {
             string objName = "";
             List<(string, List<string>)> obj = new List<(string, List<string>)>();
             foreach (AUIT.AdaptationObjectives.LocalObjective objective in localObjectiveObj)
             {
                 // Get type of objective
-                obj.Add((objective.GetType().Name, new List<string>() { ""}));
+                obj.Add((objective.GetType().Name, new List<string>() { "" }));
                 objName = objective.gameObject.name;
             }
             objectivesInfo.Add((objName, obj));
         }
         List<(string, List<string>)> multiObjInfo = new List<(string, List<string>)>();
-        foreach (AUIT.AdaptationObjectives.MultiElementObjective objective in multiElementObjectives)
+        foreach (AUIT.AdaptationObjectives.MultiElementObjective objective in m_multiElementObjectives)
         {
             multiObjInfo.Add((objective.GetType().Name, new List<string>() { "" }));
             
@@ -869,94 +768,9 @@ public class PolicyView : MonoBehaviour
         objectivesInfo.Add(("global", multiObjInfo));
         m_sacs.Init(objectivesInfo);
 
-        UpdateSACs();
 
-        // Initialize sacs for weights
-        /*
-        m_sacs.Init(m_parameters.GetParametersInfo());
-        m_sacs.SetValues(m_samples);
-        */
-
-        m_sacs.onHover += SetHover;
-        m_sacs.onSelect += SetSelected;
-        m_sacs.onApplyFiltering += ApplyFiltering;
-
-        
-
-
-        // Legacy code using an exhaustive solver
-        /*
-        List<Parameters.ParamReference<float>> parameters = m_parameters.GetParameters();
-        List<Parameters.ParamReference<float>> weights = new List<Parameters.ParamReference<float>>();
-        foreach (var p in parameters)
-        {
-            if (p.name.Contains("Weight")) // only care about weights now
-                weights.Add(p);
-        }
-        NDarray[] linRange = new NDarray[weights.Count];
-
-        foreach (Parameters.ParamReference<float> weight in weights)
-        {
-            if (weight is Parameters.FloatParamReference fweight)
-            {
-                var vals = np.linspace(fweight.min, fweight.max, m_numSamples);
-                linRange[weights.IndexOf(weight)] = vals;
-            }
-            else
-            {
-                throw new System.Exception("Policy View only supports floats at the moment");
-            }
-        }
-        
-        print("Discretizing...");
-        NDarray discretization = np.array(np.meshgrid(linRange, indexing: "ij")).T.reshape(-1, weights.Count);
-        
-        print("Invoking solver...");
-        (List<List<LocalObjective>> objectives, List<Layout> layouts) = auit.gatherOptimizationData();
-        (_, NDarray points, NDarray costs) = await solver.OptimizeCoroutine(layouts, objectives, true);
-        
-        NDarray weightCombinations = np.empty((discretization.shape[0], weights.Count));
-        for (int i = 0; i < discretization.shape[0]; i++)
-        {
-            weightCombinations[$"{i},:"] = discretization[i];
-        }
-        costs = costs.T;
-
-        NDarray result = np.matmul(weightCombinations, costs);
-        print(result.shape);
-        */
-
-        // for (int i = 0; i < points.shape[0]; ++i)
-        // {
-        //     print(points[i] + " " + costs[i]);
-        // }
-
-
-        // ;
-        //
-        // List<Parameters.ParamReference<float>> parameters = m_parameters.GetParameters();
-        //
-        // int numParameters = parameters.Count;
-        //
-        // float[,] values = new float[numParameters, m_numSamples];
-        // for (int pi = 0; pi < numParameters; pi++)
-        // {
-        //     Parameters.ParamReference<float> parameter = parameters[pi];
-        //     if (parameter is Parameters.FloatParamReference)
-        //     {
-        //         Parameters.FloatParamReference floatParameter = (Parameters.FloatParamReference)parameter;
-        //         float min = floatParameter.min;
-        //         float max = floatParameter.max;
-        //         (NDarray parameterValues, float num) = np.linspace(np.array(min), np.array(max), m_numSamples);
-        //         for (int si = 0; si < m_numSamples; si++)
-        //         {
-        //             values[pi, si] = (int)parameterValues[si];
-        //         }
-        //     }
-        // }
-
-        // TODO: Compute optimal results given samples
-
+        // Initialize context
+        LoadContext();
     }
 
 
@@ -985,6 +799,7 @@ public class PolicyView : MonoBehaviour
                     Element[] elements = m_currentLayouts[ei];
                     if (elements.Contains(element))
                     {
+                        Debug.Log(ei);
                         SetHover(ei);
                         m_sacs.SetHoverSACs(ei);
 
@@ -993,7 +808,6 @@ public class PolicyView : MonoBehaviour
                         {
                             SetSelected(ei);
                         }
-
 
                         return;
                     }
@@ -1006,9 +820,6 @@ public class PolicyView : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        //solver.Initialize(constraints);
-        //((ExhaustiveSearchSolver)solver).interval = m_solver_interval;
-
         m_gallery.onSaveSelected += SaveSelected;
         m_gallery.onClearSelected += ResetSelected;
         m_gallery.onClearSaved += ClearSaved;
@@ -1016,6 +827,12 @@ public class PolicyView : MonoBehaviour
         m_gallery.onHoverSaved += SetHoverSaved;
         m_gallery.onSelectedSaved += SetSelectedSaved;
         m_gallery.onDeploySelected += DeploySelected;
+
+        m_sacs.onHover += SetHover;
+        m_sacs.onSelect += SetSelected;
+        m_sacs.onApplyFiltering += ApplyFiltering;
+        m_sacs.onResetFiltering += ResetFiltering;
+        m_sacs.onUndoFiltering += UndoFiltering;
     }
 
     // Update is called once per frame
@@ -1026,11 +843,13 @@ public class PolicyView : MonoBehaviour
 
     private void OnEnable()
     {
+        SetContexts(m_paraHomeLoader.Contexts);
         m_paraHomeLoader.onScenesLoaded += SetContexts;
     }
 
     private void OnDisable()
     {
+        SetContexts(new List<ParaHomeContext>());
         m_paraHomeLoader.onScenesLoaded -= SetContexts;
     }
 }
@@ -1071,7 +890,7 @@ public class PolicyViewEditor : Editor
             policyView.CurrentContext = EditorGUILayout.IntSlider("Context", policyView.CurrentContext, 0, policyView.NumContexts - 1);
             if (EditorGUI.EndChangeCheck())
             {
-                policyView.LoadContext();
+                policyView.LoadContextUser();
             }
         } else
         {
@@ -1084,6 +903,7 @@ public class PolicyViewEditor : Editor
         switch (policyView.m_samplingApproach)
         {
             case PolicyView.SamplingApproach.Random:
+            case PolicyView.SamplingApproach.Uniform:
                 policyView.m_numSamples = EditorGUILayout.IntField("Number of Samples", policyView.m_numSamples);
                 break;
             case PolicyView.SamplingApproach.Interval:
@@ -1094,10 +914,6 @@ public class PolicyViewEditor : Editor
         if (GUILayout.Button("Sample Policies"))
         {
             policyView.SamplePolicies();
-        }
-        if (GUILayout.Button("Reset Filtering"))
-        {
-            policyView.ResetFiltering();
         }
         EditorGUILayout.Space();
 
@@ -1112,6 +928,7 @@ public class PolicyViewEditor : Editor
         }
 
         policyView.m_excludeOutOfBounds = EditorGUILayout.Toggle("Exclude Out of Bounds", policyView.m_excludeOutOfBounds);
-
+        policyView.m_debugProgress = EditorGUILayout.Toggle("Debug Progress", policyView.m_debugProgress);
+        policyView.m_debugProgressPrintInterval = EditorGUILayout.IntField("Debug Progress Interval", policyView.m_debugProgressPrintInterval);
     }
 }

@@ -110,5 +110,15 @@ namespace AUIT.AdaptationObjectives
         //     Vector3 idealScale = (currentDistance / initialDist) * initialScale * scalingFactor;
         //     return new Layout(optimizationTarget.Position, optimizationTarget.Rotation, idealScale);
         // }
+
+        public override float[] GetParameters()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public override void SetParameters(float[] parameters)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

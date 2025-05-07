@@ -19,21 +19,17 @@ namespace AUIT.AdaptationObjectives
 
         #region MonoBehaviour Implementation
 
-        protected virtual void Awake()
-        {
-            if (auit == null)
-                auit = GetComponent<AUIT>();
-        }
-
         protected virtual void OnEnable()
         {
             if (auit == null)
-                auit = GetComponent<AUIT>();
+                auit = FindFirstObjectByType<AUIT>();
             auit.RegisterMultiElementObjective(this);
         }
 
         protected virtual void Start() 
         {
+            if (auit == null)
+                auit = FindFirstObjectByType<AUIT>();
         }
 
         protected virtual void OnDisable()
@@ -62,5 +58,9 @@ namespace AUIT.AdaptationObjectives
             }
             return userPoseContextSource;
         }
+
+        public abstract float[] GetParameters();
+
+        public abstract void SetParameters(float[] parameters);
     }
 }

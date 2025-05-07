@@ -23,7 +23,11 @@ public class LookAtUser : MonoBehaviour
         }
         Vector3 userPosition = user.position;
         Vector3 direction = userPosition - transform.position;
-        transform.rotation = Quaternion.LookRotation(direction);
+        Vector3 flatDirection = new Vector3(direction.x, 0, direction.z);
+        if (flatDirection.magnitude > 0.001f)
+        {
+            transform.rotation = Quaternion.LookRotation(flatDirection);
+        }
 
     }
 

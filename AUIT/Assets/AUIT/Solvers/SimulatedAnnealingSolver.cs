@@ -97,13 +97,16 @@ namespace AUIT.Solvers
                 float maxCostElement = 0f;
                 float maxCostObjective = 0f;
                 float maxCostMultiObjective = 0f;
-                
+
                 if (objectives.Count > 0)
                 {
                     maxCostElement = totalObjectiveCosts.Max();
                     maxCostElementIndex = totalObjectiveCosts.IndexOf(maxCostElement);
-                    maxCostObjective = objectiveCosts[maxCostElementIndex].Max();
-                    maxCostObjectiveIndex = objectiveCosts[maxCostElementIndex].IndexOf(maxCostObjective);
+                    if (objectiveCosts[maxCostElementIndex].Count > 0)
+                    {
+                        maxCostObjective = objectiveCosts[maxCostElementIndex].Max();
+                        maxCostObjectiveIndex = objectiveCosts[maxCostElementIndex].IndexOf(maxCostObjective);
+                    }
                 }
 
                 if (multiElementObjectives.Count > 0)

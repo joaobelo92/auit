@@ -179,7 +179,7 @@ public class GalleryViewEditor : Editor
             }
             if (GUILayout.Button("Deploy Selected"))
             {
-                galleryView.ClearSaved();
+                galleryView.DeploySelected();
             }
         }
         EditorGUILayout.Space(20);

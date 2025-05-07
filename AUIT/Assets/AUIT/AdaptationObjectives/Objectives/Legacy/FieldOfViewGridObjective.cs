@@ -247,5 +247,6 @@ namespace AUIT.AdaptationObjectives.Objectives
 
             serializedObject.ApplyModifiedProperties();
         }
+
     }
 }

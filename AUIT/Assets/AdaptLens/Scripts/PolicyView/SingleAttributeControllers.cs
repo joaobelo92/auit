@@ -17,6 +17,12 @@ public class SingleAttributeControllers : MonoBehaviour
     public delegate void OnApplyFiltering(int pi, float min, float max);
     public OnApplyFiltering onApplyFiltering;
 
+    public delegate void OnResetFiltering();
+    public OnResetFiltering onResetFiltering;
+
+    public delegate void OnUndoFiltering(); 
+    public OnUndoFiltering onUndoFiltering;
+
     private List<(string, List<(string, List<SingleAttributeController>)>)> m_sacs = new List<(string, List<(string, List<SingleAttributeController>)>)>();
 
     public List<(string, List<(string, List<SingleAttributeController>)>)> SACS
@@ -39,8 +45,8 @@ public class SingleAttributeControllers : MonoBehaviour
                 {
                     SingleAttributeController sac = new SingleAttributeController(parameter, pi++);
                     sac.onHover += SetHoverPolicyViewer;
-                    sac.onSelect += SetSelectedPolicyViewer;
                     sac.onApplyFiltering += ApplyFiltering;
+                    sac.onSelect += SetSelectedPolicyViewer;
                     sacs.Add(sac);
                 }
                 objectiveSACs.Add((objectiveName, sacs));
@@ -49,7 +55,7 @@ public class SingleAttributeControllers : MonoBehaviour
         }
     }
 
-    public void SetValues(NDarray values)
+    public void SetValues(NDarray values, NDarray mask)
     {
         foreach ((string objNames, List<(string, List<SingleAttributeController>)> obj) in m_sacs)
         {
@@ -57,12 +63,7 @@ public class SingleAttributeControllers : MonoBehaviour
             {
                 foreach (SingleAttributeController sac in objectiveSACs)
                 {
-                    sac.ClearValues();
-                    for (int i = 0; i < values.shape[0]; i++)
-                    {
-                        sac.AddValue((float)values[i, sac.Id]);
-                    } 
-                    sac.CalculateMinMax();
+                    sac.SetValues(values[":", sac.Id], mask);
                 }
             }
         }
@@ -107,6 +108,15 @@ public class SingleAttributeControllers : MonoBehaviour
         }
     }
 
+    public void ApplyFiltering(int pi, float min, float max)
+    {
+        if (onApplyFiltering != null)
+        {
+            onApplyFiltering(pi, min, max);
+        }
+    }
+
+    
     private void SetSelectedPolicyViewer(int selectedIndex)
     {
         if (onSelect != null)
@@ -129,11 +139,19 @@ public class SingleAttributeControllers : MonoBehaviour
         }
     }
 
-    public void ApplyFiltering(int pi, float min, float max)
+    public void ResetFiltering()
     {
-        if (onApplyFiltering != null)
+        if (onResetFiltering != null)
         {
-            onApplyFiltering(pi, min, max);
+            onResetFiltering();
+        }
+    }
+
+    public void UndoFiltering()
+    {
+        if (onUndoFiltering != null)
+        {
+            onUndoFiltering();
         }
     }
 }
@@ -148,6 +166,16 @@ public class SingleAttributeControllersEditor : Editor
         base.OnInspectorGUI();
 
         sacs = (SingleAttributeControllers)target;
+
+        if (GUILayout.Button("Reset Filtering"))
+        {
+            sacs.ResetFiltering();
+        }
+
+        if (GUILayout.Button("Undo Filtering"))
+        {
+            sacs.UndoFiltering();
+        }
 
         foreach (var objSAC in sacs.SACS)
         {

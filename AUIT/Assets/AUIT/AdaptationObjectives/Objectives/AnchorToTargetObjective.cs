@@ -13,7 +13,7 @@ namespace AUIT.AdaptationObjectives
         private Vector3 offset;
 
         [SerializeField]
-        private float distanceThreshold = 0.3f;
+        private float distanceThreshold = 2.0f;
 
         
         
@@ -74,6 +74,18 @@ namespace AUIT.AdaptationObjectives
         public override Layout DirectRule(Layout optimizationTarget)
         {
             throw new System.NotImplementedException();
+        }
+
+        public override float[] GetParameters()
+        {
+            return new float[] { weight, offset.x, offset.y, offset.z, distanceThreshold };
+        }
+
+        public override void SetParameters(float[] parameters)
+        {
+            weight = parameters[0];
+            offset = new Vector3(parameters[1], parameters[2], parameters[3]);
+            distanceThreshold = parameters[4];
         }
     }
 }

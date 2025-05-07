@@ -128,10 +128,15 @@ namespace AUIT.AdaptationObjectives.Objectives
 
         public override float CostFunction(Layout optimizationTarget, Layout[] optimizationTargets, Layout initialLayout = null)
         {
-            int overlaps = 0;
-
-            // Yi Fei: Is element colliding being used for anything?
             elementsColliding = new List<int>();
+
+            // Occlusion requires two elements, cost = 0 if only one element
+            if (optimizationTargets.Length < 2)
+            {
+                return 0;
+            }
+
+            int overlaps = 0;
 
             if (!_boundsInitialized)
             {
@@ -167,7 +172,13 @@ namespace AUIT.AdaptationObjectives.Objectives
         {
             float cost = 0f;
             elementsColliding = new List<int>();
-            
+
+            // Occlusion requires two elements, cost = 0 if only one element
+            if (optimizationTargets.Length < 2)
+            {
+                return cost;
+            }
+
             if (!_boundsInitialized)
             {
                 InitializeMeshBounds(optimizationTargets);
@@ -331,6 +342,16 @@ namespace AUIT.AdaptationObjectives.Objectives
             base.OnEnable();
 
             userContextSource = GetUserCameraContextSource();
+        }
+
+        public override float[] GetParameters()
+        {
+            return new float[] { weight };
+        }
+
+        public override void SetParameters(float[] parameters)
+        {
+            weight = parameters[0];
         }
     }
 }

@@ -16,10 +16,10 @@ namespace AUIT.AdaptationObjectives
         private float targetDistance = 0.3f;
 
         [SerializeField]
-        private float innerDistance = 0.1f;
+        private float optimalDistanceRange = 0.1f;
 
         [SerializeField]
-        private float outerDistance = 0.5f;
+        private float maximumCostDistanceRange = 0.5f;
 
         public override float CostFunction(Layout optimizationTarget, Layout initialLayout = null)
         {
@@ -35,7 +35,7 @@ namespace AUIT.AdaptationObjectives
             distanceVector.y = 0;
             float distance = Mathf.Abs(distanceVector.magnitude - targetDistance);
 
-            float cost = (distance - innerDistance) / outerDistance;
+            float cost = (distance - optimalDistanceRange) / maximumCostDistanceRange;
             cost = Mathf.Clamp01(cost);
             return cost;
         }
@@ -95,5 +95,17 @@ namespace AUIT.AdaptationObjectives
             }
         }
 
+        public override float[] GetParameters()
+        {
+            return new[] { weight, targetDistance, optimalDistanceRange, maximumCostDistanceRange };
+        }
+
+        public override void SetParameters(float[] parameters)
+        {
+            weight = parameters[0];
+            targetDistance = parameters[1];
+            optimalDistanceRange = parameters[2];
+            maximumCostDistanceRange = parameters[3];
+        }
     }
 }

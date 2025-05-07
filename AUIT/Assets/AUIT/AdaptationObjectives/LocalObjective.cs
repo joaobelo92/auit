@@ -55,7 +55,11 @@ namespace AUIT.AdaptationObjectives
             return userPoseContextSource;
         }
 
-        
+        public abstract float[] GetParameters();
+
+        public abstract void SetParameters(float[] parameters);
+
+
 
         #endregion
 
@@ -63,9 +67,9 @@ namespace AUIT.AdaptationObjectives
 
         protected virtual void Awake()
         {
-            if (ObjectiveHandler == null)
-                ObjectiveHandler = GetComponent<LocalObjectiveHandler>();
+            
         }
+
 
         protected virtual void OnEnable()
         {
@@ -76,6 +80,8 @@ namespace AUIT.AdaptationObjectives
 
         protected virtual void Start()
         {
+            if (ObjectiveHandler == null)
+                ObjectiveHandler = GetComponent<LocalObjectiveHandler>();
         }
 
         protected virtual void OnDisable()

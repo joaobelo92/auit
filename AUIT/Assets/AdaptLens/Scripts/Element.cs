@@ -4,10 +4,12 @@ using AUIT.AdaptationObjectives.Definitions;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Events;
 using static UnityEngine.GraphicsBuffer;
 
 public class Element : MonoBehaviour
 {
+    public UnityEvent inspectingElementEvent = new UnityEvent();
     private const string LAYER = "Element";
     private List<Material> m_mat;
     private List<Color> m_originalColors;
@@ -86,18 +88,27 @@ public class Element : MonoBehaviour
         List<float> multiObjectiveCosts;
         (objectiveCosts, multiObjectiveCosts) = AUIT.Solvers.Utils.ComputeCostsUnweighted(new List<Layout>() { layout }, localObjectives, globalObjectives);
         string debug = "";
-        for (int i = 0; i < localObjectives.Count; i++)
+
+        int index = AUIT.AUIT.Instance.gameObjectsToOptimize.IndexOf(gameObject);
+        List<LocalObjective> elementLocalObjectives = localObjectives[index];
+        List<float> elementLocalObjectiveCosts = objectiveCosts[0];
+        for (int i = 0; i < elementLocalObjectives.Count; i++)
         {
-            for (int j = 0; j < localObjectives[i].Count; j++)
-            {
-                debug += localObjectives[i][j].gameObject.name + ", " + localObjectives[i][j].GetType().Name + ": " + objectiveCosts[i][j] + "\n";
-            }
+            debug += elementLocalObjectives[i].GetType().Name + ": " + elementLocalObjectiveCosts[i] + "\n";
         }
         for (int i = 0; i < globalObjectives.Count; i++)
         {
             debug += "global, " + globalObjectives[i].GetType().Name + ": " + multiObjectiveCosts[i] + "\n";
         }
         Debug.Log(debug);
+    }
+
+    public void SetInspectingElement()
+    {
+        if (gameObject.activeInHierarchy)
+        {
+            inspectingElementEvent?.Invoke();
+        }
     }
 
     // Update is called once per frame
@@ -119,5 +130,7 @@ public class ElementEditor : Editor
         {
             element.DebugCost();
         }
+        
+        element.SetInspectingElement();
     }
 }
