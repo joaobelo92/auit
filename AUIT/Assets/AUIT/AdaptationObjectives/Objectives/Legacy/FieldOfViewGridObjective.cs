@@ -132,7 +132,17 @@ namespace AUIT.AdaptationObjectives.Objectives
             throw new System.NotImplementedException();
         }
 
-        
+        public override float[] GetParameters()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void SetParameters(float[] parameters)
+        {
+            throw new NotImplementedException();
+        }
+
+
         private (float, Vector2?) DistanceToClosestActiveCell(Vector2 screenPosition)
         {
             float cellWidth = Screen.width / (float)width;

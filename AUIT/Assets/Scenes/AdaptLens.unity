@@ -4306,7 +4306,7 @@ MonoBehaviour:
     backend: 0
     solver: SimulatedAnnealing
   solverSettings:
-    rid: 200611458889547823
+    rid: 582540232741093425
   developmentMode: 1
   gameObjectsToOptimize:
   - {fileID: 939544978}
@@ -4331,7 +4331,7 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: 200611458889547823
+    - rid: 582540232741093425
       type: {class: SimulatedAnnealingSolver, ns: AUIT.Solvers, asm: Assembly-CSharp}
       data:
         iterations: 1500
@@ -5644,6 +5644,7 @@ GameObject:
   - component: {fileID: 939544989}
   - component: {fileID: 939544992}
   - component: {fileID: 939544991}
+  - component: {fileID: 939544993}
   m_Layer: 7
   m_Name: instructions
   m_TagString: Untagged
@@ -5890,6 +5891,23 @@ MonoBehaviour:
   targetContextSource: {fileID: 0}
   offset: {x: 0, y: 0, z: 0}
   distanceThreshold: 2
+--- !u!114 &939544993
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 939544978}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 89d040b35c9140bbbbeb1e53f919e5f6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  weight: 0.5
+  userContextSource: {fileID: 475268783}
+  width: 5
+  height: 5
+  grid: 00000000000000000000000000000000000001010000000101
 --- !u!1 &948486870
 GameObject:
   m_ObjectHideFlags: 0

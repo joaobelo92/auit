@@ -97,7 +97,6 @@ public class StudyLogging : MonoBehaviour
     private string GetPolicyString(List<List<LocalObjective>> localObjectives, List<MultiElementObjective> multiElementObjectives)
     {
         string log = "";
-        int vi = 0;
         foreach (List<LocalObjective> objLocalObjectives in localObjectives)
         {
             foreach (LocalObjective localObjective in objLocalObjectives)
