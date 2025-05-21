@@ -1,11 +1,14 @@
 using UnityEngine;
 
-public class TransformContextSource : ContextSource<Transform>
+namespace AUIT.ContextSources
 {
-    public Transform contextSource;
-
-    public override Transform GetValue()
+    public class TransformContextSource : ContextSource<Transform>
     {
-        return contextSource;
+        public Transform contextSource;
+
+        public override Transform GetValue()
+        {
+            return contextSource;
+        }
     }
 }

@@ -12,19 +12,19 @@ namespace AUIT.AdaptationTriggers
 {
     public class OnRequestOptimizationTrigger : AdaptationTrigger
     {
-        public delegate void OnUserOptimize(List<List<LocalObjective>> localObjectives, List<MultiElementObjective> m_multiElementObjectives);
-        public OnUserOptimize onUserOptimize;
+        // public delegate void OnUserOptimize(List<List<LocalObjective>> localObjectives, List<MultiElementObjective> m_multiElementObjectives);
+        // public OnUserOptimize onUserOptimize;
 
         public bool debugCost;
         
-        public async void UserApplyStrategy()
+        /*public async void UserApplyStrategy()
         {
             if (onUserOptimize != null)
             {
                 onUserOptimize(Auit.gatherOptimizationData().objectives, Auit.MultiElementObjectives);
             }
             ApplyStrategy();
-        }
+        }*/
 
         public override async void ApplyStrategy()
         {
@@ -88,7 +88,7 @@ namespace AUIT.AdaptationTriggers
             OnRequestOptimizationTrigger trigger = (OnRequestOptimizationTrigger)target;
             if (GUILayout.Button("Request Optimization"))
             {
-                trigger.UserApplyStrategy();
+                trigger.ApplyStrategy();
             }
         }
     }

@@ -51,7 +51,7 @@ public class StudyLogging : MonoBehaviour
         m_policyView.onFilter += LogFilter;
         m_policyView.onSave += LogSave;
         m_policyView.onChangedScene += LogSceneChange;
-        m_userOptimizationTrigger.onUserOptimize += LogUserOptimize;
+        // m_userOptimizationTrigger.onUserOptimize += LogUserOptimize;
         m_paraHomeLoader.onChangedScene += LogSceneChange;
 
     }

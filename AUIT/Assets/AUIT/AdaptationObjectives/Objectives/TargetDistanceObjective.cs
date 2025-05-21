@@ -27,6 +27,8 @@ namespace AUIT.AdaptationObjectives
             {
                 Debug.LogError("DistanceIntervalObjective.CostFunction(): Target context source is not set.");
             }
+            
+            // Debug.Log(targetContextSource.name);
 
             Vector3 targetPosition = targetContextSource.GetValue().position;
             Vector3 currentPosition = optimizationTarget.Position;

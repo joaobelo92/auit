@@ -1,5 +1,7 @@
+using System;
 using System.Collections;
 using AUIT.Extras;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace AUIT.AdaptationTriggers
@@ -15,62 +17,43 @@ namespace AUIT.AdaptationTriggers
         [SerializeField]
         private float adaptationThreshold = 0.1f;
 
-        // [Header("Limit optimization run time")]
-        // [SerializeField]
-        // private float optimizationTimeout = 5.0f;
-        // private float optimizationTimeStart = 0.0f;
-
         private float previousCost;
 
         protected void Start()
         {
-            StartCoroutine(ApplyContinuously());
+            ApplyContinuously();
         }
 
-        private IEnumerator ApplyContinuously()
+
+        private async UniTaskVoid ApplyContinuously()
         {
-            yield return new WaitForSecondsRealtime(0.5f);
+            await UniTask.Delay(TimeSpan.FromSeconds(1), DelayType.Realtime);
 
-            while (true)
+            while (enabled)
             {
-                if (enabled == false)
-                {
-                    yield break;
-                }
-
                 ApplyStrategy();
 
-                yield return new WaitForSecondsRealtime(.5f);
+                await UniTask.Delay(TimeSpan.FromSeconds(0.5), DelayType.Realtime);
             }
         }
 
         private bool ShouldApplyAdaptation()
         {
-            bool costIsBelowOptiThreshold;
             previousCost = Auit.ComputeCost();
-            costIsBelowOptiThreshold = previousCost <= optimizationThreshold;
-
-            return enabled && !costIsBelowOptiThreshold;
+            return enabled && previousCost > optimizationThreshold;
         }
 
         public override async void ApplyStrategy()
         {
-            if (Auit.isActiveAndEnabled == false)
-                return;
-                
-            if (!ShouldApplyAdaptation())
+            if (!Auit.isActiveAndEnabled)
                 return;
 
-            // if (runAsynchronous)
-            // {
-            //     StartCoroutine(WaitForOptimizedLayout());
+            // if (!ShouldApplyAdaptation())
             //     return;
-            // }
 
             OptimizationResponse response = await Auit.OptimizeLayout();
 
             bool shouldAdapt = true;
-            print($"Threshold not working, need to add cost logic in Optimization Response");
             if (shouldAdapt)
                 Auit.Adapt(response.solutions);
         }

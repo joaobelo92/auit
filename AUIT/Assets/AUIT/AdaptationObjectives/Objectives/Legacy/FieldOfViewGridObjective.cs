@@ -50,12 +50,18 @@ namespace AUIT.AdaptationObjectives.Objectives
 
         public override float CostFunction(Layout optimizationTarget, Layout initialLayout = null)
         {
-            if (userContextSource == null || optimizationTarget == null)
+            if (userContextSource == null || optimizationTarget == null) 
+			{
+				Debug.LogError("No user context source or optimization target set for FOV Grid objective.");
                 return 1f;
+			}
 
             Camera cam = userContextSource.GetValue();
             if (cam == null)
+            {
+                Debug.LogError("No camera found in user context source for FOV Grid objective.");
                 return 1f;
+            }
 
             Vector3 viewportPos = cam.WorldToViewportPoint(optimizationTarget.Position);
 
@@ -109,13 +115,14 @@ namespace AUIT.AdaptationObjectives.Objectives
                 Vector3 screenCenter = new Vector3(
                     (selectedCell.x + 0.5f) * cellWidth,
                     (selectedCell.y + 0.5f) * cellHeight,
-                    userContextSource.GetValue().WorldToScreenPoint(optimizationTarget.Position).z
+                    0.5f
                 );
 
                 Vector3 worldTarget = userContextSource.GetValue().ScreenToWorldPoint(screenCenter);
 
                 Layout optimizedLayout = optimizationTarget.Clone();
                 optimizedLayout.Position = worldTarget;
+                Debug.LogWarning("OptimizationRule: Moving to active cell to " + worldTarget + " cell " + selectedCell);
                 return optimizedLayout; 
             }
             else
