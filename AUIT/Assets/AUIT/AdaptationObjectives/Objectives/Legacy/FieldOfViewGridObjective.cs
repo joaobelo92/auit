@@ -79,7 +79,8 @@ namespace AUIT.AdaptationObjectives.Objectives
                 return 0f;
 
             float distance = DistanceToClosestActiveCell(viewportPos).Item1;
-            float maxViewportDist = Mathf.Sqrt(1f * 1f + 1f * 1f); // Diagonal of viewport
+            float maxViewportDist = Mathf.Sqrt(2); // Diagonal of viewport
+            Debug.Log(Mathf.Clamp01(distance / (maxViewportDist / 3f)));
             return Mathf.Clamp01(distance / (maxViewportDist / 3f));
 
         }

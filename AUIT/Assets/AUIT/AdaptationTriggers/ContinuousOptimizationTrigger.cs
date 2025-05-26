@@ -27,13 +27,21 @@ namespace AUIT.AdaptationTriggers
 
         private async UniTaskVoid ApplyContinuously()
         {
-            await UniTask.Delay(TimeSpan.FromSeconds(1), DelayType.Realtime);
-
-            while (enabled)
+            try
             {
-                ApplyStrategy();
+                var token = this.GetCancellationTokenOnDestroy();
+                await UniTask.Delay(TimeSpan.FromSeconds(1), DelayType.Realtime, PlayerLoopTiming.Update, token);
 
-                await UniTask.Delay(TimeSpan.FromSeconds(0.5), DelayType.Realtime);
+                while (enabled)
+                {
+                    ApplyStrategy();
+
+                    await UniTask.Delay(TimeSpan.FromSeconds(0.4), DelayType.Realtime, PlayerLoopTiming.Update, token);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                
             }
         }
 
@@ -48,8 +56,8 @@ namespace AUIT.AdaptationTriggers
             if (!Auit.isActiveAndEnabled)
                 return;
 
-            // if (!ShouldApplyAdaptation())
-            //     return;
+            if (!ShouldApplyAdaptation())
+                return;
 
             OptimizationResponse response = await Auit.OptimizeLayout();
 

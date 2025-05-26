@@ -410,55 +410,34 @@ namespace AUIT
 
         public float ComputeElementCost(GameObject element, Layout l = null)
         {
-            l ??= _layout;
-
-
-            if (!isActiveAndEnabled)
-            {
-                Debug.LogError($"[AdaptationManager.ComputeCost()]: " +
-                               $"AdaptationManager on " +
-                               $"{gameObject.name} is disabled!");
-                return 0.0f;
-            }
-
-            LocalObjectiveHandler currentHandler = element.GetComponent<LocalObjectiveHandler>();
-            if (currentHandler.Objectives.Count == 0)
-            {
-                /*
-                Debug.LogWarning($"[AdaptationManager.ComputeCost()]: " +
-                                 $"Unable to find any objectives on " +
-                                 $"{element.name}...");
-                */
-                return 0.0f;
-            }
-
-
-            // Get layout of all elements 
-            Layout[] lAll = gatherLayouts().ToArray();
-            // Get layout of target element
-            Layout lElement = lAll[gameObjectsToOptimize.IndexOf(element)];
             
+            (List<List<LocalObjective>> objectives, List<Layout> layouts) = gatherOptimizationData();
 
-            float cost = currentHandler.Objectives.Sum(
-                objective => objective.Weight * objective.CostFunction(l));
-            float elementWeightSum = currentHandler.Objectives.Sum(objective => objective.Weight);
+            float cost = 0;
+            for (int i = 0; i < layouts.Count; i++)
+            {
+                for (int j = 0; j < objectives[i].Count; j++)
+                {
+                    float objectiveCost = objectives[i][j].Weight * objectives[i][j].CostFunction(layouts[i]);
+                    cost += objectiveCost;
+                }
+            }
 
+            // TODO
             // Accounting for global objectives
-            cost += MultiElementObjectives.Sum(
-                objective => objective.Weight * objective.CostFunction(l, lAll, lElement));
-            elementWeightSum += MultiElementObjectives.Sum(objective => objective.Weight);
+            // cost += MultiElementObjectives.Sum(
+            //     objective => objective.Weight * objective.CostFunction(l, lAll, lElement));
+            // elementWeightSum += MultiElementObjectives.Sum(objective => objective.Weight);
 
-            if (elementWeightSum >= 0)
-            {
-                cost /= elementWeightSum;
-            }
-
-            
+            // if (elementWeightSum >= 0)
+            // {
+            //     cost /= elementWeightSum;
+            // }
 
             return cost;
         }
 
-        public float ComputeCost(Layout l = null, bool verbose = false)
+        /*public float ComputeCost(Layout l = null, bool verbose = false)
         {
             l ??= _layout;
             
@@ -499,8 +478,19 @@ namespace AUIT
             
             cost /= gameObjectsToOptimize.Count;
             return cost;
+        }*/
+
+        public float ComputeCost(Layout l = null, bool verbose = false)
+        {
+            float cost = 0;
+            foreach (var go in gameObjectsToOptimize)
+            {
+                cost += ComputeElementCost(go);
+            }
+
+            return cost;
         }
-        
+
         private bool _isSelectionStrategyNotNull;
 
         #region Adaptation Logic
@@ -508,7 +498,7 @@ namespace AUIT
         // necessary as property transitions might require additional logic in the future
         // (e.g., pareto optimal adaptations). It will be necessary to support property transitions
         // with more responsibilities such as picking from various layouts
-        
+
         public void Adapt(UIConfiguration[] layouts)
         {
             if (!isActiveAndEnabled)
@@ -517,7 +507,7 @@ namespace AUIT
                                $"{gameObject.name} is disabled!");
                 return;
             }
-            
+
             // If global property transition logic exists, execute it
             if (_isSelectionStrategyNotNull)
             {
@@ -561,7 +551,7 @@ namespace AUIT
             }
         }
         #endregion
-        
+
         #region LayoutSelectionStrategy
         public void RegisterSelectionStrategy(SelectionStrategy selectionStrategy)
         {
@@ -577,7 +567,7 @@ namespace AUIT
             _selectionStrategy = null;
             _isSelectionStrategyNotNull = false;
         }
-        
+
         #endregion
 
         #region Solver server communication
@@ -614,11 +604,11 @@ namespace AUIT
 
         public List<List<float>> EvaluateLayouts(EvaluationRequest evaluationRequest)
         {
-            _layoutJob = evaluationRequest.layouts; 
+            _layoutJob = evaluationRequest.layouts;
             _job = true;
-            
-            while (_job) {} 
-            
+
+            while (_job) {}
+
             return _jobResult;
         }
 
@@ -640,13 +630,13 @@ namespace AUIT
             MultiElementObjectives.Remove(multiElementObjective);
         }
     }
-    
+
     public enum Backend
     {
         Unity,
         Python
     }
-    
+
     public enum SolverUnity
     {
         SimulatedAnnealing,
@@ -657,14 +647,14 @@ namespace AUIT
     {
         GeneticAlgorithm
     }
-    
+
     [Serializable]
     public class BackendSolver
     {
         public Backend backend;
         public string solver;
     }
-    
+
     [CustomPropertyDrawer(typeof(BackendSolver))]
     public class BackendSolverDrawer : PropertyDrawer
     {
