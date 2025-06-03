@@ -8,33 +8,34 @@ namespace AUIT.PropertyTransitions
     {
         // TODO: Add mechanism to search for context sources 
         // TODO: Run adapt only if different from current coordinate system
+        protected override TransitionType TransitionType => TransitionType.Position;
         
         public TransformContextSource TorsoContextSource;
         public TransformContextSource HeadContextSource;
         
+        public GameObject debugObject;
+        
         public override void Adapt(Layout layout)
         {
-            Debug.Log("changing coordinate system to " + layout.CoordinateSystem);
+            
             switch (layout.CoordinateSystem)
             {
                 case CoordinateSystem.World:
-                    gameObject.transform.SetParent(null, worldPositionStays: true);
+                    // debugObject.GetComponent<Renderer>().material.color = Color.green;
+                    gameObject.transform.SetParent(null);
                     break;
 
                 case CoordinateSystem.Head:
                     // Assuming a head context source is available
-                    gameObject.transform.SetParent(HeadContextSource.GetValue(), worldPositionStays: true);
+                    // debugObject.GetComponent<Renderer>().material.color = Color.red;
+                    Debug.Log("changing coordinate system to " + HeadContextSource.GetValue().name);
+                    gameObject.transform.SetParent(HeadContextSource.GetValue());
                     break;
 
                 case CoordinateSystem.Torso:
                     // Assuming a torso context source is available
-                    gameObject.transform.SetParent(TorsoContextSource.GetValue(), worldPositionStays: true);
+                    gameObject.transform.SetParent(TorsoContextSource.GetValue());
                     break;
-
-                default:
-                    Debug.LogWarning("Unknown coordinate system specified in layout.");
-                    break;
-                    
             }
         }
     }

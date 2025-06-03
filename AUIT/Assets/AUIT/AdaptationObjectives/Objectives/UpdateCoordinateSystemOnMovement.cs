@@ -44,9 +44,9 @@ namespace AUIT.AdaptationObjectives.Objectives
                 currentPosition = position;
             }
         
-            _moving = distance < walkingSpeedThreshold * movementHistoryBufferSize * movementHistoryUpdateRate;
+            _moving = distance > walkingSpeedThreshold * (movementHistoryBufferSize-1) * movementHistoryUpdateRate;
             
-            Debug.Log(distance);
+            Debug.Log(distance + " " + _moving + " " + walkingSpeedThreshold * movementHistoryBufferSize * movementHistoryUpdateRate);
 
             if (_moving) 
                 return optimizationTarget.CoordinateSystem == coordinateSystemWhileMoving ? 0 : 1;

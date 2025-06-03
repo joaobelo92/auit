@@ -19,31 +19,7 @@ namespace AUIT.AdaptationObjectives.Objectives
 
         [SerializeField]
         private float outerDistance = 0.3f;
-
-        public override float CostFunction(Layout optimizationTarget, Layout[] optimizationTargets, Layout initialLayout = null)
-        {
-            float cost = 0;
-            float numDist = 0;
-
-            int targetIndex = Array.IndexOf(optimizationTargets, initialLayout);
-
-            for (int i = 0; i < optimizationTargets.Length; i++)
-            {
-                if (i != targetIndex)
-                {
-                    Layout layout = optimizationTargets[i];
-                    float distance = (optimizationTarget.Position - layout.Position).magnitude;
-                    cost += Mathf.Clamp01((Mathf.Abs(distance - targetDistance) - innerDistance) / outerDistance);
-                    numDist++;
-                }
-            }
-
-            float normalizationFactor = Mathf.Max(1, numDist);
-            Debug.Log(cost);
-            return cost / normalizationFactor;
-        }
-
-
+        
         public override float CostFunction(Layout[] optimizationTargets, Layout initialLayout = null)
         {
             float cost = 0f;

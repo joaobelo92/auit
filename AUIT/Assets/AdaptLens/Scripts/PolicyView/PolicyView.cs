@@ -203,7 +203,8 @@ public class PolicyView : MonoBehaviour
         for (int si = 0; si < m_numSamples; si++)
         {
             Layout[][] sampleLayouts = m_layouts[si];
-            GameObject[] optimizedObjs = auit.GetObjectsCopy();
+            // GameObject[] optimizedObjs = auit.GetObjectsCopy();
+            GameObject[] optimizedObjs = new GameObject[sampleLayouts.Length];
             foreach (GameObject obj in optimizedObjs)
             {
                 obj.transform.SetParent(transform);
@@ -667,7 +668,7 @@ public class PolicyView : MonoBehaviour
 
         int numContexts = m_contexts.Count;
 
-        m_localObjectives = auit.gatherOptimizationData().objectives;
+        m_localObjectives = auit.GetLayoutsAndLocalObjectives().Item1;
         m_multiElementObjectives = auit.MultiElementObjectives;
         int numLocalObjectives = 0;
         foreach (List<AUIT.AdaptationObjectives.LocalObjective> objectives in m_localObjectives)
@@ -718,7 +719,7 @@ public class PolicyView : MonoBehaviour
                 List<List<float>> localObjectiveCosts;
                 List<float> multiObjectiveCosts;
                 (localObjectiveCosts, multiObjectiveCosts) = Utils.ComputeCostsUnweighted(response.suggested.elements.ToList(), 
-                    auit.gatherOptimizationData().objectives, auit.MultiElementObjectives);
+                    auit.GetLayoutsAndLocalObjectives().Item1, auit.MultiElementObjectives);
                 // si = sample 
                 // ci = context 
                 // costi = objective index

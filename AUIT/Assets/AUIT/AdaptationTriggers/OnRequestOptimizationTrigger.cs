@@ -52,7 +52,7 @@ namespace AUIT.AdaptationTriggers
         {
             print("Debugging");
             //float cost = CostFunction(layout);
-            List<List<LocalObjective>> localObjectives = Auit.gatherOptimizationData().objectives;
+            List<List<LocalObjective>> localObjectives = Auit.GetLayoutsAndLocalObjectives().Item1;
             List<MultiElementObjective> globalObjectives = Auit.MultiElementObjectives;
             List<List<float>> objectiveCosts;
             List<float> multiObjectiveCosts;

@@ -82,7 +82,8 @@ public class Element : MonoBehaviour
     {
         Layout layout = new Layout("debug", transform);
         //float cost = CostFunction(layout);
-        List<List<LocalObjective>> localObjectives = AUIT.AUIT.Instance.gatherOptimizationData().objectives;
+        List<List<LocalObjective>> localObjectives = AUIT.AUIT.Instance.GetLayoutsAndLocalObjectives().Item1;
+        // List<List<LocalObjective>> localObjectives = AUIT.AUIT.Instance.GetCurrentLayout().objectives;
         List<MultiElementObjective> globalObjectives = AUIT.AUIT.Instance.MultiElementObjectives;
         List<List<float>> objectiveCosts;
         List<float> multiObjectiveCosts;

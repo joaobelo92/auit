@@ -59,7 +59,7 @@ namespace AUIT.AdaptationObjectives
 
         public abstract void SetParameters(float[] parameters);
 
-
+        public GameObject TargetGameObject => gameObject;
 
         #endregion
 

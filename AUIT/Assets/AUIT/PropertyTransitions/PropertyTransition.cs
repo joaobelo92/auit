@@ -4,10 +4,21 @@ using UnityEngine;
 
 namespace AUIT.PropertyTransitions
 {
+    public enum TransitionType 
+    {
+        Position,
+        Rotation,
+        Scale,
+        CoordinateSystem
+    }
+    
     public abstract class PropertyTransition : MonoBehaviour
     {
         [HideInInspector]
         protected AUIT Auit;
+        
+        protected abstract TransitionType TransitionType { get; }
+        public TransitionType GetTransitionType() => TransitionType;
         
         // TODO: refactor to work with local handler
         protected virtual void Awake()
@@ -36,4 +47,5 @@ namespace AUIT.PropertyTransitions
         
         public abstract void Adapt(Layout layout);
     }
+    
 }

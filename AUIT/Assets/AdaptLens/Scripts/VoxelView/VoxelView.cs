@@ -263,26 +263,30 @@ public class VoxelView : MonoBehaviour
                 }
             }
         }
-        int[] nonDominated = m_auit.ComputeElementPareto(m_element, layouts);
+        // int[] nonDominated = m_auit.ComputeElementPareto(m_element, layouts);
         foreach (Voxel voxel in m_voxels)
         {
             voxel.gameObject.SetActive(false);
         }
-        foreach (int i in nonDominated)
-        {
-            int z = i % m_voxelDims.z;
-            int y = (i / m_voxelDims.z) % m_voxelDims.y;
-            int x = i / (m_voxelDims.y * m_voxelDims.z);
-            Voxel paretoVoxel = m_voxels[x, y, z];
-            paretoVoxel.gameObject.SetActive(true);
-            Layout layout = new Layout(
-                elementObjectiveHandler.Id,
-                m_element.transform
-                );
-            layout.Position = paretoVoxel.transform.position;
-            float cost = m_auit.ComputeElementCost(m_element, layout);
-            paretoVoxel.SetColor(m_costGradient.Evaluate(cost));
-        }
+        // foreach (int i in nonDominated)
+        // {
+        //     int z = i % m_voxelDims.z;
+        //     int y = (i / m_voxelDims.z) % m_voxelDims.y;
+        //     int x = i / (m_voxelDims.y * m_voxelDims.z);
+        //     Voxel paretoVoxel = m_voxels[x, y, z];
+        //     paretoVoxel.gameObject.SetActive(true);
+        //     Layout layout = new Layout(
+        //         elementObjectiveHandler.Id,
+        //         m_element.transform
+        //         );
+        //     layout.Position = paretoVoxel.transform.position;
+        //     // float cost = m_auit.ComputeElementCost(m_element, layout);
+        //     
+        //     // TODO
+        //     // float cost = m_auit.ComputeCost(new List<Layout>{}, layout);
+        //     float cost = 0f;
+        //     paretoVoxel.SetColor(m_costGradient.Evaluate(cost));
+        // }
     }
 
     public void VisualizeCosts()
@@ -318,7 +322,9 @@ public class VoxelView : MonoBehaviour
                     Voxel voxel = m_voxels[x, y, z];
                     Vector3 position = voxel.transform.position;
                     layout.Position = position;
-                    float cost = m_auit.ComputeElementCost(m_element, layout);
+                    // TODO
+                    // float cost = m_auit.ComputeCost(new List<Layout>{}, layout);
+                    float cost = 0f;
                     costs.Add(cost);
                     voxel.gameObject.SetActive(true);
                     voxel.SetColor(m_costGradient.Evaluate(cost));

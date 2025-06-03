@@ -39,8 +39,6 @@ namespace AUIT.AdaptationObjectives
         }
 
         #endregion
-
-        public abstract float CostFunction(Layout target, Layout[] optimizationTargets, Layout initialLayout = null);
         
         public abstract float CostFunction(Layout[] optimizationTargets, Layout initialLayout = null);
 

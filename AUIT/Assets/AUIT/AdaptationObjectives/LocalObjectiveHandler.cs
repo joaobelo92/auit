@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using AUIT.AdaptationObjectives.Definitions;
 using AUIT.PropertyTransitions;
 using UnityEngine;
@@ -15,13 +16,7 @@ namespace AUIT.AdaptationObjectives
         }
 
         public string Id { get; } = Guid.NewGuid().ToString();
-
-        //private readonly List<Type> _objectiveTypes = new ();
-
-        /// <summary>
-        /// List of objectives that this handler will manage
-        /// Can't see yet why we will need a setter
-        /// </summary>
+        
         public List<LocalObjective> Objectives { get; } = new ();
 
         private readonly List<OptimizationTarget> _optimizationTargets = new ();
@@ -31,17 +26,7 @@ namespace AUIT.AdaptationObjectives
             if (Objectives.Contains(objective))
                 return;
 
-            /*
-            if (_objectiveTypes.Contains(objective.GetType()))
-            {
-                Debug.LogWarning($"A objective of type {objective.GetType()} has already been added");
-                Destroy(objective);
-                return;
-            }
-            */
-
             Objectives.Add(objective);
-            //_objectiveTypes.Add(objective.GetType());
             RegisterOptimizationTarget(objective.OptimizationTarget);
         }
 
@@ -69,10 +54,31 @@ namespace AUIT.AdaptationObjectives
 
         #region PropertyTransitionLogic
 
+        /// <summary>
+        /// Initiates a layout transition by invoking all registered <see cref="PropertyTransition"/>s.
+        /// </summary>
+        /// <param name="layout">The <see cref="Layout"/> containing target state information for the transition.</param>
+        /// <remarks>
+        /// This method performs the following steps:
+        /// <list type="number">
+        ///   <item>Checks if any property transitions are available; if not, the method exits early.</item>
+        ///   <item>
+        ///     Sorts the transitions so that those of type <see cref="TransitionType.CoordinateSystem"/>
+        ///     are executed before other types. This ensures that any coordinate system-related
+        ///     changes are applied first, which may be required for subsequent transitions to function correctly.
+        ///   </item>
+        ///   <item>Iterates over each <see cref="PropertyTransition"/> and calls its <c>Adapt()</c> method, passing the layout.</item>
+        /// </list>
+        /// </remarks>
         public void Transition(Layout layout)
         {
             if (_propertyTransitions == null || _propertyTransitions.Length == 0)
                 return;
+            
+            _propertyTransitions = _propertyTransitions
+                .OrderByDescending(t => t.GetTransitionType() == TransitionType.CoordinateSystem)
+                .ToArray();
+            
             foreach (PropertyTransition propertyTransition in _propertyTransitions)
             {
                 propertyTransition.Adapt(layout);

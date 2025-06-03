@@ -47,10 +47,6 @@ namespace AUIT
 
         public List<GameObject> gameObjectsToOptimize;
 
-        public bool m_initPlacement = true;
-        public Transform m_initAnchor;
-        public Vector3 m_initOffset;
-
         private (GameObject, LocalObjectiveHandler)[] _gameObjects;
 
         
@@ -130,7 +126,7 @@ namespace AUIT
             int size = gameObjectsToOptimize.Count;
             _gameObjects = new (GameObject, LocalObjectiveHandler)[size];
             GameObject[] gameObjectsArray = gameObjectsToOptimize.ToArray();
-            // Collect  adaptation objectives from the game objects to optimize
+            // Collect adaptation objectives from the game objects to optimize
             for (int i = 0; i < _gameObjects.Length; i++)
             {
                 LocalObjectiveHandler goLocalObjectiveHandler = gameObjectsArray[i]
@@ -183,42 +179,52 @@ namespace AUIT
         {
             _propertyTransitions.Remove(propertyTransition);
         }
-        
-        public (List<List<LocalObjective>> objectives, List<Layout> layouts) gatherOptimizationData()
+
+        /// <summary>
+        /// Retrieves all the local adaptation objectives and their corresponding layouts.
+        /// </summary>
+        /// <returns>A tuple consisting of a list of lists of local objectives and a list of layouts.
+        /// Each inner list of local objectives corresponds to a layout at the same index.</returns>
+        public (List<List<LocalObjective>>, List<Layout>) GetLayoutsAndLocalObjectives(bool currentLayout = true)
         {
-            // The adaptation manager is responsible for knowing the layout 
-            // (e.g. what to optimize). The properties to be optimized should 
-            // be obtained dynamically in the future, but for now we hardcode 
-            // the properties we want to optimize.
             List<List<LocalObjective>> objectives = new List<List<LocalObjective>>();
-            List<Layout> layouts = gatherLayouts();
-
-            for (int i = 0; i < _gameObjects.Length; i++)
-            {
-                if (_gameObjects[i].Item2 != null)
-                    objectives.Add(_gameObjects[i].Item2.Objectives);
-                
-            }
-            return (objectives, layouts);
-        }
-
-        public List<Layout> gatherLayouts()
-        {
             List<Layout> layouts = new List<Layout>();
+            
             for (int i = 0; i < _gameObjects.Length; i++)
             {
                 if (_gameObjects[i].Item2 != null)
                 {
-                    layouts.Add(new
-                        Layout(
-                            _gameObjects[i].Item2.Id,
-                            _gameObjects[i].Item1.transform
-                        ));
+                    // Avoid unnecessary overhead if computing a specific layout
+                    if (currentLayout)
+                        layouts.Add(new
+                            Layout(
+                                _gameObjects[i].Item2.Id,
+                                _gameObjects[i].Item1.transform
+                            ));
+                    
+                    objectives.Add(_gameObjects[i].Item2.Objectives);
                 }
             }
-            return layouts;
+            
+            return (objectives, layouts);
         }
 
+        /// <summary>
+        /// Asynchronously computes the optimal layout for a set of UI elements managed by the <see cref="AdaptationManager"/>.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="UniTask{OptimizationResponse}"/> representing the asynchronous operation,
+        /// containing the optimization result if successful; otherwise, <c>null</c>.
+        /// </returns>
+        /// <remarks>
+        /// This method performs the following steps:
+        /// <list type="number">
+        /// <item>Checks if the component is active and enabled; logs an error and returns <c>null</c> if not.</item>
+        /// <item>Gathers local objectives and current layouts from the UI elements.</item>
+        /// <item>If no objectives are found, logs a warning and returns <c>null</c>.</item>
+        /// <item>Uses an asynchronous solver to compute the optimal layout solution.</item>
+        /// </list>
+        /// </remarks>
         public async UniTask<OptimizationResponse> OptimizeLayout()
         {
             if (isActiveAndEnabled == false)
@@ -229,30 +235,7 @@ namespace AUIT
                 return null;
             }
 
-            // Initialize placement to in front of user camera
-            if (m_initPlacement && m_initAnchor != null)
-            {
-                Matrix4x4 anchorMatrix = Matrix4x4.TRS(
-                        m_initAnchor.position,
-                        m_initAnchor.rotation,
-                        Vector3.one
-                    );
-                Vector3 initPosition = anchorMatrix.MultiplyPoint3x4(m_initOffset);
-                Vector3 direction = m_initAnchor.position - initPosition;
-                Vector3 flatDirection = new Vector3(direction.x, 0, direction.z);
-                Quaternion initRotation = Quaternion.identity;
-                if (flatDirection.magnitude > 0.001f)
-                {
-                    initRotation = Quaternion.LookRotation(flatDirection);
-                }
-                foreach (GameObject obj in gameObjectsToOptimize)
-                {
-                    obj.transform.position = initPosition;
-                    obj.transform.rotation = initRotation;
-                }
-            }
-
-            (List<List<LocalObjective>> objectives, List<Layout> layouts) = gatherOptimizationData();
+            (List<List<LocalObjective>> objectives, List<Layout> layouts) = GetLayoutsAndLocalObjectives();
 
             if (objectives.Count == 0)
             {
@@ -262,158 +245,30 @@ namespace AUIT
                 return null;
             }
 
-            //Debug.Log($"Invoking solver: {backendSolver.solver}");
             (OptimizationResponse response, _, _) = await _asyncSolver.
                 OptimizeCoroutine(layouts, objectives, MultiElementObjectives);
 
-            //Debug.Log($"First res: {response.suggested.elements[0].Position}");
             return response;
         }
-
-        public int NumObjectives
+        
+        /// <summary>
+        /// Computes the layout cost for a given layout configuration.
+        /// </summary>
+        /// <param name="layouts">Optional solution to compute cost for. If null, use the current layout.</param>
+        /// <param name="verbose">If true, enables detailed logging for debugging or analysis.</param>
+        /// <returns>The total computed cost as a float value.</returns>
+        public float ComputeCost(List<Layout> layouts = null, bool verbose = false)
         {
-            get
-            {
-                if (!isActiveAndEnabled)
-                {
-                    Debug.LogError($"[AdaptationManager.ComputeCost()]: " +
-                                   $"AdaptationManager on " +
-                                   $"{gameObject.name} is disabled!");
-                    return 0;
-                }
-
-                int numObjectives = 0;
-                foreach (var element in gameObjectsToOptimize)
-                {
-                    LocalObjectiveHandler currentHandler = element.GetComponent<LocalObjectiveHandler>();
-                    numObjectives += currentHandler.Objectives.Count;
-                }
-
-                return numObjectives;
-
-            }
-        }
-
-        public List<(string, List<LocalObjective>)> GetLocalObjectives()
-        {
-            List<(string, List<LocalObjective>)> objectives = new List<(string, List<LocalObjective>)>();
-            foreach (var element in gameObjectsToOptimize)
-            {
-                List<LocalObjective> objObjectives = new List<LocalObjective>();
-                LocalObjectiveHandler currentHandler = element.GetComponent<LocalObjectiveHandler>();
-                objObjectives.AddRange(currentHandler.Objectives);
-                objectives.Add((element.name, objObjectives));
-            }
-            return objectives;
-        }
-
-        public GameObject[] GetObjectsCopy()
-        {
-            GameObject[] copy = new GameObject[gameObjectsToOptimize.Count];
-            for (int i = 0; i < gameObjectsToOptimize.Count; i++)
-            {
-                copy[i] = Instantiate(gameObjectsToOptimize[i]);
-            }
-            return copy;
-        }
-
-        public NDarray IsParetoDominated(NDarray scores)
-        {
-            // Get number of points
-            int nPoints = scores.shape[0];
-
-            // Initialize array of indices of efficient points
-            NDarray isEfficient = np.arange(nPoints);
-
+            (List<List<LocalObjective>> objectives, List<Layout> l) = GetLayoutsAndLocalObjectives(layouts == null);
             
-
-            // Next index in the isEfficient array to search for
-            int nextPointIndex = 0;
-
-            while (nextPointIndex < scores.shape[0])
+            // If no list of layouts is provided, compute the cost of current configuration
+            if (layouts == null)
             {
-                // Create mask for non-dominated points
-                // Check if any dimension is less than the current point (which would mean it's not dominated)
-                NDarray nondominatedPointMask = np.any(scores < scores[nextPointIndex], 1);
-
-                // Set the current point as non-dominated
-                nondominatedPointMask[nextPointIndex] = np.array(true);
-
-                // Remove dominated points
-                isEfficient = isEfficient[nondominatedPointMask];
-                scores = scores[nondominatedPointMask];
-
-                // Update next point index
-                nextPointIndex = (int)np.sum(nondominatedPointMask[":" + nextPointIndex.ToString()]) + 1;
+                layouts = l;
             }
-
-            return isEfficient;
-        }
-
-        // Find pareto-efficient layouts
-        public int[] ComputePareto(Layout[] ls)
-        {
-            int numSamples = ls.Length;
-            int numObjectives = NumObjectives;
-            NDarray scores = np.zeros((numSamples, numObjectives));
-            Debug.Log($"{numSamples} samples, {numObjectives} objectives");
-
-            for (int si = 0; si < numSamples; si++)
-            {
-                Layout l = ls[si];
-                int oi = 0;
-                foreach (var element in gameObjectsToOptimize)
-                {
-                    LocalObjectiveHandler currentHandler = element.GetComponent<LocalObjectiveHandler>();
-                    foreach (var objective in currentHandler.Objectives)
-                    {
-                        scores[si, oi++] = np.array(objective.CostFunction(l));
-                    }
-                }
-            }
-
-            NDarray isEfficient = IsParetoDominated(scores);
-            return isEfficient.GetData<int>();
-        }
-
-        public int[] ComputeElementPareto(GameObject element, Layout[] ls)
-        {
-            int numSamples = ls.Length;
-            int numObjectives = NumObjectives;
-            NDarray scores = np.zeros((numSamples, numObjectives));
-            Debug.Log($"{numSamples} samples, {numObjectives} objectives");
-
-            // Get layout of all elements 
-            Layout[] lAll = gatherLayouts().ToArray();
-
-            // Get layout of target element
-            Layout lElement = lAll[gameObjectsToOptimize.IndexOf(element)];
-
-            LocalObjectiveHandler currentHandler = element.GetComponent<LocalObjectiveHandler>();
-            for (int si = 0; si < numSamples; si++)
-            {
-                Layout l = ls[si];
-                int oi = 0;
-                foreach (var objective in currentHandler.Objectives)
-                {
-                    scores[si, oi++] = np.array(objective.CostFunction(l));
-                }
-                foreach (var objective in MultiElementObjectives)
-                {
-                    scores[si, oi++] = np.array(objective.CostFunction(l, lAll, lElement));
-                }
-            }
-
-            NDarray isEfficient = IsParetoDominated(scores);
-            return isEfficient.GetData<int>();
-        }
-
-        public float ComputeElementCost(GameObject element, Layout l = null)
-        {
             
-            (List<List<LocalObjective>> objectives, List<Layout> layouts) = gatherOptimizationData();
-
             float cost = 0;
+            
             for (int i = 0; i < layouts.Count; i++)
             {
                 for (int j = 0; j < objectives[i].Count; j++)
@@ -423,70 +278,8 @@ namespace AUIT
                 }
             }
 
-            // TODO
-            // Accounting for global objectives
-            // cost += MultiElementObjectives.Sum(
-            //     objective => objective.Weight * objective.CostFunction(l, lAll, lElement));
-            // elementWeightSum += MultiElementObjectives.Sum(objective => objective.Weight);
-
-            // if (elementWeightSum >= 0)
-            // {
-            //     cost /= elementWeightSum;
-            // }
-
-            return cost;
-        }
-
-        /*public float ComputeCost(Layout l = null, bool verbose = false)
-        {
-            l ??= _layout;
-            
-            if (!isActiveAndEnabled)
-            {
-                Debug.LogError($"[AdaptationManager.ComputeCost()]: " +
-                               $"AdaptationManager on " +
-                               $"{gameObject.name} is disabled!");
-                return 0.0f;
-            }
-            
-            // List<List<LocalObjective>> objectives = new List<List<LocalObjective>>();
-            // List<Layout> layouts = new List<Layout>();
-            
-            // TODO: Decide global objectives
-            // foreach (var element in gameObjectsToOptimize)
-            // {
-            //     AUIT auit = element.GetComponent<AUIT>();
-            //     globalObjectives.Add(auit._localObjectiveHandler.Objectives);
-            //     layouts.Add(auit._layout);
-            // }
-            
-            float cost = 0;
-            foreach (var element in gameObjectsToOptimize)
-            {
-                LocalObjectiveHandler currentHandler = element.GetComponent<LocalObjectiveHandler>();
-                float elementCostSum = currentHandler.Objectives.Sum(
-                    objective => objective.Weight * objective.CostFunction(l));
-                float elementWeightSum = currentHandler.Objectives.Sum(objective => objective.Weight);
-                if (elementWeightSum >= 0)
-                {
-                    elementCostSum /= elementWeightSum;
-                }
-                cost += elementCostSum;
-            }
-
-            // TODO: Global objective cost
-            
-            cost /= gameObjectsToOptimize.Count;
-            return cost;
-        }*/
-
-        public float ComputeCost(Layout l = null, bool verbose = false)
-        {
-            float cost = 0;
-            foreach (var go in gameObjectsToOptimize)
-            {
-                cost += ComputeElementCost(go);
-            }
+            cost += MultiElementObjectives.Sum(
+                objective => objective.Weight * objective.CostFunction(layouts.ToArray()));
 
             return cost;
         }
@@ -494,11 +287,18 @@ namespace AUIT
         private bool _isSelectionStrategyNotNull;
 
         #region Adaptation Logic
-        // When an adaptation is invoked, the manager will contain the method for doing so. This is
-        // necessary as property transitions might require additional logic in the future
-        // (e.g., pareto optimal adaptations). It will be necessary to support property transitions
-        // with more responsibilities such as picking from various layouts
-
+        
+        /// <summary>
+        /// Applies UI layout adaptations based on the provided layout configurations.
+        /// </summary>
+        /// <param name="layouts">An array of <see cref="UIConfiguration"/> representing the layout solutions 
+        /// to be applied to the UI elements.</param>
+        /// <remarks>
+        /// This method checks whether the <see cref="AdaptationManager"/> is active and enabled before proceeding.
+        /// If a selection strategy is defined, it delegates the adaptation to that strategy.
+        /// Otherwise, it applies the first layout configuration directly to the associated UI elements, 
+        /// logging a warning if multiple layouts are provided without a selection strategy.
+        /// </remarks>
         public void Adapt(UIConfiguration[] layouts)
         {
             if (!isActiveAndEnabled)
@@ -508,7 +308,7 @@ namespace AUIT
                 return;
             }
 
-            // If global property transition logic exists, execute it
+            // If a selection strategy exists, execute it
             if (_isSelectionStrategyNotNull)
             {
                 _selectionStrategy.Adapt(layouts);

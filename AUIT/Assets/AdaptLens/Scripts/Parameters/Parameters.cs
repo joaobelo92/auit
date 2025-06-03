@@ -87,8 +87,10 @@ public class Parameters : MonoBehaviour
         m_parameters.Clear();
 
         // Local objectives
-        List<(string, List<LocalObjective>)> objectives = m_auit.GetLocalObjectives();
-        foreach ((string obj, List<LocalObjective> objs) in objectives)
+        // List<(string, List<LocalObjective>)> objectives = m_auit.GetLocalObjectives();
+
+        List<List<LocalObjective>> objectives = m_auit.GetLayoutsAndLocalObjectives().Item1;
+        foreach (List<LocalObjective> objs in objectives)
         {
             List<(string, List<ParamReference<float>>)> objParams = new List<(string, List<ParamReference<float>>)>();
             foreach (var o in objs)
@@ -96,7 +98,7 @@ public class Parameters : MonoBehaviour
                 (string oName, List<ParamReference<float>> oParams) = GetParameters(o);
                 objParams.Add((oName, oParams));
             }
-            m_parameters.Add((obj, objParams));
+            m_parameters.Add((objs.First().TargetGameObject.name, objParams));
         }
 
         // Multi-element objectives 

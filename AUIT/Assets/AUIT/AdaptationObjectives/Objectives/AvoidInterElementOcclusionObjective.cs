@@ -126,46 +126,46 @@ namespace AUIT.AdaptationObjectives.Objectives
             return polygonsScreenSpace;
         }
 
-        public override float CostFunction(Layout optimizationTarget, Layout[] optimizationTargets, Layout initialLayout = null)
-        {
-            elementsColliding = new List<int>();
-
-            // Occlusion requires two elements, cost = 0 if only one element
-            if (optimizationTargets.Length < 2)
-            {
-                return 0;
-            }
-
-            int overlaps = 0;
-
-            if (!_boundsInitialized)
-            {
-                InitializeMeshBounds(optimizationTargets);
-                _boundsInitialized = true;
-            }
-
-            int targetIndex = Array.IndexOf(optimizationTargets, initialLayout);
-            //Debug.Log(targetIndex);
-
-            List<List<Vector2>> polygonsScreenSpace = CalcPolygonsScreenSpace(optimizationTargets);
-
-            if (CalcPolygonScreenSpace(optimizationTarget, _bounds[targetIndex], out List<Vector2> targetScreenSpace)) {
-                for (int i = 0; i < polygonsScreenSpace.Count; i++)
-                {
-                    if (i != targetIndex && PolygonsOverlap(targetScreenSpace, polygonsScreenSpace[i]))
-                    {
-                        elementsColliding.Add(i);
-                        overlaps += 1;
-                    }
-                }
-            }
-
-            // Exclude overlaps with self 
-            //int maxOverlaps = Mathf.Max(polygonsScreenSpace.Count - 1, 1);
-            float cost = (overlaps > 0) ? 1 : 0;
-            //Debug.Log("Cost: " + cost);
-            return cost;
-        }
+        // public float CostFunction(Layout optimizationTarget, Layout[] optimizationTargets, Layout initialLayout = null)
+        // {
+        //     elementsColliding = new List<int>();
+        //
+        //     // Occlusion requires two elements, cost = 0 if only one element
+        //     if (optimizationTargets.Length < 2)
+        //     {
+        //         return 0;
+        //     }
+        //
+        //     int overlaps = 0;
+        //
+        //     if (!_boundsInitialized)
+        //     {
+        //         InitializeMeshBounds(optimizationTargets);
+        //         _boundsInitialized = true;
+        //     }
+        //
+        //     int targetIndex = Array.IndexOf(optimizationTargets, initialLayout);
+        //     //Debug.Log(targetIndex);
+        //
+        //     List<List<Vector2>> polygonsScreenSpace = CalcPolygonsScreenSpace(optimizationTargets);
+        //
+        //     if (CalcPolygonScreenSpace(optimizationTarget, _bounds[targetIndex], out List<Vector2> targetScreenSpace)) {
+        //         for (int i = 0; i < polygonsScreenSpace.Count; i++)
+        //         {
+        //             if (i != targetIndex && PolygonsOverlap(targetScreenSpace, polygonsScreenSpace[i]))
+        //             {
+        //                 elementsColliding.Add(i);
+        //                 overlaps += 1;
+        //             }
+        //         }
+        //     }
+        //
+        //     // Exclude overlaps with self 
+        //     //int maxOverlaps = Mathf.Max(polygonsScreenSpace.Count - 1, 1);
+        //     float cost = (overlaps > 0) ? 1 : 0;
+        //     //Debug.Log("Cost: " + cost);
+        //     return cost;
+        // }
 
 
         public override float CostFunction(Layout[] optimizationTargets, Layout initialLayout = null)

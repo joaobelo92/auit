@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using AUIT.Extras;
 using Cysharp.Threading.Tasks;
+using Unity.Multiplayer.Center.Common;
 using UnityEngine;
 
 namespace AUIT.AdaptationTriggers
@@ -17,7 +18,7 @@ namespace AUIT.AdaptationTriggers
         [SerializeField]
         private float adaptationThreshold = 0.1f;
 
-        private float previousCost;
+        private float _previousCost;
 
         protected void Start()
         {
@@ -47,8 +48,8 @@ namespace AUIT.AdaptationTriggers
 
         private bool ShouldApplyAdaptation()
         {
-            previousCost = Auit.ComputeCost();
-            return enabled && previousCost > optimizationThreshold;
+            _previousCost = Auit.ComputeCost();
+            return enabled && _previousCost > optimizationThreshold;
         }
 
         public override async void ApplyStrategy()
@@ -59,11 +60,9 @@ namespace AUIT.AdaptationTriggers
             if (!ShouldApplyAdaptation())
                 return;
 
-            OptimizationResponse response = await Auit.OptimizeLayout();
-
-            bool shouldAdapt = true;
-            if (shouldAdapt)
-                Auit.Adapt(response.solutions);
+            var response = await Auit.OptimizeLayout();
+            
+            Auit.Adapt(response.solutions);
         }
     }
 }
