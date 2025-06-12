@@ -24,6 +24,7 @@ namespace AUIT.AdaptationObjectives
             // Assuming x = width, y = height
             // Checking center and corners of the layout element
             List<Vector3> checkTargetsLocal = new List<Vector3>();
+            // pick an odd number of points per axis to yield a meaningful mean in the first alternative of the OptimizationRule
             for (float x = -0.5f; x <= 0.5f; x += 0.25f)
             {
                 for (float y = -0.5f; y <= 0.5f; y += 0.25f)
@@ -98,15 +99,41 @@ namespace AUIT.AdaptationObjectives
             if (moveStrategy < 0.33)
             {
                 Vector3[] checkPoints = GetCheckPoints(optimizationTarget);
-                Vector3 center = checkPoints[4];
-                for (int i = 0; i < 4; i++)
+                int checkPointsCount = checkPoints.Length;
+                int mean = (checkPointsCount - 1) / 2;            // this is only meaningful for an odd checkPointsCount 
+                Vector3 center = checkPoints[mean];
+
+                Vector3 ComputeMoveDirection(Vector3 moveDirection, int position)
                 {
-                    Vector3 corner = checkPoints[i];
+                    Vector3 corner = checkPoints[position];
                     if (IsOccluding(corner))
                     {
-                        moveDirection += (corner - center).normalized;
+                        moveDirection += (center - corner).normalized;
                     }
+                    return moveDirection;
                 }
+
+                // Alternative 1: invocation for all checkpoints (-> refactor this, if Alternative 2 is excluded)
+                /*
+                for (int i = 0; i < numberOfCheckpoints; i++)
+                {
+                    moveDirection = MoveDirection(moveDirection, i);
+                }
+                */
+                
+                // Alternative 2: invocation only for the corners of the object's plane (saving calls to IsOccluding())
+                int sqrtOfCheckPointsCount = (int) Mathf.Sqrt(checkPointsCount);
+                
+                int bottomLeft = 0;
+                int topLeft = sqrtOfCheckPointsCount - 1;
+                int bottomRight = checkPointsCount - sqrtOfCheckPointsCount;
+                int topRight = checkPointsCount - 1;
+                
+                moveDirection = ComputeMoveDirection(moveDirection, bottomLeft);
+                moveDirection = ComputeMoveDirection(moveDirection, topLeft);
+                moveDirection = ComputeMoveDirection(moveDirection, bottomRight);
+                moveDirection = ComputeMoveDirection(moveDirection, topRight);
+                
                 moveDirection.Normalize();
             } else if (moveStrategy < 0.66) {
                 moveDirection = GetPlanarDirection(optimizationTarget);
