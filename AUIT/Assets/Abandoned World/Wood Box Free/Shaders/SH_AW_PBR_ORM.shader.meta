@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 64873896b4040984087f6a01a15a1716
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures: []
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 105811
+  packageName: Wood Box Pack (15 objects)
+  packageVersion: 1.0
+  assetPath: Assets/Abandoned World/Wood Box Free/Shaders/SH_AW_PBR_ORM.shader
+  uploadId: 706016
