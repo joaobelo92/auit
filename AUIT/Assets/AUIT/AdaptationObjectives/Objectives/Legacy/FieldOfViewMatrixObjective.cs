@@ -103,6 +103,7 @@ namespace AUIT.AdaptationObjectives.Objectives
             _userCamera = Camera.main;
             ComputeMeshBounds();
             base.Start();
+            objectiveType = ObjectiveType.FieldOfView;
             InvokeRepeating(nameof(TestCost), 1f, 5f);
         }
 

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing.Printing;
 using System.Linq;
 using AUIT.AdaptationObjectives;
 using AUIT.AdaptationObjectives.Definitions;

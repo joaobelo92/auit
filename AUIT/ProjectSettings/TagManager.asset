@@ -17,26 +17,32 @@ TagManager:
   - QDSUIToggleSwitch
   - QDSUISharedThemeColor
   - QDSUIBorderlessButton
+  - QDSUIPrimaryButton
+  - QDSUITextInvertedColor
+  - QDSUITextSecondaryInvertedColor
+  - QDSUIToggleCheckboxRadio
+  - QDSUIDestructiveButton
+  - QDSUITextInputField
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Overlay UI
   - Water
   - UI
   - Occlusion
   - Element
   - Physical Environment
+  - HiddenMesh
+  - Character
+  - Interaction
   - 
   - 
   - 
   - 
   - 
-  - 
-  - 
-  - 
-  - TaskCameraOnly
-  - 
+  - LocatedTaskCameraOnly
+  - ContinuousTaskCameraOnly
   - 
   - 
   - 

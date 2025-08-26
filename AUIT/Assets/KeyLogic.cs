@@ -11,12 +11,16 @@ public class KeyLogic : MonoBehaviour
     public GameObject bow;
     public GameObject tip;
 
-    public bool meshRequired = true; 
+    public BoxCollider boxCollider0;
+    public BoxCollider boxCollider1;
+
+    private Vector3 startPos;
+    private Quaternion startRot;
+
+    private StudyControlPanel studyControlPanel;
 
     void Start()
     {
-        if (meshRequired)
-            CombineMesh();
         Transform handlesGO = transform.Find("KeyHandle");
         for (int i = 0; i < handlesGO.childCount; i++)
         {
@@ -28,7 +32,26 @@ public class KeyLogic : MonoBehaviour
             ends.Add(endsGO.GetChild(i).gameObject);
         }
 
-        print($"KeyLogic Start: {handles.Count} handles, {ends.Count} ends");
+        startPos = transform.position;
+        startRot = transform.rotation;
+
+        studyControlPanel = FindFirstObjectByType<StudyControlPanel>();
+
+        InvokeRepeating(nameof(CheckIfAtDropBox), 0f, 0.2f);
+    }
+
+    private void CheckIfAtDropBox()
+    {
+        if (boxCollider0 != null && boxCollider0.bounds.Contains(transform.position))
+        {
+            Debug.Log("Key is within bounds of the box collider 0.");
+            studyControlPanel.AdvanceTask(gameObject.transform.parent.gameObject, 0);
+        }
+        if (boxCollider1 != null && boxCollider1.bounds.Contains(transform.position))
+        {
+            Debug.Log("Key is within bounds of the box collider 1.");
+            studyControlPanel.AdvanceTask(gameObject.transform.parent.gameObject, 1);
+        }
     }
 
 
@@ -45,9 +68,6 @@ public class KeyLogic : MonoBehaviour
             ends[i].SetActive(keyIndex.Item2 == i);
         }
 
-        if (meshRequired)
-            CombineMesh();
-
     }
 
     public void toggleBowTip()
@@ -56,22 +76,12 @@ public class KeyLogic : MonoBehaviour
         tip.SetActive(!tip.activeSelf);
     }
 
-    private void CombineMesh()
+    public void ResetKey()
     {
-        MeshFilter[] meshFilters = GetComponentsInChildren<MeshFilter>();
-        CombineInstance[] combine = new CombineInstance[meshFilters.Length];
-
-        for (int i = 0; i < meshFilters.Length; i++)
-        {
-            combine[i].mesh = meshFilters[i].sharedMesh;
-            combine[i].transform = meshFilters[i].transform.localToWorldMatrix;
-        }
-
-        Mesh combinedMesh = new Mesh();
-        combinedMesh.CombineMeshes(combine);
-
-        MeshCollider meshCollider = GetComponent<MeshCollider>();
-        meshCollider.sharedMesh = combinedMesh;
+        transform.position = startPos;
+        transform.rotation = startRot;
     }
+
+
 
 }

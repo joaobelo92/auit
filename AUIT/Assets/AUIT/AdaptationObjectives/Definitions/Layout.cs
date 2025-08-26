@@ -66,6 +66,13 @@ namespace AUIT.AdaptationObjectives.Definitions
             _position = position;
             _coordinateSystem = coordinateSystem;
         }
+        
+        public Layout(Vector3 position, Quaternion rotation, CoordinateSystem coordinateSystem = CoordinateSystem.World)
+        {
+            _position = position;
+            _rotation = rotation;
+            _coordinateSystem = coordinateSystem;
+        }
 
         public Layout(string id, Transform transform, CoordinateSystem coordinateSystem = CoordinateSystem.World)
         {

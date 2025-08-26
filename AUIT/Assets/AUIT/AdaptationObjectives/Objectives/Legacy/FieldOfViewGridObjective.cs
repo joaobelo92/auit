@@ -47,14 +47,20 @@ namespace AUIT.AdaptationObjectives.Objectives
             if (x < 0 || x >= width || y < 0 || y >= height) return false;
             return grid[y * width + x];
         }
+        
+        protected override void Start()
+        {
+            base.Start();
+            objectiveType = ObjectiveType.TargetDistance;
+        }
 
         public override float CostFunction(Layout optimizationTarget, Layout initialLayout = null)
         {
-            if (userContextSource == null || optimizationTarget == null) 
-			{
-				Debug.LogError("No user context source or optimization target set for FOV Grid objective.");
+            if (userContextSource == null || optimizationTarget == null)
+            {
+                Debug.LogError("No user context source or optimization target set for FOV Grid objective.");
                 return 1f;
-			}
+            }
 
             Camera cam = userContextSource.GetValue();
             if (cam == null)
@@ -68,27 +74,45 @@ namespace AUIT.AdaptationObjectives.Objectives
             // Visibility check
             if (viewportPos.z < 0 || viewportPos.x < 0f || viewportPos.x > 1f || viewportPos.y < 0f || viewportPos.y > 1f)
             {
+                // Debug.LogWarning("Optimization target is outside camera view.");
                 return 1f;
             }
 
             // Map normalized viewport to grid cell
+            // In this case X is the column and Y the row.. Perhaps make more intuitive
             int cellX = Mathf.FloorToInt(viewportPos.x * width);
             int cellY = Mathf.FloorToInt(viewportPos.y * height);
+            // string gridString = "";
+            // foreach (bool c in grid)
+            // {
+            //     gridString += c ? "X " : "0 ";
+            // }
+            // print("Cell: " + cellX + ", " + cellY);
+            // print(gridString);
 
             if (IsCellActive(cellX, cellY))
+            {
+                // print("Cell is active: " + cellX + ", " + cellY);
                 return 0f;
+            }
 
-            float distance = DistanceToClosestActiveCell(viewportPos).Item1;
-            float maxViewportDist = Mathf.Sqrt(2); // Diagonal of viewport
-            Debug.Log(Mathf.Clamp01(distance / (maxViewportDist / 3f)));
-            return Mathf.Clamp01(distance / (maxViewportDist / 3f));
+            (int, int)? closestCell = DistanceToClosestActiveCell(viewportPos);
+            if (closestCell == null)
+            {
+                Debug.LogWarning("No active cells found in the grid.");
+                return 1f;
+            }
+            int manhattanDist = Math.Abs(cellX - closestCell.Value.Item1) + Math.Abs(cellY - closestCell.Value.Item2);
+            // print("Man: " + manhattanDist);
+            return Mathf.Clamp01(manhattanDist / 3f); // Normalize to a range of 0-1, assuming max distance is 3 cells away (Manhattan distance)
 
         }
 
         public override Layout OptimizationRule(Layout optimizationTarget, Layout initialLayout = null)
         {
-            if (Random.value < 0.33f)
+            if (Random.value < 0.5f)
             {
+                // Find all active cells
                 List<Vector2Int> activeCells = new List<Vector2Int>();
                 for (int y = 0; y < height; y++)
                 {
@@ -107,24 +131,27 @@ namespace AUIT.AdaptationObjectives.Objectives
                     return optimizationTarget;
                 }
 
-                // Pick active cell at random
+                // Pick an active cell at random
                 Vector2Int selectedCell = activeCells[Random.Range(0, activeCells.Count)];
 
-                float cellWidth = Screen.width / (float)width;
-                float cellHeight = Screen.height / (float)height;
+                // Calculate the center of the selected cell in normalized viewport coordinates
+                float cellCenterX = (selectedCell.x + 0.5f) / width;
+                float cellCenterY = (selectedCell.y + 0.5f) / height;
+                Vector3 viewportCenter = new Vector3(cellCenterX, cellCenterY, 0.5f); // z=0.5 as a reasonable default
 
-                Vector3 screenCenter = new Vector3(
-                    (selectedCell.x + 0.5f) * cellWidth,
-                    (selectedCell.y + 0.5f) * cellHeight,
-                    0.5f
-                );
-
-                Vector3 worldTarget = userContextSource.GetValue().ScreenToWorldPoint(screenCenter);
+                // Convert viewport center to world position using the user's camera
+                Camera cam = userContextSource.GetValue();
+                if (cam == null)
+                {
+                    Debug.LogError("OptimizationRule: No camera found in user context source.");
+                    return optimizationTarget;
+                }
+                Vector3 worldTarget = cam.ViewportToWorldPoint(viewportCenter);
 
                 Layout optimizedLayout = optimizationTarget.Clone();
                 optimizedLayout.Position = worldTarget;
-                Debug.LogWarning("OptimizationRule: Moving to active cell to " + worldTarget + " cell " + selectedCell);
-                return optimizedLayout; 
+                Debug.Log($"OptimizationRule: Moving to active cell {selectedCell} at world position {worldTarget}");
+                return optimizedLayout;
             }
             else
             {
@@ -151,12 +178,12 @@ namespace AUIT.AdaptationObjectives.Objectives
         }
 
 
-        private (float, Vector2?) DistanceToClosestActiveCell(Vector2 screenPosition)
+        private (int, int)? DistanceToClosestActiveCell(Vector2 position)
         {
-            float cellWidth = Screen.width / (float)width;
-            float cellHeight = Screen.height / (float)height;
+            // float cellWidth = Screen.width / (float)width;
+            // float cellHeight = Screen.height / (float)height;
 
-            Vector2? closestCell = null;
+            (int, int)? closestCell = null;
             float closestDistanceSqr = float.MaxValue;
 
             for (int y = 0; y < height; y++)
@@ -167,17 +194,22 @@ namespace AUIT.AdaptationObjectives.Objectives
                         continue;
 
                     // Calculate center of this cell in screen space
+                    // Vector2 cellCenter = new Vector2(
+                    //     (x + 0.5f) * cellWidth,
+                    //     (y + 0.5f) * cellHeight
+                    // );
+                    // Calculate center of this cell in screen space
                     Vector2 cellCenter = new Vector2(
-                        (x + 0.5f) * cellWidth,
-                        (y + 0.5f) * cellHeight
+                        (x + 0.5f) / width,
+                        (y + 0.5f) / height
                     );
 
-                    float distSqr = (cellCenter - screenPosition).sqrMagnitude;
+                    float distSqr = (cellCenter - position).sqrMagnitude;
 
                     if (distSqr < closestDistanceSqr)
                     {
                         closestDistanceSqr = distSqr;
-                        closestCell = new Vector2(x,y);
+                        closestCell = (x, y);
                     }
                 }
             }
@@ -185,28 +217,9 @@ namespace AUIT.AdaptationObjectives.Objectives
             // print(closestCell);
             // print(closestDistanceSqr);
 
-            return (Mathf.Sqrt(closestDistanceSqr), closestCell);
+            return closestCell;
         }
         
-        public void PrintGrid()
-        {
-            System.Text.StringBuilder sb = new System.Text.StringBuilder();
-            sb.AppendLine($"Grid ({width} × {height}):");
-
-            for (int y = 0; y < height; y++)
-            {
-                int flippedY = (height - 1) - y; // Match top-to-bottom visual order
-                for (int x = 0; x < width; x++)
-                {
-                    int index = flippedY * width + x;
-                    bool cell = (index < grid.Count) ? grid[index] : false;
-                    sb.Append(cell ? "X " : ". ");
-                }
-                sb.AppendLine();
-            }
-
-            Debug.Log(sb.ToString());
-        }
     }
     
     [CustomEditor(typeof(FieldOfViewGridObjective))]

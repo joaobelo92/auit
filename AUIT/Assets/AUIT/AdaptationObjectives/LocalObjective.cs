@@ -6,6 +6,17 @@ using System.Collections.Generic;
 
 namespace AUIT.AdaptationObjectives
 {
+
+    public enum ObjectiveType
+    {
+        AvoidOcclusion,
+        TargetDistance,
+        FieldOfView,
+        UpdateCoordinateSystemOnMovement,
+        LookTowards,
+        NotSpecified,
+    }
+
     // Local Objectives have to derive from MonoBehaviour, so I'm unsure an interface for Global and Local is possible.
     [RequireComponent(typeof(LocalObjectiveHandler))]
     public abstract class LocalObjective : MonoBehaviour
@@ -13,7 +24,9 @@ namespace AUIT.AdaptationObjectives
         #region Context Source Logic
 
         protected LocalObjectiveHandler ObjectiveHandler;
-        
+
+        [HideInInspector]
+        public ObjectiveType objectiveType = ObjectiveType.NotSpecified;
 
         public OptimizationTarget OptimizationTarget { get; set; } = OptimizationTarget.Position;
 

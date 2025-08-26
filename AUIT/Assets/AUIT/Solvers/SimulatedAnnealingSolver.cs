@@ -26,22 +26,21 @@ namespace AUIT.Solvers
         public float earlyStopping = 0.02f;
         public int iterationsPerFrame = 50;
 
-        // TODO: Absolutely disgusting approach to constrain position. Probably should change.
         private Vector3 ConstrainPosition(Vector3 position)
         {
             Vector3 constrainedPosition = position;
-            List<Constraints.Constraint> constraints = AUIT.Instance.GetConstraints();
-            foreach (Constraints.Constraint constraint in constraints)
+            List<Constraint> constraints = AUIT.Instance.GetConstraints();
+            foreach (Constraint constraint in constraints)
             {
                 switch (constraint.type)
                 {
-                    case Constraints.ConstraintType.SpatialXAxis:
+                    case ConstraintType.SpatialXAxis:
                         constrainedPosition.x = Mathf.Clamp(constrainedPosition.x, constraint.minimum, constraint.maximum);
                         break;
-                    case Constraints.ConstraintType.SpatialYAxis:
+                    case ConstraintType.SpatialYAxis:
                         constrainedPosition.y = Mathf.Clamp(constrainedPosition.y, constraint.minimum, constraint.maximum);
                         break;
-                    case Constraints.ConstraintType.SpatialZAxis:
+                    case ConstraintType.SpatialZAxis:
                         constrainedPosition.z = Mathf.Clamp(constrainedPosition.z, constraint.minimum, constraint.maximum);
                         break;
                 }
@@ -125,14 +124,12 @@ namespace AUIT.Solvers
                 if (maxCostObjective > maxCostMultiObjective)
                 {
                     Layout maxCostLayout = objectives[maxCostElementIndex][maxCostObjectiveIndex].OptimizationRule(currentLayout[maxCostElementIndex]);
-                    // TODO: Absolutely disgusting approach to constrain position. Probably should change.
                     maxCostLayout.Position = ConstrainPosition(maxCostLayout.Position); // Constrain the position of the layout
                     currentLayout[maxCostElementIndex] = maxCostLayout;
                 }
                 else
                 {
                     currentLayout = multiElementObjectives[maxMultiObjectiveIndex].OptimizationRule(currentLayout);
-                    // TODO: Absolutely disgusting approach to constrain position. Probably should change.
                     for (int j = 0; j < currentLayout.Count; j++)
                     {
                         if (currentLayout[j] != null)
@@ -194,7 +191,7 @@ namespace AUIT.Solvers
             }
             
             UIConfiguration best = new UIConfiguration(bestLayout.ToArray());
-            return (new OptimizationResponse(best), null, null);
+            return (new OptimizationResponse(best, cost), null, null);
             // return (new List<List<Layout>> { bestLayout }, cost);
         }
     }

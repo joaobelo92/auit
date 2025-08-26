@@ -185,7 +185,7 @@ namespace AUIT
         /// </summary>
         /// <returns>A tuple consisting of a list of lists of local objectives and a list of layouts.
         /// Each inner list of local objectives corresponds to a layout at the same index.</returns>
-        public (List<List<LocalObjective>>, List<Layout>) GetLayoutsAndLocalObjectives(bool currentLayout = true)
+        public (List<List<LocalObjective>>, List<Layout>) GetLayoutsAndLocalObjectives(bool currentLayout = true, List<ObjectiveType> evaluationObjectives = null)
         {
             List<List<LocalObjective>> objectives = new List<List<LocalObjective>>();
             List<Layout> layouts = new List<Layout>();
@@ -194,15 +194,31 @@ namespace AUIT
             {
                 if (_gameObjects[i].Item2 != null)
                 {
+                    CoordinateSystem coordinateSystem = CoordinateSystem.World;
+                    if (_gameObjects[i].Item2.GetComponent<CoordinateSystemTransition>() != null)
+                    {
+                        // Ensure the coordinate system transition is updated before getting the layout
+                        coordinateSystem = _gameObjects[i].Item2.GetComponent<CoordinateSystemTransition>().CurrentCoordinateSystem;
+                    }
                     // Avoid unnecessary overhead if computing a specific layout
                     if (currentLayout)
                         layouts.Add(new
                             Layout(
                                 _gameObjects[i].Item2.Id,
-                                _gameObjects[i].Item1.transform
+                                _gameObjects[i].Item1.transform,
+                                coordinateSystem
                             ));
                     
-                    objectives.Add(_gameObjects[i].Item2.Objectives);
+                    List<LocalObjective> objs = new();
+                    foreach (var obj in _gameObjects[i].Item2.Objectives)
+                    {
+                        if (evaluationObjectives == null || evaluationObjectives.Count == 0 || evaluationObjectives.Contains(obj.objectiveType))
+                        {
+                            // print("Adding objective " + obj.objectiveType + " to evaluation: " + obj.name);
+                            objs.Add(obj);
+                        }
+                    }
+                    objectives.Add(objs);
                 }
             }
             
@@ -257,9 +273,9 @@ namespace AUIT
         /// <param name="layouts">Optional solution to compute cost for. If null, use the current layout.</param>
         /// <param name="verbose">If true, enables detailed logging for debugging or analysis.</param>
         /// <returns>The total computed cost as a float value.</returns>
-        public float ComputeCost(List<Layout> layouts = null, bool verbose = false)
+        public float ComputeCost(List<Layout> layouts = null, List<ObjectiveType> evaluationObjectives = null, bool verbose = false)
         {
-            (List<List<LocalObjective>> objectives, List<Layout> l) = GetLayoutsAndLocalObjectives(layouts == null);
+            (List<List<LocalObjective>> objectives, List<Layout> l) = GetLayoutsAndLocalObjectives(layouts == null, evaluationObjectives: evaluationObjectives);
             
             // If no list of layouts is provided, compute the cost of current configuration
             if (layouts == null)
@@ -268,18 +284,28 @@ namespace AUIT
             }
             
             float cost = 0;
-            
+            string costsLog = "";
+
             for (int i = 0; i < layouts.Count; i++)
             {
                 for (int j = 0; j < objectives[i].Count; j++)
                 {
+                    if (!objectives[i][j].isActiveAndEnabled) continue;
                     float objectiveCost = objectives[i][j].Weight * objectives[i][j].CostFunction(layouts[i]);
                     cost += objectiveCost;
+                    costsLog += $"Objective {j} Cost: {objectiveCost}\n";
                 }
             }
 
             cost += MultiElementObjectives.Sum(
                 objective => objective.Weight * objective.CostFunction(layouts.ToArray()));
+
+            if (verbose)
+            {
+                Debug.Log($"[AdaptationManager.ComputeCost()]: Total Cost: {cost}\n" +
+                          $"Costs Breakdown:\n{costsLog}");
+            }
+
 
             return cost;
         }

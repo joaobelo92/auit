@@ -113,7 +113,7 @@ namespace AUIT.AdaptationObjectives
                 moveDirection = Random.onUnitSphere;
             }
 
-            result.Position += 0.05f * HelperMath.SampleNormalDistribution(1, 0.5f) * moveDirection;
+            result.Position += Random.Range(0f, 0.1f) * moveDirection;
 
             return result; 
         }

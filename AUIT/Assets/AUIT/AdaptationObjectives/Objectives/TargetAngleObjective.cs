@@ -68,7 +68,7 @@ namespace AUIT.AdaptationObjectives
             }
             else // move some cm at random
             {
-                result.Position = optimizationTarget.Position + 0.05f * HelperMath.SampleNormalDistribution(0.5f, 0.5f) * Random.onUnitSphere;
+                result.Position = optimizationTarget.Position + 0.05f * Random.onUnitSphere;;
             }
 
             return result;

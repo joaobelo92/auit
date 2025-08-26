@@ -1,5 +1,7 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using AUIT.AdaptationObjectives;
 using AUIT.Extras;
 using Cysharp.Threading.Tasks;
 using Unity.Multiplayer.Center.Common;
@@ -18,7 +20,12 @@ namespace AUIT.AdaptationTriggers
         [SerializeField]
         private float adaptationThreshold = 0.1f;
 
+        [SerializeField]
+        private bool verbose = true;
+
         private float _previousCost;
+
+        public List<ObjectiveType> evaluationObjectives;
 
         protected void Start()
         {
@@ -37,7 +44,7 @@ namespace AUIT.AdaptationTriggers
                 {
                     ApplyStrategy();
 
-                    await UniTask.Delay(TimeSpan.FromSeconds(0.4), DelayType.Realtime, PlayerLoopTiming.Update, token);
+                    await UniTask.Delay(TimeSpan.FromSeconds(0.2), DelayType.Realtime, PlayerLoopTiming.Update, token);
                 }
             }
             catch (OperationCanceledException)
@@ -48,7 +55,7 @@ namespace AUIT.AdaptationTriggers
 
         private bool ShouldApplyAdaptation()
         {
-            _previousCost = Auit.ComputeCost();
+            _previousCost = Auit.ComputeCost(evaluationObjectives: evaluationObjectives, verbose: verbose);
             return enabled && _previousCost > optimizationThreshold;
         }
 
@@ -61,6 +68,9 @@ namespace AUIT.AdaptationTriggers
                 return;
 
             var response = await Auit.OptimizeLayout();
+            
+            if (response.costs[0] >= _previousCost)
+                return;
             
             Auit.Adapt(response.solutions);
         }

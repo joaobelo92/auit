@@ -22,7 +22,7 @@ namespace AUIT.PropertyTransitions
             if (_adapting) return;
             // Operate in local space to support multiple coordinates systems
             _startPosition = transform.localPosition;
-            _targetPosition = transform.parent
+            _targetPosition = layout.CoordinateSystem != CoordinateSystem.World
                 ? transform.parent.InverseTransformPoint(layout.Position)
                 : layout.Position;
 

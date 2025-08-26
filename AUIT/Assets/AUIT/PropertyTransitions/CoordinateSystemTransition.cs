@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using AUIT.AdaptationObjectives.Definitions;
 using AUIT.ContextSources;
 using UnityEngine;
@@ -8,16 +9,34 @@ namespace AUIT.PropertyTransitions
     {
         // TODO: Add mechanism to search for context sources 
         // TODO: Run adapt only if different from current coordinate system
-        protected override TransitionType TransitionType => TransitionType.Position;
-        
+        protected override TransitionType TransitionType => TransitionType.CoordinateSystem;
+
         public TransformContextSource TorsoContextSource;
         public TransformContextSource HeadContextSource;
-        
+
+        public GameObject headAnchoringSignifier;
+        public GameObject torsoAnchoringSignifier;
+        public GameObject worldAnchoringSignifier;
+
         public GameObject debugObject;
-        
+
+        public CoordinateSystem onStartCoordinateSystem = CoordinateSystem.World;
+
+        [HideInInspector]
+        public CoordinateSystem CurrentCoordinateSystem;
+
+        protected override void Start()
+        {
+            base.Start();
+            CurrentCoordinateSystem = onStartCoordinateSystem;
+            EnableSignifier(CurrentCoordinateSystem);
+            Adapt(new Layout() { CoordinateSystem = onStartCoordinateSystem });
+        }
+
         public override void Adapt(Layout layout)
         {
-            
+            EnableSignifier(layout.CoordinateSystem);
+            CurrentCoordinateSystem = layout.CoordinateSystem;
             switch (layout.CoordinateSystem)
             {
                 case CoordinateSystem.World:
@@ -28,7 +47,6 @@ namespace AUIT.PropertyTransitions
                 case CoordinateSystem.Head:
                     // Assuming a head context source is available
                     // debugObject.GetComponent<Renderer>().material.color = Color.red;
-                    Debug.Log("changing coordinate system to " + HeadContextSource.GetValue().name);
                     gameObject.transform.SetParent(HeadContextSource.GetValue());
                     break;
 
@@ -36,7 +54,15 @@ namespace AUIT.PropertyTransitions
                     // Assuming a torso context source is available
                     gameObject.transform.SetParent(TorsoContextSource.GetValue());
                     break;
+
             }
+        }
+        
+        private void EnableSignifier(CoordinateSystem coordinateSystem)
+        {
+            headAnchoringSignifier.SetActive(coordinateSystem == CoordinateSystem.Head);
+            torsoAnchoringSignifier.SetActive(coordinateSystem == CoordinateSystem.Torso);
+            worldAnchoringSignifier.SetActive(coordinateSystem == CoordinateSystem.World);
         }
     }
 }

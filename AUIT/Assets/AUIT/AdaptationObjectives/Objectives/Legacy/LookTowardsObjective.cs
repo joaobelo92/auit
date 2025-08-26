@@ -26,6 +26,12 @@ namespace AUIT.AdaptationObjectives
         private void Reset()
         {
         }
+        
+        protected override void Start()
+        {
+            base.Start();
+            objectiveType = ObjectiveType.LookTowards;
+        }
 
         public override float CostFunction(Layout optimizationTarget, Layout initialLayout = null)
         {
@@ -35,7 +41,7 @@ namespace AUIT.AdaptationObjectives
             }
 
             Vector3 targetPosition = targetContextSource.GetValue().position;
-            
+
             Matrix4x4 TRS = Matrix4x4.TRS(optimizationTarget.Position, optimizationTarget.Rotation, transform.lossyScale);
             Vector3 orientationVector = new Vector3(TRS.m02, TRS.m12, TRS.m22);
             float angle = Vector3.Angle(optimizationTarget.Position - targetPosition, orientationVector);
