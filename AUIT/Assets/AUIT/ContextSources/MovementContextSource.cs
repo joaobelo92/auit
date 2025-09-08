@@ -8,10 +8,8 @@ namespace AUIT.ContextSources
 
         private FixedSizeQueue<Vector3> _positionHistory;
 
-        public int movementHistoryBufferSize = 10;
+        public int movementHistoryBufferSize = 15;
         public float movementHistoryUpdateRate = 0.05f; // 20hz
-
-        private float _momentum = 0f;
 
         public int momentumUpdateRate = 5;
 
@@ -19,10 +17,12 @@ namespace AUIT.ContextSources
 
         public float momentumIncrease = 5f;   // higher = reacts faster when moving
         public float momentumDecay = 4f;      // higher = stops faster when not moving
-        public float momentumThreshold = 1f;  // crossing this = considered "moving"
+        public float momentumThreshold = 0.8f;  // crossing this = considered "moving"
         public float jitterDeadzone = 0.01f; // need to adjust if we change hz
 
-        public float WalkingSpeedMetersPerSecond = 0.5f; // according to chatgpt a normal walking speed is roughly 1.2m/s
+        public float WalkingSpeedMetersPerSecond = 0.4f; // according to chatgpt a normal walking speed is roughly 1.2m/s
+
+        private float _movementMomentum = 0f;
 
         private bool _moving = false;
 
@@ -50,36 +50,64 @@ namespace AUIT.ContextSources
             _momentumCounter += 1;
             if (_momentumCounter % momentumUpdateRate == 0 && _momentumCounter > movementHistoryBufferSize)
             {
-                var totalDistance = 0f;
-                Vector3? prevPosition = null;
-                foreach (Vector3 position in _positionHistory)
+                Vector3 velocitySum = Vector3.zero;
+                int velocityCount = 0;
+                Vector3? prev = null;
+                foreach (var pos in _positionHistory)
                 {
-                    if (prevPosition != null)
+                    if (prev.HasValue)
                     {
-                        float stepDistance = Vector3.Distance(prevPosition.Value, position);
-                        if (stepDistance > jitterDeadzone)
-                            totalDistance += stepDistance;
-                        else
+                        var delta = pos - prev.Value;
+                        if (delta.magnitude > jitterDeadzone)
                         {
-                            totalDistance = 0;
-                            continue;
+                            velocitySum += delta / movementHistoryUpdateRate;
+                            velocityCount++;
                         }
                     }
-                    prevPosition = position;
+                    prev = pos;
                 }
 
-                float totalTime = (movementHistoryBufferSize - 1) * movementHistoryUpdateRate;
-                float avgSpeed = totalDistance / totalTime;
+                float avgSpeed = velocityCount > 0 ? velocitySum.magnitude / velocityCount : 0f;
 
-                // if (avgSpeed > WalkingSpeedMetersPerSecond)
-                //     _momentum += momentumIncrease * movementHistoryUpdateRate * momentumUpdateRate;
-                // else
-                //     _momentum -= momentumDecay * movementHistoryUpdateRate * momentumUpdateRate;
 
-                // _momentum = Mathf.Clamp(_momentum, 0f, 10f);
+                if (avgSpeed > WalkingSpeedMetersPerSecond)
+                {
+                    _movementMomentum += momentumIncrease * movementHistoryUpdateRate;
+                }
+                else
+                {
+                    _movementMomentum -= momentumDecay * movementHistoryUpdateRate;
+                }
 
-                _moving = avgSpeed > WalkingSpeedMetersPerSecond;
-                print("User is " + (_moving ? "moving" : "not moving") + " (speed: " + avgSpeed.ToString("F2") + " m/s, momentum: " + _momentum.ToString("F2") + ")");
+
+                _movementMomentum = Mathf.Clamp(_movementMomentum, 0f, 1f);
+                _moving = _movementMomentum > momentumThreshold;
+                
+                
+                // print("Average speed: " + avgSpeed + " Moving: " + _moving + " Momentum: " + _movementMomentum);
+
+                // var totalDistance = 0f;
+                // Vector3? prevPosition = null;
+                // foreach (Vector3 position in _positionHistory)
+                // {
+                //     if (prevPosition != null)
+                //     {
+                //         float stepDistance = Vector3.Distance(prevPosition.Value, position);
+                //         if (stepDistance > jitterDeadzone)
+                //             totalDistance += stepDistance;
+                //         else
+                //         {
+                //             totalDistance = 0;
+                //             continue;
+                //         }
+                //     }
+                //     prevPosition = position;
+                // }
+
+                // float totalTime = (movementHistoryBufferSize - 1) * movementHistoryUpdateRate;
+                // float avgSpeed = totalDistance / totalTime;
+
+                // _moving = avgSpeed > WalkingSpeedMetersPerSecond;
             }
 
             var currentPosition = movementContextSource.position;

@@ -33,6 +33,8 @@ namespace AUIT.AdaptationObjectives
         [SerializeField]
         private List<Relevance> taskRelevances;
 
+        public override ObjectiveType ObjectiveType => throw new NotImplementedException();
+
         public override float CostFunction(Layout optimizationTarget, Layout initialLayout = null)
         {
             if (userContextSource == null)

@@ -217,7 +217,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b213d3e3c7f3109449eb46a4c8ee42f0, type: 3}
   m_Name: XrPerformanceSettingsFeature Standalone
   m_EditorClassIdentifier: 
-  m_enabled: 0
+  m_enabled: 1
   nameUi: XR Performance Settings
   version: 1.0.0
   featureIdInternal: com.unity.openxr.feature.extension.performance_settings
@@ -520,7 +520,7 @@ MonoBehaviour:
   - {fileID: 7760899380431811665}
   - {fileID: -4574752989376741294}
   m_renderMode: 1
-  m_latencyOptimization: 0
+  m_latencyOptimization: 1
   m_autoColorSubmissionMode: 1
   m_colorSubmissionModes:
     m_List: 00000000
@@ -570,7 +570,7 @@ MonoBehaviour:
   - {fileID: 8255188614680000592}
   - {fileID: 4718068312239173748}
   m_renderMode: 1
-  m_latencyOptimization: 0
+  m_latencyOptimization: 1
   m_autoColorSubmissionMode: 1
   m_colorSubmissionModes:
     m_List: 00000000
@@ -821,9 +821,10 @@ MonoBehaviour:
     XR_META_colocation_discovery XR_META_spatial_entity_sharing XR_META_spatial_entity_group_sharing
     XR_EXT_debug_utils XR_META_dynamic_object_tracker XR_META_dynamic_object_keyboard
     XR_META_hand_tracking_microgestures XR_META_spatial_entity_persistence XR_META_spatial_entity_discovery
-    XR_META_boundary_visibility XR_METAX1_face_tracking_visemes XR_META_headset_id
-    XR_FB_composition_layer_settings XR_META_automatic_layer_filter XR_EXT_future
-    XR_EXTX2_stationary_reference_space XR_META_recommended_layer_resolution XR_EXT_local_floor '
+    XR_META_boundary_visibility XR_META_face_tracking_visemes XR_META_headset_id
+    XR_FB_composition_layer_settings XR_META_automatic_layer_filter XR_METAX1_spatial_entity_marker
+    XR_EXT_future XR_EXTX2_stationary_reference_space XR_META_recommended_layer_resolution
+    XR_EXT_local_floor '
   company: Meta
   priority: 0
   required: 0
@@ -920,9 +921,10 @@ MonoBehaviour:
     XR_META_colocation_discovery XR_META_spatial_entity_sharing XR_META_spatial_entity_group_sharing
     XR_EXT_debug_utils XR_META_dynamic_object_tracker XR_META_dynamic_object_keyboard
     XR_META_hand_tracking_microgestures XR_META_spatial_entity_persistence XR_META_spatial_entity_discovery
-    XR_META_boundary_visibility XR_METAX1_face_tracking_visemes XR_META_headset_id
-    XR_FB_composition_layer_settings XR_META_automatic_layer_filter XR_EXT_future
-    XR_EXTX2_stationary_reference_space XR_META_recommended_layer_resolution XR_EXT_local_floor '
+    XR_META_boundary_visibility XR_META_face_tracking_visemes XR_META_headset_id
+    XR_FB_composition_layer_settings XR_META_automatic_layer_filter XR_METAX1_spatial_entity_marker
+    XR_EXT_future XR_EXTX2_stationary_reference_space XR_META_recommended_layer_resolution
+    XR_EXT_local_floor '
   company: Meta
   priority: 0
   required: 0
@@ -998,7 +1000,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f647cc0545697264a9878224faada6d5, type: 3}
   m_Name: MetaQuestFeature Android
   m_EditorClassIdentifier: 
-  m_enabled: 0
+  m_enabled: 1
   nameUi: Meta Quest Support
   version: 1.0.0
   featureIdInternal: com.unity.openxr.feature.metaquest

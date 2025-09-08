@@ -14,6 +14,7 @@ namespace AUIT.AdaptationObjectives
         FieldOfView,
         UpdateCoordinateSystemOnMovement,
         LookTowards,
+        PreferPreviousPositions,
         NotSpecified,
     }
 
@@ -26,11 +27,10 @@ namespace AUIT.AdaptationObjectives
         protected LocalObjectiveHandler ObjectiveHandler;
 
         [HideInInspector]
-        public ObjectiveType objectiveType = ObjectiveType.NotSpecified;
+        public abstract ObjectiveType ObjectiveType { get; }
 
         public OptimizationTarget OptimizationTarget { get; set; } = OptimizationTarget.Position;
 
-        [Parameter("Weight")]
         [SerializeField]
         [Range(0, 1)]
         protected float weight = 0.5f;

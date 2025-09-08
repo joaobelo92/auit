@@ -9,6 +9,8 @@ namespace AUIT.AdaptationObjectives.Definitions
         World,
         Head,
         Torso,
+        LimbLeft,
+        LimbRight
     }
     
     [Serializable]

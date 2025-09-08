@@ -74,7 +74,7 @@ public class ObjectivesEditor : EditorWindow
     {
         
         // Get all GameObjects in the scene
-        _gameObjects = FindObjectsOfType<GameObject>();
+        _gameObjects = FindObjectsByType<GameObject>(FindObjectsSortMode.None);
 
         // Create an array to store the names
         _gameObjectNames = new string[_gameObjects.Length];

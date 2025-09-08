@@ -13,7 +13,6 @@ namespace AUIT.Solvers
         {
             List<List<float>> objectiveCosts = new List<List<float>>();
             List<float> multiObjectiveCosts = new List<float>();
-            float totalWeights = 0;
             for (int j = 0; j < currentLayout.Count; j++)
             {
                 List<float> costs = new List<float>();
@@ -22,7 +21,6 @@ namespace AUIT.Solvers
                     float weight = objectives[j][k].Weight;
                     float objectiveCost = weight * objectives[j][k].CostFunction(currentLayout[j]);
                     costs.Add(objectiveCost);
-                    totalWeights += weight;
                 }
                 objectiveCosts.Add(costs);
             }
@@ -34,22 +32,6 @@ namespace AUIT.Solvers
                 float weight = multiElementObjectives[j].Weight;
                 float objectiveCost = weight * multiElementObjectives[j].CostFunction(currentLayout.ToArray());
                 multiObjectiveCosts.Add(objectiveCost);
-                totalWeights += weight;
-            }
-
-            if (totalWeights > 0)
-            {
-                for (int j = 0; j < currentLayout.Count; j++)
-                {
-                    for (int k = 0; k < objectives[j].Count; k++)
-                    {
-                        objectiveCosts[j][k] /= totalWeights;
-                    }
-                }
-                for (int j = 0; j < multiObjectiveCosts.Count; j++)
-                {
-                    multiObjectiveCosts[j] /= totalWeights;
-                }
             }
 
             return (objectiveCosts, multiObjectiveCosts);

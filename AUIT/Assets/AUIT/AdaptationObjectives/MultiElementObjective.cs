@@ -11,7 +11,6 @@ namespace AUIT.AdaptationObjectives
         
         protected AUIT auit;
 
-        [Parameter("Weight")]
         [SerializeField]
         [Range(0, 1)]
         protected float weight = 0.5f;

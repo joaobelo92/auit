@@ -15,8 +15,10 @@ namespace AUIT.AdaptationObjectives
         [SerializeField]
         private float distanceThreshold = 2.0f;
 
-        
-        
+        public override ObjectiveType ObjectiveType => throw new System.NotImplementedException();
+
+
+
         // Start is called before the first frame update
         public override float CostFunction(Layout optimizationTarget, Layout initialLayout = null)
         {

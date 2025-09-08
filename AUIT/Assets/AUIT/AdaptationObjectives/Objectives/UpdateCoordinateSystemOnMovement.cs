@@ -29,16 +29,10 @@ namespace AUIT.AdaptationObjectives.Objectives
     
         public CoordinateSystem coordinateSystemWhileMoving = CoordinateSystem.Torso;
         public CoordinateSystem coordinateSystemWhileNotMoving = CoordinateSystem.World;
-    
+
         // private bool _moving = false;
-    
-        protected override void Start()
-        {
-            base.Start();
-            objectiveType = ObjectiveType.UpdateCoordinateSystemOnMovement;
-            // _positionHistory = new FixedSizeQueue<Vector3>(movementHistoryBufferSize);
-            // InvokeRepeating(nameof(AddCurrentPositionToQueue), 0f, movementHistoryUpdateRate);
-        }
+
+        public override ObjectiveType ObjectiveType => ObjectiveType.UpdateCoordinateSystemOnMovement;
 
         public override float CostFunction(Layout optimizationTarget, Layout initialLayout = null)
         {

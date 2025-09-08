@@ -16,7 +16,9 @@ namespace AUIT.AdaptationObjectives.Objectives
 
         [SerializeField]
         private float eyeToShoulderDistance = 0.25f;
-        
+
+        public override ObjectiveType ObjectiveType => throw new System.NotImplementedException();
+
         public void Reset()
         {
         }

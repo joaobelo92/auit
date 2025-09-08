@@ -24,6 +24,8 @@ namespace AUIT.AdaptationObjectives
         [Tooltip("The outer limit after which range deviation incurs full cost. Cost ramps up between optimalAngleRange and this boundary.")]
         private float maximumCostAngleRange = 45f;
 
+        public override ObjectiveType ObjectiveType => throw new System.NotImplementedException();
+
         public override float CostFunction(Layout optimizationTarget, Layout initialLayout = null)
         {
             if (userContextSource == null)

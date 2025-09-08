@@ -36,6 +36,8 @@ namespace AUIT.AdaptationObjectives
         [SerializeField]
         private GameObject test;
 
+        public override ObjectiveType ObjectiveType => throw new NotImplementedException();
+
         protected override void Start()
         {
             base.Start();

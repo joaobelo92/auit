@@ -21,6 +21,8 @@ namespace AUIT.AdaptationObjectives
         [SerializeField]
         private bool normalize = true;
 
+        public override ObjectiveType ObjectiveType => throw new NotImplementedException();
+
         public void Reset()
         {
         }

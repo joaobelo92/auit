@@ -17,6 +17,8 @@ namespace AUIT.AdaptationObjectives
         [SerializeField]
         private ContextSource<Transform> userContextSource;
 
+        public override ObjectiveType ObjectiveType => throw new System.NotImplementedException();
+
         public void Reset()
         {
         }

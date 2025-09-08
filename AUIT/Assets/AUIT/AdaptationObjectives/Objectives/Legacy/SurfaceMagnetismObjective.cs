@@ -10,9 +10,12 @@ namespace AUIT.AdaptationObjectives
 
         [SerializeField, Tooltip("Layer Mask should contain all surfaces")]
         private LayerMask layerMask = Physics.DefaultRaycastLayers;
+
+        public override ObjectiveType ObjectiveType => throw new System.NotImplementedException();
+
         // [SerializeField, Tooltip("The goal distance from the surface of the target.")]
         // private float goalSurfaceDistance = 0.03f;
-        
+
         // [SerializeField, Tooltip("The goal distance from the surface of the target.")]
         // private float distanceTolerance = 0.3f;
 

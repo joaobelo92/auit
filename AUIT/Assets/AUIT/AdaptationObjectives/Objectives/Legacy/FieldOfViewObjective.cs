@@ -26,6 +26,8 @@ namespace AUIT.AdaptationObjectives
         [SerializeField]
         private float customBoundaryInterval = 3.0f;
 
+        public override ObjectiveType ObjectiveType => throw new System.NotImplementedException();
+
         public override float CostFunction(Layout optimizationTarget, Layout initialLayout = null)
         {
             if (userContextSource == null)

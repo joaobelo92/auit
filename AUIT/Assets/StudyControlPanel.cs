@@ -26,7 +26,6 @@ public class StudyControlPanel : MonoBehaviour
     public AdaptationType adaptationType = AdaptationType.Manual;
     public ScenarioType scenarioType = ScenarioType.Stationary;
 
-    public List<GameObject> TaskPolygons = new List<GameObject>();
     public List<GameObject> DropBoxes = new List<GameObject>();
 
     private int currentTaskIndex = 0;
@@ -40,6 +39,7 @@ public class StudyControlPanel : MonoBehaviour
     public AudioSource incorrectSound;
 
     public AudioSource timeTicking;
+    public AudioSource annoyingMusic;
 
     public GameObject onTheGoTask;
 
@@ -58,7 +58,11 @@ public class StudyControlPanel : MonoBehaviour
 
     public GameObject[] visualAttentionAnswerComponents;
 
+    public GameObject visualAttentionAnswerButtonPanel;
+
     public TextMeshProUGUI taskInfoText;
+
+    private float annoyingMusicStartTime;
 
     private StudyLocatedTask[] stationaryStudy = {
         new StudyLocatedTask(new (int, int)[] { (0, 1), (1, 2), (2, 2), (3, 1), (4, 0) }, 2, 0),
@@ -149,10 +153,10 @@ public class StudyControlPanel : MonoBehaviour
     // Start is called once before the first execution of Update after the MonSoBehaviour is created
     void Start()
     {
-        // for (int i = 0; i < transform.childCount; i++)
-        // {
-        //     taskKeys.Add(transform.GetChild(i).gameObject);
-        // }
+        foreach (GameObject go in visualAttentionTaskComponents)
+        {
+            go.SetActive(false);
+        }
     }
 
     // Update is called once per frame
@@ -210,6 +214,7 @@ public class StudyControlPanel : MonoBehaviour
         }
 
         StartCoroutine(PrepareMovingTask());
+        StartCoroutine(AnnoyingMusicCoroutine());
     }
 
     // public void AnswerPrompt(string answer)
@@ -241,10 +246,10 @@ public class StudyControlPanel : MonoBehaviour
 
     // }
 
-    
+
     public void AnswerVisualTask(int answer)
     {
-        
+
         visualTaskRunning = false;
         timeTicking.Stop();
         foreach (GameObject go in visualAttentionTaskComponents)
@@ -254,7 +259,7 @@ public class StudyControlPanel : MonoBehaviour
 
         if (nonLocatedTasks[currentTaskIndex] is StudyVisualAttentionTask visualAttentionTask)
         {
-            if (answer >= 0 &&visualAttentionTask.possibleAnswers[answer] == visualAttentionTask.correctColorFaces)
+            if (answer >= 0 && visualAttentionTask.possibleAnswers[answer] == visualAttentionTask.correctColorFaces)
             {
                 correctVisualTaskCount++;
                 correctSound.Play();
@@ -303,6 +308,17 @@ public class StudyControlPanel : MonoBehaviour
         //     SetupPromptTask(promptTask);
         // }
 
+
+    }
+
+
+
+    private IEnumerator AnnoyingMusicCoroutine()
+    {
+        yield return new WaitForSeconds(UnityEngine.Random.Range(5f, 20f));
+        annoyingMusic.Play();
+
+        annoyingMusicStartTime = Time.time;
 
     }
 
@@ -416,7 +432,7 @@ public class StudyControlPanel : MonoBehaviour
             // e.g., show results, reset study, etc.
         }
     }
-    
+
     private bool[] RandomizeFaces(int size, int trueCount)
     {
         if (trueCount > size)
@@ -430,7 +446,7 @@ public class StudyControlPanel : MonoBehaviour
         int assigned = 0;
         while (assigned < trueCount)
         {
-            int index = UnityEngine.Random.Range(0, size); 
+            int index = UnityEngine.Random.Range(0, size);
             if (!result[index])
             {
                 result[index] = true;
@@ -441,6 +457,15 @@ public class StudyControlPanel : MonoBehaviour
         print(result);
 
         return result;
+    }
+    
+    public void VisualAnswer(bool correct)
+    {
+        if (visualTaskRunning)
+        {
+            int answerIndex = correct ? 0 : 1;
+            AnswerVisualTask(answerIndex);
+        }
     }
 
 
@@ -453,10 +478,33 @@ public class KeyPickerLogicEditor : Editor
     {
         DrawDefaultInspector();
 
-        StudyControlPanel keyPickerLogic = (StudyControlPanel)target;
+        StudyControlPanel studyControlPanel = (StudyControlPanel)target;
+
+        GUILayout.Space(10);
+        EditorGUILayout.LabelField("Study Control Panel", EditorStyles.boldLabel);
+
         if (GUILayout.Button("Start Study"))
         {
-            keyPickerLogic.StartStudy();
+            studyControlPanel.StartStudy();
+        }
+
+        GUILayout.Space(10);
+        
+        EditorGUILayout.LabelField("Visual Task", EditorStyles.boldLabel);
+        
+        
+        GUILayout.Space(5);
+
+        if (GUILayout.Button("Correct Visual Answer"))
+        {
+            studyControlPanel.VisualAnswer(true);
+        }
+        
+        GUILayout.Space(5);
+
+        if (GUILayout.Button("Wrong Visual Answer"))
+        {
+            studyControlPanel.VisualAnswer(false);
         }
     }
 }

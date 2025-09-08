@@ -13,13 +13,11 @@ namespace AUIT.PropertyTransitions
 
         public TransformContextSource TorsoContextSource;
         public TransformContextSource HeadContextSource;
+        public TransformContextSource LeftLimbContextSource;
+        public TransformContextSource RightLimbContextSource;
 
-        public GameObject headAnchoringSignifier;
-        public GameObject torsoAnchoringSignifier;
-        public GameObject worldAnchoringSignifier;
 
         public GameObject debugObject;
-
         public CoordinateSystem onStartCoordinateSystem = CoordinateSystem.World;
 
         [HideInInspector]
@@ -29,13 +27,11 @@ namespace AUIT.PropertyTransitions
         {
             base.Start();
             CurrentCoordinateSystem = onStartCoordinateSystem;
-            EnableSignifier(CurrentCoordinateSystem);
             Adapt(new Layout() { CoordinateSystem = onStartCoordinateSystem });
         }
 
         public override void Adapt(Layout layout)
         {
-            EnableSignifier(layout.CoordinateSystem);
             CurrentCoordinateSystem = layout.CoordinateSystem;
             switch (layout.CoordinateSystem)
             {
@@ -55,14 +51,18 @@ namespace AUIT.PropertyTransitions
                     gameObject.transform.SetParent(TorsoContextSource.GetValue());
                     break;
 
+                case CoordinateSystem.LimbLeft:
+                    // Assuming a left limb context source is available
+                    gameObject.transform.SetParent(LeftLimbContextSource.GetValue());
+                    break;
+
+                case CoordinateSystem.LimbRight:
+                    // Assuming a right limb context source is available
+                    gameObject.transform.SetParent(RightLimbContextSource.GetValue());
+                    break;
+
             }
         }
         
-        private void EnableSignifier(CoordinateSystem coordinateSystem)
-        {
-            headAnchoringSignifier.SetActive(coordinateSystem == CoordinateSystem.Head);
-            torsoAnchoringSignifier.SetActive(coordinateSystem == CoordinateSystem.Torso);
-            worldAnchoringSignifier.SetActive(coordinateSystem == CoordinateSystem.World);
-        }
     }
 }

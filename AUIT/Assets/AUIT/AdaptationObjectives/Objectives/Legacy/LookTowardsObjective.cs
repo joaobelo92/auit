@@ -23,14 +23,10 @@ namespace AUIT.AdaptationObjectives
         [SerializeField]
         private Direction lookTowards = Direction.LookAway;
 
+        public override ObjectiveType ObjectiveType => ObjectiveType.LookTowards;
+
         private void Reset()
         {
-        }
-        
-        protected override void Start()
-        {
-            base.Start();
-            objectiveType = ObjectiveType.LookTowards;
         }
 
         public override float CostFunction(Layout optimizationTarget, Layout initialLayout = null)
@@ -48,8 +44,8 @@ namespace AUIT.AdaptationObjectives
 
             float goalAngle = lookTowards == Direction.LookAway ? 0 : 180f;
 
-            float cost = Mathf.Min(Mathf.Abs(angle - goalAngle) / angleThreshold, 1);
-            return cost;
+            float cost = Mathf.Abs(angle - goalAngle) / angleThreshold;
+            return Mathf.Clamp01(cost);
 
         }
 

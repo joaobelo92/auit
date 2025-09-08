@@ -24,7 +24,7 @@ namespace AUIT.Solvers
         // annealingSchedule = alpha
         public float annealingSchedule = 0.98f;
         public float earlyStopping = 0.02f;
-        public int iterationsPerFrame = 50;
+        public int iterationsPerFrame = 100;
 
         private Vector3 ConstrainPosition(Vector3 position)
         {
@@ -139,36 +139,35 @@ namespace AUIT.Solvers
                     }
                 }
                 
-                // objectiveCosts = new List<List<float>>();
-                // totalObjectiveCosts = new List<float>();
-                // multiObjectiveCosts = new List<float>();
-                // for (int j = 0; j < currentLayout.Count; j++)
-                // {
-                //     List<float> costs = new List<float>();
-                //     float totalCost = 0;
-                //     for (int k = 0; k < objectives[j].Count; k++)
-                //     {
-                //         float objectiveCost = objectives[j][k].Weight * objectives[j][k].CostFunction(currentLayout[j]) / objectives[j].Count;
-                //         totalCost += objectiveCost;
-                //         costs.Add(objectiveCost);
-                //     }
-                //     objectiveCosts.Add(costs);
-                //     totalObjectiveCosts.Add(totalCost);
-                // }
-                //
-                // // Here is where we compute the multi-element objectives
-                // for (int j = 0; j < multiElementObjectives.Count; j++)
-                // {
-                //     // Yi Fei: Updating to include conderation of weight
-                //     float objectiveCost = multiElementObjectives[j].Weight * multiElementObjectives[j].CostFunction(currentLayout.ToArray());
-                //     multiObjectiveCosts.Add(objectiveCost);
-                // }
-                (objectiveCosts, multiObjectiveCosts) = Utils.ComputeCosts(currentLayout, objectives, multiElementObjectives);
+                objectiveCosts = new List<List<float>>();
+                totalObjectiveCosts = new List<float>();
+                multiObjectiveCosts = new List<float>();
+                for (int j = 0; j < currentLayout.Count; j++)
+                {
+                    List<float> costs = new List<float>();
+                    float totalCost = 0;
+                    for (int k = 0; k < objectives[j].Count; k++)
+                    {
+                        float objectiveCost = objectives[j][k].Weight * objectives[j][k].CostFunction(currentLayout[j]);
+                        totalCost += objectiveCost;
+                        costs.Add(objectiveCost);
+                    }
+                    objectiveCosts.Add(costs);
+                    totalObjectiveCosts.Add(totalCost);
+                }
+                
+                // Here is where we compute the multi-element objectives
+                for (int j = 0; j < multiElementObjectives.Count; j++)
+                {
+                    float objectiveCost = multiElementObjectives[j].Weight * multiElementObjectives[j].CostFunction(currentLayout.ToArray());
+                    multiObjectiveCosts.Add(objectiveCost);
+                }
+
+                // (objectiveCosts, multiObjectiveCosts) = Utils.ComputeCosts(currentLayout, objectives, multiElementObjectives);
                 
                 totalObjectiveCosts = objectiveCosts.Select(item => item.Sum()).ToList();
                 
-                float currentCost = (totalObjectiveCosts.Sum() + multiObjectiveCosts.Sum()) / 
-                                    (totalObjectiveCosts.Count + multiObjectiveCosts.Count);
+                float currentCost = totalObjectiveCosts.Sum() + multiObjectiveCosts.Sum();
 
                 // Early stopping 
                 if (currentCost <= earlyStopping)

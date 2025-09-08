@@ -22,6 +22,8 @@ namespace AUIT.AdaptationObjectives
         [SerializeField]
         private float maxDistance = 2f;
 
+        public override ObjectiveType ObjectiveType => throw new System.NotImplementedException();
+
         private Vector3 GetDistanceVector(Layout optimizationTarget)
         {
             // y values should not be changed here, otherwise we have a sphere instead of a radius from the user

@@ -12,7 +12,6 @@ using AUIT.Constraints;
 using AUIT.Extras;
 using Cysharp.Threading.Tasks;
 using UnityEditor;
-using Numpy;
 
 namespace AUIT
 {
@@ -212,9 +211,9 @@ namespace AUIT
                     List<LocalObjective> objs = new();
                     foreach (var obj in _gameObjects[i].Item2.Objectives)
                     {
-                        if (evaluationObjectives == null || evaluationObjectives.Count == 0 || evaluationObjectives.Contains(obj.objectiveType))
+                        if (evaluationObjectives == null || evaluationObjectives.Count == 0 || evaluationObjectives.Contains(obj.ObjectiveType))
                         {
-                            // print("Adding objective " + obj.objectiveType + " to evaluation: " + obj.name);
+                            // print("Adding objective " + obj.ObjectiveType + " to evaluation: " + obj.name);
                             objs.Add(obj);
                         }
                     }
@@ -293,7 +292,7 @@ namespace AUIT
                     if (!objectives[i][j].isActiveAndEnabled) continue;
                     float objectiveCost = objectives[i][j].Weight * objectives[i][j].CostFunction(layouts[i]);
                     cost += objectiveCost;
-                    costsLog += $"Objective {j} Cost: {objectiveCost}\n";
+                    costsLog += $"Objective {objectives[i][j].ObjectiveType} Cost: {objectiveCost}\n";
                 }
             }
 

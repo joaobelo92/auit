@@ -17,6 +17,8 @@ namespace AUIT.AdaptationObjectives
         [SerializeField]
         private LayerMask physicalLayerMask;
 
+        public override ObjectiveType ObjectiveType => throw new System.NotImplementedException();
+
         private Vector3[] GetCheckPoints(Layout layout)
         {
             // Assuming x = width, y = height

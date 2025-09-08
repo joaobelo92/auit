@@ -39,7 +39,8 @@ namespace AUIT.AdaptationObjectives
         private float negativeAssociationWeight = 0.625f;
         [SerializeField]
         private List<GameObjectAssociation> associations = new List<GameObjectAssociation>();
-        
+
+        public override ObjectiveType ObjectiveType => throw new NotImplementedException();
 
         public void Reset()
         {

@@ -43,6 +43,8 @@ namespace AUIT.AdaptationObjectives.Objectives
 
         private float _prevCost = 1f;
 
+        public override ObjectiveType ObjectiveType => ObjectiveType.AvoidOcclusion;
+
         private void Reset()
         {
         }
@@ -50,7 +52,6 @@ namespace AUIT.AdaptationObjectives.Objectives
         protected override void Start()
         {
             base.Start();
-            objectiveType = ObjectiveType.AvoidOcclusion;
             occlusionMask &= ~(1 << gameObject.layer);
 
             if (occlusionCollider != null)
@@ -101,6 +102,8 @@ namespace AUIT.AdaptationObjectives.Objectives
         {
             Transform contextSourceTransform = userContextSource.GetValue();
 
+            Matrix4x4 trs = Matrix4x4.TRS(optimizationTarget.Position, optimizationTarget.Rotation, optimizationTarget.Scale);
+
             float cost = 0.0f;
             // Store a copy of the keys of the Dictionary
             // List<Vector3> keypointsKeys = new List<Vector3>(keyPoints.Keys);
@@ -110,7 +113,7 @@ namespace AUIT.AdaptationObjectives.Objectives
 
                 for (int j = 0; j < keyPointSubdivisions + 2; j++)
                 {
-                    Vector3 targetKeyPointPos = keyPointTransforms[i * (keyPointSubdivisions + 2) + j].position;
+                    Vector3 targetKeyPointPos = trs.MultiplyPoint(keyPointTransforms[i * (keyPointSubdivisions + 2) + j].localPosition);
                     bool isOccluded = CheckIfCornerIsOccluded(contextSourceTransform.position, targetKeyPointPos);
                     cost += isOccluded ? 1 : 0;
                     keyPointsOccluded[i, j] = isOccluded;
@@ -119,7 +122,7 @@ namespace AUIT.AdaptationObjectives.Objectives
 
             
             _prevCost = cost / keyPointTransforms.Count;
-            return _prevCost;
+            return Mathf.Clamp01(_prevCost);
         }
 
         public override Layout OptimizationRule(Layout optimizationTarget, Layout initialLayout = null)

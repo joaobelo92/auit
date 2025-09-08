@@ -22,6 +22,8 @@ namespace AUIT.AdaptationObjectives
         private float initialDist = 0.5f;
         private Vector3 initialScale;
 
+        public override ObjectiveType ObjectiveType => throw new System.NotImplementedException();
+
         public void Reset()
         {
         }

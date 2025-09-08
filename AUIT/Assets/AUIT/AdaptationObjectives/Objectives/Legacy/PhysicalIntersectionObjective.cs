@@ -12,6 +12,8 @@ namespace AUIT.AdaptationObjectives
 
         private Collider layoutCollider;
 
+        public override ObjectiveType ObjectiveType => throw new System.NotImplementedException();
+
         private bool IsIntersecting(Layout optimizationTarget)
         {
             Bounds bounds = layoutCollider.bounds;

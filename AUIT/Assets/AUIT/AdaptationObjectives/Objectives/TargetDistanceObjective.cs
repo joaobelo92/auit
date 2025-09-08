@@ -1,6 +1,5 @@
-﻿using System;
-using AUIT.AdaptationObjectives.Definitions;
-using AUIT.AdaptationObjectives.Extras;
+﻿using AUIT.AdaptationObjectives.Definitions;
+using AUIT.ContextSources;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -11,7 +10,7 @@ namespace AUIT.AdaptationObjectives
         // In this case optimization target must be a transform
         // Add validation in the future
         [SerializeField]
-        private ContextSource<Transform> targetContextSource;
+        private TransformContextSource targetContextSource;
 
         [SerializeField]
         private float targetDistance = 0.5f;
@@ -35,13 +34,49 @@ namespace AUIT.AdaptationObjectives
         private float yAxisOptimalRange = 0.2f;
 
         [SerializeField]
+        private bool debugOptimalArea = false;
 
-        protected override void Start()
+        private void Update()
         {
-            base.Start();
-            objectiveType = ObjectiveType.TargetDistance;
+            if (debugOptimalArea)
+            {
+                DrawDebugLines();
+            }
         }
 
+        private void DrawDebugLines()
+        {
+            Transform userTransform = targetContextSource.GetValue();
+
+            int angleStep = 5; // degrees
+            int yStep = 5; // cm
+            float minAngle = -angleInterval;
+            float maxAngle = angleInterval;
+            float minY = yAxisOptimalOrigin - yAxisOptimalRange;
+            float maxY = yAxisOptimalOrigin + yAxisOptimalRange;
+            float minDist = targetDistance - optimalDistanceRange;
+            float maxDist = targetDistance + optimalDistanceRange;
+            float distStep = 0.05f; // meters
+
+            for (float angle = minAngle; angle <= maxAngle; angle += angleStep)
+            {
+                Quaternion rot = Quaternion.Euler(0, angle, 0);
+                Vector3 dir = rot * Vector3.forward;
+
+                for (float dist = minDist; dist <= maxDist; dist += distStep)
+                {
+                    for (float y = minY; y <= maxY; y += yStep * 0.01f)
+                    {
+                        Vector3 localPoint = new Vector3(dir.x * dist, y, dir.z * dist);
+                        Vector3 worldPoint = userTransform.TransformPoint(localPoint);
+                        Debug.DrawLine(worldPoint, worldPoint + Vector3.up * 0.05f, Color.green, 0.05f, false);
+                    }
+                }
+            }
+        }
+
+        public override ObjectiveType ObjectiveType => ObjectiveType.TargetDistance;
+        
         public override float CostFunction(Layout optimizationTarget, Layout initialLayout = null)
         {
             if (targetContextSource == null)
@@ -51,20 +86,31 @@ namespace AUIT.AdaptationObjectives
 
             // Debug.Log(targetContextSource.name);
 
-            Transform userTransform = targetContextSource.GetValue().transform;
+            Transform userTransform = targetContextSource.GetValue();
             Vector3 distanceVector = userTransform.InverseTransformPoint(optimizationTarget.Position);
             // In user's coordinate system
             Vector2 distanceVectorXZ = new Vector2(distanceVector.x, distanceVector.z);
 
+            // print(distanceVectorXZ + " magnitude: " + distanceVectorXZ.magnitude);
+
             float totalCost = 0f;
 
-            float angle = Vector2.Angle(distanceVectorXZ, Vector2.right);
-            
+            float angle = Vector2.Angle(distanceVectorXZ, Vector2.up);
+
             if (angle > angleInterval)
             {
                 float excess = angle - angleInterval;
                 float angleCost = excess / angleIntervalCostRange;
                 totalCost += angleCost;
+            }
+
+            float distance = distanceVectorXZ.magnitude - targetDistance;
+
+            if (Mathf.Abs(distance) > optimalDistanceRange)
+            {
+                float excess = Mathf.Abs(distance) - optimalDistanceRange;
+                float distanceCost = excess / maximumCostDistance;
+                totalCost += distanceCost;
             }
 
             float yAxis = distanceVector.y - yAxisOptimalOrigin;
@@ -82,14 +128,23 @@ namespace AUIT.AdaptationObjectives
 
         public override Layout OptimizationRule(Layout optimizationTarget, Layout initialLayout)
         {
+
+            Layout result = optimizationTarget.Clone();
+
             // Pick random position in optimal zone
             if (Random.value > 0.5f)
             {
-                Vector2 point = Quaternion.Euler(0, 0, Random.Range(0, angleInterval)) * Vector2.up;
-                Transform userTransform = targetContextSource.GetValue().transform;
+                Vector3 point = Quaternion.Euler(0, Random.Range(0, angleInterval), 0) * Vector3.forward * targetDistance;
+                Transform userTransform = targetContextSource.GetValue();
+                Vector3 newPosition = userTransform.TransformPoint(new Vector3(point.x, Random.Range(yAxisOptimalOrigin - yAxisOptimalRange, yAxisOptimalOrigin + yAxisOptimalRange), point.z));
+                result.Position = newPosition;
             }
-            Transform userTransform = targetContextSource.GetValue().transform;
-            Vector3 distanceVector = userTransform.InverseTransformPoint(optimizationTarget.Position);
+            else
+            {
+                result.Position += 0.05f * Random.onUnitSphere;
+            }
+
+            return result;
         }
 
         public override Layout DirectRule(Layout optimizationTarget)
@@ -101,19 +156,19 @@ namespace AUIT.AdaptationObjectives
             return result;
         }
 
-        private new void OnEnable()
-        {
-            base.OnEnable();
+        // private new void OnEnable()
+        // {
+        //     base.OnEnable();
 
-            if (targetContextSource == null)
-            {
-                targetContextSource = GetUserPoseContextSource();
-            }
-        }
+        //     if (targetContextSource == null)
+        //     {
+        //         targetContextSource = GetUserPoseContextSource();
+        //     }
+        // }
 
         public override float[] GetParameters()
         {
-            return new[] { weight, targetDistance, optimalDistanceRange, maximumCostDistanceRange };
+            return new[] { weight, targetDistance, optimalDistanceRange, maximumCostDistance };
         }
 
         public override void SetParameters(float[] parameters)
@@ -121,7 +176,9 @@ namespace AUIT.AdaptationObjectives
             weight = parameters[0];
             targetDistance = parameters[1];
             optimalDistanceRange = parameters[2];
-            maximumCostDistanceRange = parameters[3];
+            maximumCostDistance = parameters[3];
         }
+        
+
     }
 }

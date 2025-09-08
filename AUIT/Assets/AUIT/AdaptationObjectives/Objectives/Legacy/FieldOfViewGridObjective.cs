@@ -21,6 +21,12 @@ namespace AUIT.AdaptationObjectives.Objectives
         [SerializeField]
         public List<bool> grid = new List<bool>();
 
+        public override ObjectiveType ObjectiveType => ObjectiveType.FieldOfView;
+
+        
+        [SerializeField]
+        public bool debugDrawGrid = false;
+
         public void OnValidate()
         {
             ResizeGrid();
@@ -47,11 +53,38 @@ namespace AUIT.AdaptationObjectives.Objectives
             if (x < 0 || x >= width || y < 0 || y >= height) return false;
             return grid[y * width + x];
         }
-        
-        protected override void Start()
+    
+
+        private void Update()
         {
-            base.Start();
-            objectiveType = ObjectiveType.TargetDistance;
+            if (debugDrawGrid)
+            {
+                DrawDebugGrid();
+            }
+        }
+
+        public void DrawDebugGrid()
+        {
+            Camera cam = userContextSource?.GetValue();
+            if (cam == null) return;
+
+            float z = 2.0f; // Distance in front of the camera to visualize the grid (adjust as needed)
+
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    // Center of the cell in normalized viewport coordinates
+                    float cellCenterX = (x + 0.5f) / width;
+                    float cellCenterY = (y + 0.5f) / height;
+                    Vector3 viewportCenter = new Vector3(cellCenterX, cellCenterY, z);
+
+                    Vector3 worldPoint = cam.ViewportToWorldPoint(viewportCenter);
+
+                    Color color = IsCellActive(x, y) ? Color.green : Color.red;
+                    Debug.DrawLine(cam.transform.position, worldPoint, color, 0.1f, false);
+                }
+            }
         }
 
         public override float CostFunction(Layout optimizationTarget, Layout initialLayout = null)
@@ -150,7 +183,7 @@ namespace AUIT.AdaptationObjectives.Objectives
 
                 Layout optimizedLayout = optimizationTarget.Clone();
                 optimizedLayout.Position = worldTarget;
-                Debug.Log($"OptimizationRule: Moving to active cell {selectedCell} at world position {worldTarget}");
+                // Debug.Log($"OptimizationRule: Moving to active cell {selectedCell} at world position {worldTarget}");
                 return optimizedLayout;
             }
             else
@@ -234,7 +267,7 @@ namespace AUIT.AdaptationObjectives.Objectives
             // Draw user context source
             SerializedProperty contextProp = serializedObject.FindProperty("userContextSource");
             EditorGUILayout.PropertyField(contextProp, new GUIContent("User Camera Source"));
-            
+
             SerializedProperty weightProp = serializedObject.FindProperty("weight");
             EditorGUILayout.PropertyField(weightProp, new GUIContent("Weight"));
 
@@ -275,8 +308,12 @@ namespace AUIT.AdaptationObjectives.Objectives
             {
                 EditorUtility.SetDirty(gridConfig);
             }
+            
+            SerializedProperty debugProp = serializedObject.FindProperty("debugDrawGrid");
+            EditorGUILayout.PropertyField(debugProp, new GUIContent("Debug Draw Grid"));
 
             serializedObject.ApplyModifiedProperties();
+            
         }
 
     }

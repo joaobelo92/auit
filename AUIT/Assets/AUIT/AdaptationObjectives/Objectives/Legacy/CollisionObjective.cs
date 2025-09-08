@@ -11,6 +11,8 @@ namespace AUIT.AdaptationObjectives
         [SerializeField]
         private float moveAwayDistance = 1.0f;
 
+        public override ObjectiveType ObjectiveType => throw new System.NotImplementedException();
+
         private Vector3? GetDistanceVector(Vector3 currentPosition)
         {
             // Can the contextSource somehow be a list of overlapping colliders?
