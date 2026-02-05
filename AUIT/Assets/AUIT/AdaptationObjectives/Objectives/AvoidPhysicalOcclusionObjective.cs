@@ -24,7 +24,7 @@ namespace AUIT.AdaptationObjectives
             // Assuming x = width, y = height
             // Checking center and corners of the layout element
             List<Vector3> checkTargetsLocal = new List<Vector3>();
-            // pick an odd number of points per axis to yield a meaningful mean in the first alternative of the OptimizationRule
+            // pick the same odd number of points per axis to yield a meaningful mean and square root in the second alternative of the OptimizationRule
             for (float x = -0.5f; x <= 0.5f; x += 0.25f)
             {
                 for (float y = -0.5f; y <= 0.5f; y += 0.25f)
@@ -122,7 +122,7 @@ namespace AUIT.AdaptationObjectives
                 */
                 
                 // Alternative 2: invocation only for the corners of the object's plane (saving calls to IsOccluding())
-                int sqrtOfCheckPointsCount = (int) Mathf.Sqrt(checkPointsCount);
+                int sqrtOfCheckPointsCount = (int) Mathf.Sqrt(checkPointsCount);            // this is only meaningful for a square grid of checkPoints
                 
                 int bottomLeft = 0;
                 int topLeft = sqrtOfCheckPointsCount - 1;
