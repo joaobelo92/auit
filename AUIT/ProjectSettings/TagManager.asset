@@ -23,6 +23,8 @@ TagManager:
   - QDSUIToggleCheckboxRadio
   - QDSUIDestructiveButton
   - QDSUITextInputField
+  - NotInteractableLeft
+  - NotInteractableRight
   layers:
   - Default
   - TransparentFX

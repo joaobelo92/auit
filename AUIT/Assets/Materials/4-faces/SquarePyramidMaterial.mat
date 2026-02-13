@@ -75,6 +75,9 @@ Material:
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
     - _DstBlendAlpha: 0
+    - _EnableEdge0: 1
+    - _EnableEdge1: 1
+    - _EnableEdge2: 1
     - _EnvironmentReflections: 1
     - _GlossMapScale: 0.404
     - _Glossiness: 0.5

@@ -1,22 +1,38 @@
+using System.Collections;
 using UnityEngine;
 
-public class RotateOverAxis : MonoBehaviour
+public class RotateOverXAxis : MonoBehaviour
 {
-    public float rotationX = 45f;
-    public float rotationY = 0f;
-    public float rotationZ = 0f;
-    
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    public float rotationDuration = 10f;
+
+    void OnEnable()
     {
-        
+        StartCoroutine(RotateSequence());
     }
 
-    // Update is called once per frame
-    void Update()
+    private IEnumerator RotateSequence()
     {
-        transform.Rotate(Vector3.right * rotationX * Time.deltaTime);
-        transform.Rotate(Vector3.up * rotationY * Time.deltaTime);
-        transform.Rotate(Vector3.forward * rotationZ * Time.deltaTime);
+        while (true)
+        {
+            yield return StartCoroutine(RotateOverTime(Vector3.right, 360f, rotationDuration));
+        }
+    }
+    
+    private IEnumerator RotateOverTime(Vector3 axis, float angle, float duration)
+    {
+        float elapsed = 0f;
+        float currentAngle = 0f;
+
+        while (elapsed < duration)
+        {
+            float step = angle / duration * Time.deltaTime;
+            transform.Rotate(axis, step, Space.Self);
+
+            elapsed += Time.deltaTime;
+            currentAngle += step;
+            yield return null;
+        }
+
+        transform.Rotate(axis, angle - currentAngle, Space.Self);
     }
 }

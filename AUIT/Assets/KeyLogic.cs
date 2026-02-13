@@ -17,6 +17,10 @@ public class KeyLogic : MonoBehaviour
     private Vector3 startPos;
     private Quaternion startRot;
 
+    
+    public GameObject keyBox;
+    public GameObject keyPicker;
+
     private StudyControlPanel studyControlPanel;
 
     void Start()
@@ -72,6 +76,8 @@ public class KeyLogic : MonoBehaviour
 
     public void toggleBowTip()
     {
+        keyBox.SetActive(false);
+        keyPicker.SetActive(true);
         bow.SetActive(!bow.activeSelf);
         tip.SetActive(!tip.activeSelf);
     }
